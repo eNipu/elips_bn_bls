@@ -1,6 +1,0 @@
-<ELiPS_bn_bls/bls12_frobenius.h>
-#include <ELiPS_bn_bls/bn_efp12.h>
-#include <ELiPS_bn_bls/bn_bls12_precoms.h>
-#include <ELiPS_bn_bls/bn_utils.h>
-#include <ELiPS_bn_bls/bls12_timeprint.h>
-#include <ELiPS_bn_bls/bls12_frobenius.h>
