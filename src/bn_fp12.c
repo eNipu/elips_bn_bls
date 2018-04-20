@@ -258,7 +258,7 @@ void Fp12_pow(Fp12 *ANS,Fp12 *A,mpz_t scalar){
     Fp12_init(&tmp);
     Fp12_set(&tmp,A);
     
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         Fp12_sqr(&tmp,&tmp);
         if(binary[i]=='1'){
             Fp12_mul(&tmp,A,&tmp);

@@ -158,7 +158,7 @@ void Fp8_pow(struct Fp8 *ANS,struct Fp8 *A,mpz_t B){
     Fp8_init(&buf);
     Fp8_set(&buf,A);
     
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         //Fp2_mul(&buf,&buf,&buf);
         Fp8_sqr(&buf,&buf);
         if(binary[i]=='1'){

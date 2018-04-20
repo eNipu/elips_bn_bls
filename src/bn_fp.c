@@ -210,7 +210,7 @@ void Fp_pow(Fp *ANS,Fp *A,mpz_t scalar){
     
     Fp_set(&tmp,A);
     
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         Fp_mul(&tmp,&tmp,&tmp);
         if(binary[i]=='1'){
             Fp_mul(&tmp,A,&tmp);

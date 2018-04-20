@@ -202,7 +202,7 @@ void EFp12_SCM(EFp12 *ANS,EFp12 *P,mpz_t scalar){
     mpz_get_str(binary,2,scalar);
     
     EFp12_set(&Next_P,&Tmp_P);
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         EFp12_ECD(&Next_P,&Next_P);
         if(binary[i]=='1'){
             EFp12_ECA(&Next_P,&Next_P,&Tmp_P);

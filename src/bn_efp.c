@@ -204,7 +204,7 @@ void EFp_SCM(EFp *ANS,EFp *P,mpz_t scalar){
     mpz_get_str(binary,2,scalar);
     
     EFp_set(&Next_P,&Tmp_P);
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         EFp_ECD(&Next_P,&Next_P);
         if(binary[i]=='1'){
             EFp_ECA(&Next_P,&Next_P,&Tmp_P);

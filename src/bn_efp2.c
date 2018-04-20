@@ -180,7 +180,7 @@ void EFp2_SCM(EFp2 *ANS,EFp2 *P,mpz_t scalar){
     mpz_get_str(binary,2,scalar);
     
     EFp2_set(&Next_P,&Tmp_P);
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         EFp2_ECD(&Next_P,&Next_P);
         if(binary[i]=='1'){
             EFp2_ECA(&Next_P,&Next_P,&Tmp_P);

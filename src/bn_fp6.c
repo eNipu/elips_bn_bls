@@ -330,7 +330,7 @@ void Fp6_pow(Fp6 *ANS,Fp6 *A,mpz_t scalar){
     Fp6_init(&tmp);
     Fp6_set(&tmp,A);
     
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         Fp6_sqr(&tmp,&tmp);
         if(binary[i]=='1'){
             Fp6_mul(&tmp,A,&tmp);

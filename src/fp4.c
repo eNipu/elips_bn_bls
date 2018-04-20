@@ -151,7 +151,7 @@ void Fp4_pow( Fp4 *ANS, Fp4 *A,mpz_t B){
     Fp4_init(&buf);
     Fp4_set(&buf,A);
     
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         //Fp2_mul(&buf,&buf,&buf);
         Fp4_sqr(&buf,&buf);
         if(binary[i]=='1'){

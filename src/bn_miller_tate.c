@@ -28,7 +28,7 @@ void Miller_algo_for_tate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     Fp_set_ui(&f.x0.x0.x0,1);
     
     //miller
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         ff_ltt_vtt_for_tate(&f,&T,Q);
         if(binary[i]=='1'){
             f_ltp_vtp_for_tate(&f,&T,&Tmp_P,Q);

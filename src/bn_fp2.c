@@ -399,7 +399,7 @@ void Fp2_pow(Fp2 *ANS,Fp2 *A,mpz_t scalar){
     Fp2_init(&tmp);
     Fp2_set(&tmp,A);
     
-    for(i=1; binary[i]!='\0'; i++){
+    for(i=1; i<length; i++){
         Fp2_sqr(&tmp,&tmp);
         if(binary[i]=='1'){
             Fp2_mul(&tmp,A,&tmp);
