@@ -14,14 +14,14 @@
 
 extern struct timeval t0,t1;
 
-extern float MILLER_TATE,MILLER_PLAINATE,MILLER_OPTATE,MILLER_XATE;
-extern float FINALEXP_PLAIN,FINALEXP_OPT;
-extern float G1SCM_PLAIN,G1SCM_2SPLIT;
-extern float G2SCM_PLAIN,G2SCM_2SPLIT,G2SCM_4SPLIT;
-extern float G3SCM_PLAIN,G3SCM_2SPLIT,G3SCM_4SPLIT;
+extern double MILLER_TATE,MILLER_PLAINATE,MILLER_OPTATE,MILLER_XATE;
+extern double FINALEXP_PLAIN,FINALEXP_OPT;
+extern double G1SCM_PLAIN,G1SCM_2SPLIT;
+extern double G2SCM_PLAIN,G2SCM_2SPLIT,G2SCM_4SPLIT;
+extern double G3SCM_PLAIN,G3SCM_2SPLIT,G3SCM_4SPLIT;
 
-extern float timedifference_msec(struct timeval t0, struct timeval t1);
-extern float timedifference_usec(struct timeval t0, struct timeval t1);
+extern double timedifference_msec(struct timeval t0, struct timeval t1);
+extern double timedifference_usec(struct timeval t0, struct timeval t1);
 
 //print pairing
 extern void BN12_print_parameters(void);

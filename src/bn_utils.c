@@ -10,18 +10,18 @@
 
 struct timeval t0,t1;
 
-float MILLER_TATE,MILLER_PLAINATE,MILLER_OPTATE,MILLER_XATE;
-float FINALEXP_PLAIN,FINALEXP_OPT;
-float G1SCM_PLAIN,G1SCM_2SPLIT;
-float G2SCM_PLAIN,G2SCM_2SPLIT,G2SCM_4SPLIT;
-float G3SCM_PLAIN,G3SCM_2SPLIT,G3SCM_4SPLIT;
+double MILLER_TATE,MILLER_PLAINATE,MILLER_OPTATE,MILLER_XATE;
+double FINALEXP_PLAIN,FINALEXP_OPT;
+double G1SCM_PLAIN,G1SCM_2SPLIT;
+double G2SCM_PLAIN,G2SCM_2SPLIT,G2SCM_4SPLIT;
+double G3SCM_PLAIN,G3SCM_2SPLIT,G3SCM_4SPLIT;
 
-float timedifference_msec(struct timeval t0, struct timeval t1){
-    return (t1.tv_sec - t0.tv_sec) * 1000.0f + (t1.tv_usec - t0.tv_usec) / 1000.0f;
+double timedifference_msec(struct timeval t0, struct timeval t1){
+    return (double)(t1.tv_sec - t0.tv_sec) * 1000.0f + (double)(t1.tv_usec - t0.tv_usec) / 1000.0f;
 }
 
-float timedifference_usec(struct timeval t0, struct timeval t1){
-    return (t1.tv_sec - t0.tv_sec) + (t1.tv_usec - t0.tv_usec);
+double timedifference_usec(struct timeval t0, struct timeval t1){
+    return (double)(t1.tv_sec - t0.tv_sec) * 1000000.0f + (t1.tv_usec - t0.tv_usec);
 }
 
 void BN12_print_tate_time(){
