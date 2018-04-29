@@ -26,6 +26,14 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Header of generating rational point for BLS12 over Fp12 extension field.
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_generate_points_h
 #define bls12_generate_points_h
 
@@ -33,8 +41,34 @@
 #include <ELiPS_bn_bls/bls12_twist.h>
 #include <ELiPS_bn_bls/bls12_frobenius.h>
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+/**
+ * Generates rational point P in G1 group.
+ * Usally generated in prime field but maps it to Fp12 for using in pairing.
+ * where G1*G2->G3 is the bilinear pairing.
+ * 
+ * @param[out] P				- the generated point.
+ * @param[in] P				    - the input vecotr initialized as 'EFp12 P' point by 'EFp12_init' function.
+ */
 extern void bls12_generate_G1_point(EFp12 *P);
+
+/**
+ * Generates  special rational point Q in G2 group.
+ * where G1*G2->G3 is the bilinear pairing.
+ * 
+ * @param[out] Q				- the generated point.
+ * @param[in] Q			        - the input vecotr initialized as 'EFp12 Q' point by 'EFp12_init' function.
+ */
 extern void bls12_generate_G2_point(EFp12 *Q);
+
+/**
+ * Generates random rational point R in the BLS12 curve over Fp12.
+ * 
+ * @param[out] R				- the generated point.
+ * @param[in]  R				- the input vecotr initialized as 'EFp12 P' point by 'EFp12_init'.
+ */
 extern void bls12_generate_random_point(EFp12 *R);
 
 #endif /* bls12_generate_points_h */

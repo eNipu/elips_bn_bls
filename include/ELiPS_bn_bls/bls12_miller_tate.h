@@ -26,12 +26,30 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+/**
+ * @file
+ *
+ * Interaface for BLS12 Miller's algo of tate pairing.
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_miller_tate_h
 #define bls12_miller_tate_h
 
 #include <ELiPS_bn_bls/bls12_line_tate.h>
 #include <ELiPS_bn_bls/bls12_twist.h>
 
-//miller algo for tate
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+/**
+ * Calculate Miller's loop for  tate pairing in BLS12 curve.
+ *
+ * @param[out] ANS			    - output in Fp12
+ * @param[in] Q			        - Input rational point Q in G2.
+ * @param[in] P		            - Input rational point P in G1.
+ */
 extern void bls12_Miller_algo_for_tate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
 #endif /* bls12_miller_tate_h */

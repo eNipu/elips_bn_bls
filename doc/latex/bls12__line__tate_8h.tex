@@ -1,0 +1,174 @@
+\hypertarget{bls12__line__tate_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+line\+\_\+tate.h File Reference}
+\label{bls12__line__tate_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+line\+\_\+tate.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+line\+\_\+tate.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+efp12.\+h$>$}\newline
+Include dependency graph for bls12\+\_\+line\+\_\+tate.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bls12__line__tate_8h_a91895df9737048f5ac59ee81633aa247}{bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate} (\hyperlink{struct_fp12}{Fp12} $\ast$f, \hyperlink{struct_e_fp}{E\+Fp} $\ast$T, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\item 
+void \hyperlink{bls12__line__tate_8h_a1f80689fc6980972d6a85828147271a9}{bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate} (\hyperlink{struct_fp12}{Fp12} $\ast$f, \hyperlink{struct_e_fp}{E\+Fp} $\ast$T, \hyperlink{struct_e_fp}{E\+Fp} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Interaface for B\+L\+S12 line evaluation for tate pairing. 
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bls12__line__tate_8h_a1f80689fc6980972d6a85828147271a9}\label{bls12__line__tate_8h_a1f80689fc6980972d6a85828147271a9}} 
+\index{bls12\+\_\+line\+\_\+tate.\+h@{bls12\+\_\+line\+\_\+tate.\+h}!bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate@{bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate}}
+\index{bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate@{bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate}!bls12\+\_\+line\+\_\+tate.\+h@{bls12\+\_\+line\+\_\+tate.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate()}{bls12\_f\_ltp\_vtp\_for\_tate()}}
+{\footnotesize\ttfamily void bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{f,  }\item[{\hyperlink{struct_e_fp}{E\+Fp} $\ast$}]{T,  }\item[{\hyperlink{struct_e_fp}{E\+Fp} $\ast$}]{P,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+Calculate line equation for tate pairing in B\+L\+S12 curve.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em f} & -\/ output in \hyperlink{struct_fp12}{Fp12} \\
+\hline
+\mbox{\tt in}  & {\em T} & -\/ Input rational point T in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ Input rational point P in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em Q} & -\/ Input rational point Q mapped in Fp22. \\
+\hline
+\end{DoxyParams}
+
+
+References E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+set().
+
+
+
+Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate().
+
+
+\begin{DoxyCode}
+151                                                              \{
+152     \hyperlink{struct_e_fp}{EFp} Next\_T;
+153     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&Next\_T);
+154     \hyperlink{struct_fp12}{Fp12} tmp1,tmp2,tmp3;
+155     Fp12\_init(&tmp1);
+156     Fp12\_init(&tmp2);
+157     Fp12\_init(&tmp3);
+158     \hyperlink{struct_fp}{Fp} lambda;
+159     Fp\_init(&lambda);
+160     
+161     bls12\_EFp\_ECA\_return\_lambda(&Next\_T,&lambda,T,P);
+162     
+163     \textcolor{keywordflow}{switch}(Next\_T.infinity)\{
+164         \textcolor{keywordflow}{case} 0:
+165             Fp12\_set(&tmp3,&Q->x);
+166             Fp\_sub(&tmp3.x0.x0.x0,&Q->x.x0.x0.x0,&P->x);
+167             Fp12\_mul\_mpz(&tmp3,&tmp3,lambda.x0);
+168             Fp12\_set(&tmp1,&Q->y);
+169             Fp\_sub(&tmp1.x0.x0.x0,&Q->y.x0.x0.x0,&P->y);
+170             Fp12\_sub(&tmp1,&tmp1,&tmp3);
+171             
+172             Fp12\_set(&tmp2,&Q->x);
+173             Fp\_sub(&tmp2.x0.x0.x0,&Q->x.x0.x0.x0,&Next\_T.x);
+174             
+175             Fp12\_inv(&tmp3,&tmp2);
+176             Fp12\_mul(&tmp2,f,&tmp1);
+177             Fp12\_mul(f,&tmp2,&tmp3);
+178             \textcolor{keywordflow}{break};
+179         \textcolor{keywordflow}{case} 1:
+180             Fp12\_set(&tmp1,&Q->x);
+181             Fp\_sub(&tmp1.x0.x0.x0,&Q->x.x0.x0.x0,&T->x);
+182             Fp12\_mul(f,f,&tmp1);
+183             \textcolor{keywordflow}{break};
+184         \textcolor{keywordflow}{default}:
+185             \textcolor{keywordflow}{break};
+186     \}
+187     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(T,&Next\_T);
+188     
+189     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Next\_T);
+190     Fp12\_clear(&tmp1);
+191     Fp12\_clear(&tmp2);
+192     Fp12\_clear(&tmp3);
+193     Fp\_clear(&lambda);
+194 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 2
+Here is the caller graph for this function\+:
+% FIG 3
+\mbox{\Hypertarget{bls12__line__tate_8h_a91895df9737048f5ac59ee81633aa247}\label{bls12__line__tate_8h_a91895df9737048f5ac59ee81633aa247}} 
+\index{bls12\+\_\+line\+\_\+tate.\+h@{bls12\+\_\+line\+\_\+tate.\+h}!bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate@{bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate}}
+\index{bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate@{bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate}!bls12\+\_\+line\+\_\+tate.\+h@{bls12\+\_\+line\+\_\+tate.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate()}{bls12\_ff\_ltt\_vtt\_for\_tate()}}
+{\footnotesize\ttfamily void bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{f,  }\item[{\hyperlink{struct_e_fp}{E\+Fp} $\ast$}]{T,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+Calculate line equation for tate pairing in B\+L\+S12 curve.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em f} & -\/ output in \hyperlink{struct_fp12}{Fp12} \\
+\hline
+\mbox{\tt in}  & {\em T} & -\/ Input rational point T in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em Q} & -\/ Input rational point Q mapped in Fp22. \\
+\hline
+\end{DoxyParams}
+
+
+References E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+set().
+
+
+
+Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate().
+
+
+\begin{DoxyCode}
+106                                                        \{
+107     \hyperlink{struct_e_fp}{EFp} Next\_T;
+108     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&Next\_T);
+109     \hyperlink{struct_fp12}{Fp12} tmp1,tmp2,tmp3;
+110     Fp12\_init(&tmp1);
+111     Fp12\_init(&tmp2);
+112     Fp12\_init(&tmp3);
+113     \hyperlink{struct_fp}{Fp} lambda;
+114     Fp\_init(&lambda);
+115     
+116     bls12\_EFp\_ECD\_return\_lambda(&Next\_T,&lambda,T);
+117     \textcolor{keywordflow}{switch}(Next\_T.infinity)\{
+118         \textcolor{keywordflow}{case} 0:
+119             Fp12\_sqr(&tmp1,f);
+120             Fp12\_set(&tmp3,&Q->x);
+121             Fp\_sub(&tmp3.x0.x0.x0,&Q->x.x0.x0.x0,&T->x);
+122             Fp12\_mul\_mpz(&tmp3,&tmp3,lambda.x0);
+123             Fp12\_set(&tmp2,&Q->y);
+124             Fp\_sub(&tmp2.x0.x0.x0,&Q->y.x0.x0.x0,&T->y);
+125             Fp12\_sub(&tmp2,&tmp2,&tmp3);
+126             
+127             Fp12\_set(&tmp3,&Q->x);
+128             Fp\_sub(&tmp3.x0.x0.x0,&Q->x.x0.x0.x0,&Next\_T.x);
+129             Fp12\_inv(&tmp3,&tmp3);
+130             Fp12\_mul(&tmp1,&tmp1,&tmp2);
+131             Fp12\_mul(f,&tmp1,&tmp3);
+132             \textcolor{keywordflow}{break};
+133         \textcolor{keywordflow}{case} 1:
+134             Fp12\_sqr(&tmp1,f);
+135             Fp12\_set(&tmp2,&Q->x);
+136             Fp\_sub(&tmp2.x0.x0.x0,&Q->x.x0.x0.x0,&T->x);
+137             Fp12\_mul(f,&tmp1,&tmp2);
+138             \textcolor{keywordflow}{break};
+139         \textcolor{keywordflow}{default}:
+140             \textcolor{keywordflow}{break};
+141     \}
+142     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(T,&Next\_T);
+143     
+144     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Next\_T);
+145     Fp12\_clear(&tmp1);
+146     Fp12\_clear(&tmp2);
+147     Fp12\_clear(&tmp3);
+148     Fp\_clear(&lambda);
+149 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 4
+Here is the caller graph for this function\+:
+% FIG 5

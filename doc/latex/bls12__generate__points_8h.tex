@@ -1,0 +1,144 @@
+\hypertarget{bls12__generate__points_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+generate\+\_\+points.h File Reference}
+\label{bls12__generate__points_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+generate\+\_\+points.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+generate\+\_\+points.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/curve\+\_\+settings.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+twist.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+frobenius.\+h$>$}\newline
+Include dependency graph for bls12\+\_\+generate\+\_\+points.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bls12__generate__points_8h_a72ef3b90d050e3eeb5395016e62ceaf1}{bls12\+\_\+generate\+\_\+\+G1\+\_\+point} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P)
+\item 
+void \hyperlink{bls12__generate__points_8h_ab798368874a1a8365377d05ce9c5c121}{bls12\+\_\+generate\+\_\+\+G2\+\_\+point} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\item 
+void \hyperlink{bls12__generate__points_8h_ab39eb02b096537d74bfdb71b59e0beac}{bls12\+\_\+generate\+\_\+random\+\_\+point} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$R)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Header of generating rational point for B\+L\+S12 over \hyperlink{struct_fp12}{Fp12} extension field. 
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bls12__generate__points_8h_a72ef3b90d050e3eeb5395016e62ceaf1}\label{bls12__generate__points_8h_a72ef3b90d050e3eeb5395016e62ceaf1}} 
+\index{bls12\+\_\+generate\+\_\+points.\+h@{bls12\+\_\+generate\+\_\+points.\+h}!bls12\+\_\+generate\+\_\+\+G1\+\_\+point@{bls12\+\_\+generate\+\_\+\+G1\+\_\+point}}
+\index{bls12\+\_\+generate\+\_\+\+G1\+\_\+point@{bls12\+\_\+generate\+\_\+\+G1\+\_\+point}!bls12\+\_\+generate\+\_\+points.\+h@{bls12\+\_\+generate\+\_\+points.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+generate\+\_\+\+G1\+\_\+point()}{bls12\_generate\_G1\_point()}}
+{\footnotesize\ttfamily void bls12\+\_\+generate\+\_\+\+G1\+\_\+point (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P }\end{DoxyParamCaption})}
+
+Generates rational point P in G1 group. Usally generated in prime field but maps it to \hyperlink{struct_fp12}{Fp12} for using in pairing. where G1$\ast$\+G2-\/$>$G3 is the bilinear pairing.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em P} & -\/ the generated point. \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ the input vecotr initialized as \textquotesingle{}\hyperlink{struct_e_fp12}{E\+Fp12} P\textquotesingle{} point by \textquotesingle{}E\+Fp12\+\_\+init\textquotesingle{} function. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12().
+
+
+
+Referenced by bls12\+\_\+test\+\_\+\+G1\+\_\+scm(), bls12\+\_\+test\+\_\+\+G3\+\_\+exp(), bls12\+\_\+test\+\_\+opt\+\_\+ate\+\_\+pairing(), bls12\+\_\+test\+\_\+plain\+\_\+ate\+\_\+pairing(), and bls12\+\_\+test\+\_\+tate\+\_\+pairing().
+
+
+\begin{DoxyCode}
+33                                       \{
+34     \hyperlink{struct_e_fp}{EFp} Tmp\_P;
+35     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&Tmp\_P);
+36     mpz\_t scalar;
+37     mpz\_init(scalar);
+38     
+39     \hyperlink{bn__efp_8h_a131fa3538790c33f2006d84b4a60f4e5}{EFp\_rational\_point\_bls12}(&Tmp\_P);
+40     \hyperlink{bls12__twist_8h_a1fff3d9b5a4da8df91e68493d344cb6b}{bls12\_EFp\_to\_EFp12}(P,&Tmp\_P);
+41     mpz\_tdiv\_q(scalar,curve\_parameters.EFp\_total,curve\_parameters.order);
+42     EFp12\_SCM(P,P,scalar);
+43     P->infinity=Tmp\_P.infinity;
+44     
+45     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Tmp\_P);
+46     mpz\_clear(scalar);
+47 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 2
+Here is the caller graph for this function\+:
+% FIG 3
+\mbox{\Hypertarget{bls12__generate__points_8h_ab798368874a1a8365377d05ce9c5c121}\label{bls12__generate__points_8h_ab798368874a1a8365377d05ce9c5c121}} 
+\index{bls12\+\_\+generate\+\_\+points.\+h@{bls12\+\_\+generate\+\_\+points.\+h}!bls12\+\_\+generate\+\_\+\+G2\+\_\+point@{bls12\+\_\+generate\+\_\+\+G2\+\_\+point}}
+\index{bls12\+\_\+generate\+\_\+\+G2\+\_\+point@{bls12\+\_\+generate\+\_\+\+G2\+\_\+point}!bls12\+\_\+generate\+\_\+points.\+h@{bls12\+\_\+generate\+\_\+points.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+generate\+\_\+\+G2\+\_\+point()}{bls12\_generate\_G2\_point()}}
+{\footnotesize\ttfamily void bls12\+\_\+generate\+\_\+\+G2\+\_\+point (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+Generates special rational point Q in G2 group. where G1$\ast$\+G2-\/$>$G3 is the bilinear pairing.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em Q} & -\/ the generated point. \\
+\hline
+\mbox{\tt in}  & {\em Q} & -\/ the input vecotr initialized as \textquotesingle{}\hyperlink{struct_e_fp12}{E\+Fp12} Q\textquotesingle{} point by \textquotesingle{}E\+Fp12\+\_\+init\textquotesingle{} function. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1().
+
+
+
+Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm(), bls12\+\_\+test\+\_\+\+G3\+\_\+exp(), bls12\+\_\+test\+\_\+opt\+\_\+ate\+\_\+pairing(), and bls12\+\_\+test\+\_\+plain\+\_\+ate\+\_\+pairing().
+
+
+\begin{DoxyCode}
+49                                       \{
+50     \hyperlink{struct_e_fp12}{EFp12} random\_P,P,frobenius\_P;
+51     EFp12\_init(&random\_P);
+52     EFp12\_init(&P);
+53     EFp12\_init(&frobenius\_P);
+54     mpz\_t exp;
+55     mpz\_init(exp);
+56     
+57     EFp12\_rational\_point\_bls12(&random\_P);
+58     mpz\_pow\_ui(exp,curve\_parameters.order,2);
+59     mpz\_tdiv\_q(exp,curve\_parameters.EFpd\_total,exp);
+60     EFp12\_SCM(&P,&random\_P,exp);
+61     \hyperlink{bls12__frobenius_8h_a22e66a8db607710f331457d0a42b52a6}{bls12\_Fp12\_frobenius\_map\_p1}(&frobenius\_P.x,&P.x);
+62     \hyperlink{bls12__frobenius_8h_a22e66a8db607710f331457d0a42b52a6}{bls12\_Fp12\_frobenius\_map\_p1}(&frobenius\_P.y,&P.y);
+63     frobenius\_P.infinity=P.infinity;
+64     EFp12\_set\_neg(&P,&P);
+65     EFp12\_ECA(Q,&P,&frobenius\_P);
+66     
+67     mpz\_clear(exp);
+68     EFp12\_clear(&random\_P);
+69     EFp12\_clear(&P);
+70     EFp12\_clear(&frobenius\_P);
+71 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 4
+Here is the caller graph for this function\+:
+% FIG 5
+\mbox{\Hypertarget{bls12__generate__points_8h_ab39eb02b096537d74bfdb71b59e0beac}\label{bls12__generate__points_8h_ab39eb02b096537d74bfdb71b59e0beac}} 
+\index{bls12\+\_\+generate\+\_\+points.\+h@{bls12\+\_\+generate\+\_\+points.\+h}!bls12\+\_\+generate\+\_\+random\+\_\+point@{bls12\+\_\+generate\+\_\+random\+\_\+point}}
+\index{bls12\+\_\+generate\+\_\+random\+\_\+point@{bls12\+\_\+generate\+\_\+random\+\_\+point}!bls12\+\_\+generate\+\_\+points.\+h@{bls12\+\_\+generate\+\_\+points.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+generate\+\_\+random\+\_\+point()}{bls12\_generate\_random\_point()}}
+{\footnotesize\ttfamily void bls12\+\_\+generate\+\_\+random\+\_\+point (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{R }\end{DoxyParamCaption})}
+
+Generates random rational point R in the B\+L\+S12 curve over \hyperlink{struct_fp12}{Fp12}.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em R} & -\/ the generated point. \\
+\hline
+\mbox{\tt in}  & {\em R} & -\/ the input vecotr initialized as \textquotesingle{}\hyperlink{struct_e_fp12}{E\+Fp12} P\textquotesingle{} point by \textquotesingle{}E\+Fp12\+\_\+init\textquotesingle{}. \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyCode}
+73                                           \{
+74     EFp12\_init(R);
+75     EFp12\_rational\_point\_bls12(R);
+76 \}
+\end{DoxyCode}

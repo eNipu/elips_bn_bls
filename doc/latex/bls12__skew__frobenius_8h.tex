@@ -1,0 +1,197 @@
+\hypertarget{bls12__skew__frobenius_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+skew\+\_\+frobenius.h File Reference}
+\label{bls12__skew__frobenius_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+skew\+\_\+frobenius.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+skew\+\_\+frobenius.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+bls12\+\_\+precoms.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+efp12.\+h$>$}\newline
+Include dependency graph for bls12\+\_\+skew\+\_\+frobenius.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bls12__skew__frobenius_8h_a27f5995aeb743e8ca184d8fdfe4dd819}{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2} (\hyperlink{struct_e_fp}{E\+Fp} $\ast$A\+NS, \hyperlink{struct_e_fp}{E\+Fp} $\ast$A)
+\item 
+void \hyperlink{bls12__skew__frobenius_8h_a8d89c42f0d2898af5639f908ebc6ad72}{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1} (\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A\+NS, \hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A)
+\item 
+void \hyperlink{bls12__skew__frobenius_8h_a53a7cd126428aa8a94732b2c521ad0f7}{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2} (\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A\+NS, \hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A)
+\item 
+void \hyperlink{bls12__skew__frobenius_8h_a87f87eeb97f9ba92718de8561d8a486d}{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3} (\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A\+NS, \hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A)
+\item 
+void \hyperlink{bls12__skew__frobenius_8h_a534f12cce374454dcfcd7455c92fa244}{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10} (\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A\+NS, \hyperlink{struct_e_fp2}{E\+Fp2} $\ast$A)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Interaface for B\+L\+S12\textquotesingle{}s Skew Frobenius map implementations 
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bls12__skew__frobenius_8h_a8d89c42f0d2898af5639f908ebc6ad72}\label{bls12__skew__frobenius_8h_a8d89c42f0d2898af5639f908ebc6ad72}} 
+\index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1}}
+\index{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1()}{bls12\_EFp2\_skew\_frobenius\_map\_p1()}}
+{\footnotesize\ttfamily void bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1 (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Calculate Skew Frobenius map for pwer of p in G2 of B\+L\+S12 curve
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in G2\textquotesingle{} \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ A in \hyperlink{struct_e_fp2}{E\+Fp2}. \\
+\hline
+\end{DoxyParams}
+
+
+References d12\+\_\+skew\+\_\+frobenius\+\_\+constant.
+
+
+
+Referenced by bls12\+\_\+4split\+\_\+\+G2\+\_\+scm().
+
+
+\begin{DoxyCode}
+36                                                         \{
+37     \textcolor{comment}{//x}
+38     Fp\_set(&ANS->x.x0,&A->x.x0);
+39     Fp\_set\_neg(&ANS->x.x1,&A->x.x1);
+40     Fp2\_mul(&ANS->x,&ANS->x,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p1][0]);
+41     \textcolor{comment}{//y}
+42     Fp\_set(&ANS->y.x0,&A->y.x0);
+43     Fp\_set\_neg(&ANS->y.x1,&A->y.x1);
+44     Fp2\_mul(&ANS->y,&ANS->y,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p1][1]);
+45 \}
+\end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 2
+\mbox{\Hypertarget{bls12__skew__frobenius_8h_a534f12cce374454dcfcd7455c92fa244}\label{bls12__skew__frobenius_8h_a534f12cce374454dcfcd7455c92fa244}} 
+\index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10}}
+\index{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10()}{bls12\_EFp2\_skew\_frobenius\_map\_p10()}}
+{\footnotesize\ttfamily void bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10 (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Calculate Skew Frobenius map for pwer of p$^\wedge$10 in G2 of B\+L\+S12 curve
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in G2\textquotesingle{} \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ A in \hyperlink{struct_e_fp2}{E\+Fp2}. \\
+\hline
+\end{DoxyParams}
+
+
+References d12\+\_\+skew\+\_\+frobenius\+\_\+constant.
+
+
+\begin{DoxyCode}
+65                                                          \{
+66     \textcolor{comment}{//x}
+67     Fp2\_mul(&ANS->x,&A->x,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p10][0]);
+68     \textcolor{comment}{//y}
+69     Fp2\_mul(&ANS->y,&A->y,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p10][1]);
+70 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bls12__skew__frobenius_8h_a53a7cd126428aa8a94732b2c521ad0f7}\label{bls12__skew__frobenius_8h_a53a7cd126428aa8a94732b2c521ad0f7}} 
+\index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2}}
+\index{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2()}{bls12\_EFp2\_skew\_frobenius\_map\_p2()}}
+{\footnotesize\ttfamily void bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2 (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Calculate Skew Frobenius map for pwer of p$^\wedge$2 in G2 of B\+L\+S12 curve
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in G2\textquotesingle{} \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ A in \hyperlink{struct_e_fp2}{E\+Fp2}. \\
+\hline
+\end{DoxyParams}
+
+
+References d12\+\_\+skew\+\_\+frobenius\+\_\+constant.
+
+
+
+Referenced by bls12\+\_\+2split\+\_\+\+G2\+\_\+scm(), and bls12\+\_\+4split\+\_\+\+G2\+\_\+scm().
+
+
+\begin{DoxyCode}
+47                                                         \{
+48     \textcolor{comment}{//x}
+49     Fp2\_mul(&ANS->x,&A->x,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p2][0]);
+50     \textcolor{comment}{//y}
+51     Fp2\_mul(&ANS->y,&A->y,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p2][1]);
+52 \}
+\end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 3
+\mbox{\Hypertarget{bls12__skew__frobenius_8h_a87f87eeb97f9ba92718de8561d8a486d}\label{bls12__skew__frobenius_8h_a87f87eeb97f9ba92718de8561d8a486d}} 
+\index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3}}
+\index{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3()}{bls12\_EFp2\_skew\_frobenius\_map\_p3()}}
+{\footnotesize\ttfamily void bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3 (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp2}{E\+Fp2} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Calculate Skew Frobenius map for pwer of p$^\wedge$3 in G2 of B\+L\+S12 curve
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in G2\textquotesingle{} \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ A in \hyperlink{struct_e_fp2}{E\+Fp2}. \\
+\hline
+\end{DoxyParams}
+
+
+References d12\+\_\+skew\+\_\+frobenius\+\_\+constant.
+
+
+
+Referenced by bls12\+\_\+4split\+\_\+\+G2\+\_\+scm().
+
+
+\begin{DoxyCode}
+54                                                         \{
+55     \textcolor{comment}{//x}
+56     Fp\_set(&ANS->x.x0,&A->x.x0);
+57     Fp\_set\_neg(&ANS->x.x1,&A->x.x1);
+58     Fp2\_mul(&ANS->x,&ANS->x,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p3][0]);
+59     \textcolor{comment}{//y}
+60     Fp\_set(&ANS->y.x0,&A->y.x0);
+61     Fp\_set\_neg(&ANS->y.x1,&A->y.x1);
+62     Fp2\_mul(&ANS->y,&ANS->y,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p3][1]);
+63 \}
+\end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 4
+\mbox{\Hypertarget{bls12__skew__frobenius_8h_a27f5995aeb743e8ca184d8fdfe4dd819}\label{bls12__skew__frobenius_8h_a27f5995aeb743e8ca184d8fdfe4dd819}} 
+\index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2@{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2}}
+\index{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2@{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2()}{bls12\_EFp\_skew\_frobenius\_map\_p2()}}
+{\footnotesize\ttfamily void bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2 (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp}{E\+Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp}{E\+Fp} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Calculate Skew Frobenius map for p$^\wedge$2 in G1 of B\+L\+S12 curve
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in G1 \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ A in \hyperlink{struct_e_fp}{E\+Fp}. \\
+\hline
+\end{DoxyParams}
+
+
+References epsilon1.
+
+
+
+Referenced by bls12\+\_\+2split\+\_\+\+G1\+\_\+scm().
+
+
+\begin{DoxyCode}
+31                                                      \{
+32     Fp\_mul\_mpz(&ANS->x,&A->x,\hyperlink{bn__bls12__precoms_8h_a0e028790b8ecdcbc4208efb5da6bf7f1}{epsilon1});
+33     Fp\_set\_neg(&ANS->y,&A->y);
+34 \}
+\end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 5

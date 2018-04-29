@@ -1,0 +1,107 @@
+\hypertarget{bn__miller__xate_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+xate.h File Reference}
+\label{bn__miller__xate_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+xate.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+xate.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+line\+\_\+ate.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+frobenius.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+twist.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+skew\+\_\+frobenius.\+h$>$}\newline
+Include dependency graph for bn\+\_\+miller\+\_\+xate.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bn__miller__xate_8h_aed5c880305335036aac77a3957c8f9c4}{Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bn__miller__xate_8h_aed5c880305335036aac77a3957c8f9c4}\label{bn__miller__xate_8h_aed5c880305335036aac77a3957c8f9c4}} 
+\index{bn\+\_\+miller\+\_\+xate.\+h@{bn\+\_\+miller\+\_\+xate.\+h}!Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate@{Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate}}
+\index{Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate@{Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate}!bn\+\_\+miller\+\_\+xate.\+h@{bn\+\_\+miller\+\_\+xate.\+h}}
+\subsubsection{\texorpdfstring{Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate()}{Miller\_algo\_for\_x\_ate()}}
+{\footnotesize\ttfamily void Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P }\end{DoxyParamCaption})}
+
+
+
+References bn\+\_\+\+X\+\_\+length, E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), E\+Fp2\+\_\+clear(), E\+Fp2\+\_\+init(), E\+Fp2\+\_\+set(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), f\+\_\+ltq(), ff\+\_\+ltt(), Fp12\+\_\+clear(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p10(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), Fp12\+\_\+init(), Fp12\+\_\+mul(), Fp12\+\_\+set(), Fp12\+\_\+set\+\_\+ui(), Fp2\+\_\+set\+\_\+neg(), Fp\+\_\+clear(), Fp\+\_\+init(), Fp\+\_\+set(), Fp\+\_\+set\+\_\+ui(), E\+Fp\+::infinity, E\+Fp2\+::infinity, E\+Fp12\+::infinity, Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+::x, E\+Fp12\+::x, Fp6\+::x0, Fp12\+::x0, X\+\_\+binary, E\+Fp\+::y, E\+Fp2\+::y, and E\+Fp12\+::y.
+
+
+
+Referenced by bn12\+\_\+x\+\_\+ate().
+
+
+\begin{DoxyCode}
+32                                                        \{
+33     \hyperlink{struct_e_fp2}{EFp2} T;
+34     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&T);
+35     \hyperlink{struct_e_fp2}{EFp2} mapped\_Q,mapped\_Q\_neg,mapped\_Q1,mapped\_Q2;
+36     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q);
+37     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q\_neg);
+38     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q1);
+39     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q2);
+40     \hyperlink{struct_e_fp}{EFp} mapped\_P;
+41     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&mapped\_P);
+42     \hyperlink{struct_fp12}{Fp12} f,tmp;
+43     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&f);
+44     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&tmp);
+45     \hyperlink{struct_fp}{Fp} L;
+46     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&L);
+47     \textcolor{keywordtype}{int} i;
+48     
+49     \textcolor{comment}{//set}
+50     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&mapped\_P.\hyperlink{struct_e_fp_a8618afb86482b3d0706034daf34bcb26}{x},&P->\hyperlink{struct_e_fp12_a2093c5bc5dbf6d031eb56a8854507ef0}{x}.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0);    \textcolor{comment}{//set P}
+51     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&mapped\_P.\hyperlink{struct_e_fp_abf3b0f738e395442776f86293dd457d8}{y},&P->\hyperlink{struct_e_fp12_adc7c5acbe16cd3aafe56696ecf8be16c}{y}.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0);
+52     mapped\_P.\hyperlink{struct_e_fp_a909983155a262e8a19f2fb170676643f}{infinity}=P->\hyperlink{struct_e_fp12_a00227737aefc2c00985e2a4b5f417ca0}{infinity};
+53     \hyperlink{bn__twist_8h_acc077e1d0312fa29c246d52f6d2adac3}{EFp12\_to\_EFp2}(&mapped\_Q,Q);\textcolor{comment}{//set mapped\_Q}
+54     mapped\_Q.\hyperlink{struct_e_fp2_a21841a8eff911b94f67934baa686e975}{infinity}=Q->\hyperlink{struct_e_fp12_a00227737aefc2c00985e2a4b5f417ca0}{infinity};
+55     
+56     \hyperlink{bn__p8sparse_8h_a6c5f863e73bfbf6dbeaf402b1d188ea5}{Pseudo\_8\_sparse\_mapping}(&mapped\_P,&mapped\_Q,&L);
+57     
+58     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&mapped\_Q\_neg,&mapped\_Q);\textcolor{comment}{//set mapped\_Q\_neg}
+59     \hyperlink{bn__fp2_8h_a25739bf2bf574fc064ae84f9527e948e}{Fp2\_set\_neg}(&mapped\_Q\_neg.\hyperlink{struct_e_fp2_a20a382faaa04dbb84eed9543dd4d6ab6}{y},&mapped\_Q\_neg.\hyperlink{struct_e_fp2_a20a382faaa04dbb84eed9543dd4d6ab6}{y});
+60     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&T,&mapped\_Q);        \textcolor{comment}{//set T}
+61     \hyperlink{bn__fp12_8h_abab8338a90506aac6754cca5a661477f}{Fp12\_set\_ui}(&f,0);            \textcolor{comment}{//set f}
+62     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&f.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0,1);
+63     \textcolor{comment}{//miller}
+64     \textcolor{keywordflow}{for}(i=\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\_X\_length}-1; i>=0; i--)\{
+65         \textcolor{keywordflow}{switch}(\hyperlink{curve__settings_8h_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[i])\{
+66             \textcolor{keywordflow}{case} 0:
+67                 \hyperlink{bn__line__ate_8h_ae514021863e1cc110bac41ecfdb8b23b}{ff\_ltt}(&f,&T,&mapped\_P,&L);
+68                 \textcolor{keywordflow}{break};
+69             \textcolor{keywordflow}{case} 1:
+70                 \hyperlink{bn__line__ate_8h_ae514021863e1cc110bac41ecfdb8b23b}{ff\_ltt}(&f,&T,&mapped\_P,&L);
+71                 \hyperlink{bn__line__ate_8h_adcdcfbd9c084e1d7f78a05d4d3bd5fbf}{f\_ltq}(&f,&T,&mapped\_Q,&mapped\_P,&L);
+72                 \textcolor{keywordflow}{break};
+73             \textcolor{keywordflow}{case} -1:
+74                 \hyperlink{bn__line__ate_8h_ae514021863e1cc110bac41ecfdb8b23b}{ff\_ltt}(&f,&T,&mapped\_P,&L);
+75                 \hyperlink{bn__line__ate_8h_adcdcfbd9c084e1d7f78a05d4d3bd5fbf}{f\_ltq}(&f,&T,&mapped\_Q\_neg,&mapped\_P,&L);
+76                 \textcolor{keywordflow}{break};
+77             \textcolor{keywordflow}{default}:
+78                 \textcolor{keywordflow}{break};
+79         \}
+80     \}
+81     
+82     \hyperlink{bn__frobenius_8h_ab847a85270e4534251b17ece161d3d41}{Fp12\_frobenius\_map\_p3}(&tmp,&f);        \textcolor{comment}{//f←f*f^(p^3)}
+83     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&f,&tmp,&f);
+84     \hyperlink{bn__skew__frobenius_8h_a8348fd37dbdce1190d898afd5ba6dd65}{EFp2\_skew\_frobenius\_map\_p3}(&mapped\_Q1,&T);\textcolor{comment}{//mapped\_Q1←T^(p^3)}
+85     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&mapped\_Q2,&T);
+86     \hyperlink{bn__line__ate_8h_adcdcfbd9c084e1d7f78a05d4d3bd5fbf}{f\_ltq}(&f,&mapped\_Q2,&mapped\_Q1,&mapped\_P,&L);
+87     \hyperlink{bn__frobenius_8h_a24a261a5d62ac5a2a2b6767e46ad9745}{Fp12\_frobenius\_map\_p10}(&tmp,&f);        \textcolor{comment}{//f←f*f^(p^10)}
+88     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&f,&tmp,&f);
+89     \hyperlink{bn__skew__frobenius_8h_a266d2156e8cbbcb82f4504d0a6ec4004}{EFp2\_skew\_frobenius\_map\_p10}(&T,&mapped\_Q2);\textcolor{comment}{//T←Q2^(p^10)}
+90     \hyperlink{bn__line__ate_8h_adcdcfbd9c084e1d7f78a05d4d3bd5fbf}{f\_ltq}(&f,&T,&mapped\_Q2,&mapped\_P,&L);
+91     
+92     \hyperlink{bn__fp12_8h_a95c271ea5c7c21d89c9a0123a896e47d}{Fp12\_set}(ANS,&f);
+93     
+94     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&tmp);
+95     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&f);
+96     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&T);
+97     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q);
+98     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q\_neg);
+99     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q1);
+100     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q2);
+101     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&mapped\_P);
+102     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&L);
+103 \}
+\end{DoxyCode}

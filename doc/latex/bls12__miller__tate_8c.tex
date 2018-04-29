@@ -1,0 +1,71 @@
+\hypertarget{bls12__miller__tate_8c}{}\section{src/bls12\+\_\+miller\+\_\+tate.c File Reference}
+\label{bls12__miller__tate_8c}\index{src/bls12\+\_\+miller\+\_\+tate.\+c@{src/bls12\+\_\+miller\+\_\+tate.\+c}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+miller\+\_\+tate.\+h$>$}\newline
+Include dependency graph for bls12\+\_\+miller\+\_\+tate.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bls12__miller__tate_8c_a7bb2e92a90536f6ad134483cbd3f1f7c}{bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bls12__miller__tate_8c_a7bb2e92a90536f6ad134483cbd3f1f7c}\label{bls12__miller__tate_8c_a7bb2e92a90536f6ad134483cbd3f1f7c}} 
+\index{bls12\+\_\+miller\+\_\+tate.\+c@{bls12\+\_\+miller\+\_\+tate.\+c}!bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate@{bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate}}
+\index{bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate@{bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate}!bls12\+\_\+miller\+\_\+tate.\+c@{bls12\+\_\+miller\+\_\+tate.\+c}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate()}{bls12\_Miller\_algo\_for\_tate()}}
+{\footnotesize\ttfamily void bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P }\end{DoxyParamCaption})}
+
+Calculate Miller\textquotesingle{}s loop for tate pairing in B\+L\+S12 curve.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in \hyperlink{struct_fp12}{Fp12} \\
+\hline
+\mbox{\tt in}  & {\em Q} & -\/ Input rational point Q in G2. \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ Input rational point P in G1. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), curve\+\_\+parameters, E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), E\+Fp\+\_\+set(), Fp12\+\_\+clear(), Fp12\+\_\+init(), Fp12\+\_\+set(), Fp12\+\_\+set\+\_\+ui(), Fp\+\_\+set\+\_\+ui(), curve\+\_\+params\+::order, Fp6\+::x0, and Fp12\+::x0.
+
+
+
+Referenced by bls12\+\_\+tate().
+
+
+\begin{DoxyCode}
+32                                                             \{
+33     \hyperlink{struct_e_fp}{EFp} Tmp\_P,T;
+34     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&Tmp\_P);
+35     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&T);
+36     \hyperlink{struct_fp12}{Fp12} f;
+37     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&f);
+38     \textcolor{keywordtype}{int} i,length;
+39     length=(int)mpz\_sizeinbase(\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},2);
+40     \textcolor{keywordtype}{char} binary[length];
+41     mpz\_get\_str(binary,2,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
+42     
+43     \textcolor{comment}{//set}
+44     \hyperlink{bls12__twist_8h_ab400c20c7379b8092500f351fda16323}{bls12\_EFp12\_to\_EFp}(&Tmp\_P,P);
+45     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&T,&Tmp\_P);
+46     \hyperlink{bn__fp12_8h_abab8338a90506aac6754cca5a661477f}{Fp12\_set\_ui}(&f,0);
+47     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&f.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0,1);
+48     
+49     \textcolor{comment}{//miller}
+50     \textcolor{keywordflow}{for}(i=1; i<length; i++)\{
+51         \hyperlink{bls12__line__tate_8h_a91895df9737048f5ac59ee81633aa247}{bls12\_ff\_ltt\_vtt\_for\_tate}(&f,&T,Q);
+52         \textcolor{keywordflow}{if}(binary[i]==\textcolor{charliteral}{'1'})\{
+53             \hyperlink{bls12__line__tate_8h_a1f80689fc6980972d6a85828147271a9}{bls12\_f\_ltp\_vtp\_for\_tate}(&f,&T,&Tmp\_P,Q);
+54         \}
+55     \}
+56     \hyperlink{bn__fp12_8h_a95c271ea5c7c21d89c9a0123a896e47d}{Fp12\_set}(ANS,&f);
+57     
+58     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&f);
+59     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&T);
+60     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Tmp\_P);
+61 \}
+\end{DoxyCode}

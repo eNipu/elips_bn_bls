@@ -26,15 +26,49 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+/**
+ * @file
+ *
+ * Interaface for BLS12's rational point mapping functionalities
+ *
+ * @ingroup bls12
+ */
 #ifndef bls12_twist_h
 #define bls12_twist_h
 
 #include <ELiPS_bn_bls/bn_efp12.h>
-//sextic twist
+
+/**
+ * Calculate sextic twisted map G2 rational point
+ *
+ * @param[out] ANS			    -  output in EFp2
+ * @param[in] P			        -  input P in EFp12.
+ */
 extern void bls12_EFp12_to_EFp2(EFp2 *ANS,EFp12 *P);
+
+/**
+ * Calculate sextic twisted map G2 rational point
+ *
+ * @param[out] ANS			    -  output in EFp12
+ * @param[in] P			        -  input P in EFp2.
+ */
 extern void bls12_EFp2_to_EFp12(EFp12 *ANS,EFp2 *P);
-//primary twist
+
+/**
+ * Calculate primary twist of  G1 rational point
+ *
+ * @param[out] ANS			    -  output in EFp
+ * @param[in] P			        -  input P in EFp12.
+ */
 extern void bls12_EFp12_to_EFp(EFp *ANS,EFp12 *P);
+
+/**
+ * Calculate primary twist of  G1 rational point
+ *
+ * @param[out] ANS			    -  output in EFp12
+ * @param[in] P			        -  input P in EFp.
+ */
 extern void bls12_EFp_to_EFp12(EFp12 *ANS,EFp *P);
 
 #endif /* bls12_twist_h */

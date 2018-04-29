@@ -1,0 +1,146 @@
+\hypertarget{bn__pairings_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+pairings.h File Reference}
+\label{bn__pairings_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+pairings.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+pairings.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+ate.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+tate.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+xate.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+optate.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+final\+\_\+exp.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+utils.\+h$>$}\newline
+Include dependency graph for bn\+\_\+pairings.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bn__pairings_8h_a5dc43ab57b000f478dfa0f4303e1b20b}{bn12\+\_\+tate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\item 
+void \hyperlink{bn__pairings_8h_aa88c7031311d6b3f4e4a0c2ce2ac2e2c}{bn12\+\_\+plain\+\_\+ate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\item 
+void \hyperlink{bn__pairings_8h_ab576a6e7a7448a0e04e845aa6202d4e2}{bn12\+\_\+opt\+\_\+ate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\item 
+void \hyperlink{bn__pairings_8h_ad60891797bcee309b0ae6be2083d5685}{bn12\+\_\+x\+\_\+ate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bn__pairings_8h_ab576a6e7a7448a0e04e845aa6202d4e2}\label{bn__pairings_8h_ab576a6e7a7448a0e04e845aa6202d4e2}} 
+\index{bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}!bn12\+\_\+opt\+\_\+ate@{bn12\+\_\+opt\+\_\+ate}}
+\index{bn12\+\_\+opt\+\_\+ate@{bn12\+\_\+opt\+\_\+ate}!bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}}
+\subsubsection{\texorpdfstring{bn12\+\_\+opt\+\_\+ate()}{bn12\_opt\_ate()}}
+{\footnotesize\ttfamily void bn12\+\_\+opt\+\_\+ate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+
+
+References Final\+\_\+exp\+\_\+optimal(), F\+I\+N\+A\+L\+E\+X\+P\+\_\+\+O\+PT, Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), M\+I\+L\+L\+E\+R\+\_\+\+O\+P\+T\+A\+TE, t1, and timedifference\+\_\+msec().
+
+
+
+Referenced by bn12\+\_\+test\+\_\+opt\+\_\+ate\+\_\+pairing().
+
+
+\begin{DoxyCode}
+59                                                \{
+60     \textcolor{comment}{//miller}
+61     gettimeofday(&t0,NULL);
+62     \hyperlink{bn__miller__optate_8h_a6c8df028ae0b51d0e0d380772cd321e8}{Miller\_algo\_for\_opt\_ate}(ANS,P,Q);
+63     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+64     \hyperlink{bn__utils_8h_af71463afbd00fc5a1d48a9066761119c}{MILLER\_OPTATE}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+65     
+66     \textcolor{comment}{//final exp}
+67     gettimeofday(&t0,NULL);
+68     \hyperlink{bn__final__exp_8h_a3d64a816989df1bfce21e6d25f04316a}{Final\_exp\_optimal}(ANS,ANS);
+69     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+70     \hyperlink{bn__utils_8h_aa2aca3ffa09433282dc47cc77964d7e8}{FINALEXP\_OPT}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+71 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bn__pairings_8h_aa88c7031311d6b3f4e4a0c2ce2ac2e2c}\label{bn__pairings_8h_aa88c7031311d6b3f4e4a0c2ce2ac2e2c}} 
+\index{bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}!bn12\+\_\+plain\+\_\+ate@{bn12\+\_\+plain\+\_\+ate}}
+\index{bn12\+\_\+plain\+\_\+ate@{bn12\+\_\+plain\+\_\+ate}!bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}}
+\subsubsection{\texorpdfstring{bn12\+\_\+plain\+\_\+ate()}{bn12\_plain\_ate()}}
+{\footnotesize\ttfamily void bn12\+\_\+plain\+\_\+ate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+
+
+References Final\+\_\+exp\+\_\+optimal(), F\+I\+N\+A\+L\+E\+X\+P\+\_\+\+O\+PT, Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), M\+I\+L\+L\+E\+R\+\_\+\+P\+L\+A\+I\+N\+A\+TE, t1, and timedifference\+\_\+msec().
+
+
+
+Referenced by bn12\+\_\+test\+\_\+plain\+\_\+ate\+\_\+pairing().
+
+
+\begin{DoxyCode}
+45                                                 \{
+46     \textcolor{comment}{//miller}
+47     gettimeofday(&t0,NULL);
+48     \hyperlink{bn__miller__ate_8h_ad69079c6c91e62935bdb5052a8ea9870}{Miller\_algo\_for\_plain\_ate}(ANS,P,Q);
+49     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+50     \hyperlink{bn__utils_8h_aa9f4716059c80603f64bb40f5036615d}{MILLER\_PLAINATE}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+51     
+52     \textcolor{comment}{//final exp}
+53     gettimeofday(&t0,NULL);
+54     \hyperlink{bn__final__exp_8h_a3d64a816989df1bfce21e6d25f04316a}{Final\_exp\_optimal}(ANS,ANS);
+55     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+56     \hyperlink{bn__utils_8h_aa2aca3ffa09433282dc47cc77964d7e8}{FINALEXP\_OPT}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+57 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bn__pairings_8h_a5dc43ab57b000f478dfa0f4303e1b20b}\label{bn__pairings_8h_a5dc43ab57b000f478dfa0f4303e1b20b}} 
+\index{bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}!bn12\+\_\+tate@{bn12\+\_\+tate}}
+\index{bn12\+\_\+tate@{bn12\+\_\+tate}!bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}}
+\subsubsection{\texorpdfstring{bn12\+\_\+tate()}{bn12\_tate()}}
+{\footnotesize\ttfamily void bn12\+\_\+tate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+
+
+References Final\+\_\+exp\+\_\+optimal(), F\+I\+N\+A\+L\+E\+X\+P\+\_\+\+O\+PT, Miller\+\_\+algo\+\_\+for\+\_\+tate(), M\+I\+L\+L\+E\+R\+\_\+\+T\+A\+TE, t1, and timedifference\+\_\+msec().
+
+
+
+Referenced by bn12\+\_\+test\+\_\+tate\+\_\+pairing().
+
+
+\begin{DoxyCode}
+31                                             \{
+32     \textcolor{comment}{//miller}
+33     gettimeofday(&t0,NULL);
+34     \hyperlink{bn__miller__tate_8h_ab485b4a06e4e9532d91909c443a3ad3d}{Miller\_algo\_for\_tate}(ANS,P,Q);
+35     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+36     \hyperlink{bn__utils_8h_acdd16b9dedec4356d2a880aaf4c82e96}{MILLER\_TATE}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+37     
+38     \textcolor{comment}{//final exp}
+39     gettimeofday(&t0,NULL);
+40     \hyperlink{bn__final__exp_8h_a3d64a816989df1bfce21e6d25f04316a}{Final\_exp\_optimal}(ANS,ANS);
+41     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+42     \hyperlink{bn__utils_8h_aa2aca3ffa09433282dc47cc77964d7e8}{FINALEXP\_OPT}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+43 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bn__pairings_8h_ad60891797bcee309b0ae6be2083d5685}\label{bn__pairings_8h_ad60891797bcee309b0ae6be2083d5685}} 
+\index{bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}!bn12\+\_\+x\+\_\+ate@{bn12\+\_\+x\+\_\+ate}}
+\index{bn12\+\_\+x\+\_\+ate@{bn12\+\_\+x\+\_\+ate}!bn\+\_\+pairings.\+h@{bn\+\_\+pairings.\+h}}
+\subsubsection{\texorpdfstring{bn12\+\_\+x\+\_\+ate()}{bn12\_x\_ate()}}
+{\footnotesize\ttfamily void bn12\+\_\+x\+\_\+ate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+
+
+References Final\+\_\+exp\+\_\+optimal(), F\+I\+N\+A\+L\+E\+X\+P\+\_\+\+O\+PT, Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate(), M\+I\+L\+L\+E\+R\+\_\+\+X\+A\+TE, t1, and timedifference\+\_\+msec().
+
+
+
+Referenced by bn12\+\_\+test\+\_\+x\+\_\+ate\+\_\+pairing().
+
+
+\begin{DoxyCode}
+73                                              \{
+74     \textcolor{comment}{//miller}
+75     gettimeofday(&t0,NULL);
+76     \hyperlink{bn__miller__xate_8h_aed5c880305335036aac77a3957c8f9c4}{Miller\_algo\_for\_x\_ate}(ANS,P,Q);
+77     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+78     \hyperlink{bn__utils_8h_ab028d6f0c4b170f2bdb8ef61310d4384}{MILLER\_XATE}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+79     
+80     \textcolor{comment}{//final exp}
+81     gettimeofday(&t0,NULL);
+82     \hyperlink{bn__final__exp_8h_a3d64a816989df1bfce21e6d25f04316a}{Final\_exp\_optimal}(ANS,ANS);
+83     gettimeofday(&\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},NULL);
+84     \hyperlink{bn__utils_8h_aa2aca3ffa09433282dc47cc77964d7e8}{FINALEXP\_OPT}=\hyperlink{bn__utils_8h_ac2bf9f2dd7d509823e2cb22fa7d25698}{timedifference\_msec}(t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1});
+85 \}
+\end{DoxyCode}

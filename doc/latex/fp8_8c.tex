@@ -1,0 +1,677 @@
+\hypertarget{fp8_8c}{}\section{src/fp8.c File Reference}
+\label{fp8_8c}\index{src/fp8.\+c@{src/fp8.\+c}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/fp8.\+h$>$}\newline
+Include dependency graph for fp8.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\+\_\+init} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+void \hyperlink{fp8_8c_af31d9a1b66671d8707568117f280c7ba}{Fp8\+\_\+set} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+void \hyperlink{fp8_8c_add0a147935be0931aee581d6bed81041}{Fp8\+\_\+set\+\_\+ui} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A, signed long int B)
+\item 
+void \hyperlink{fp8_8c_af568838563b006d07c4f6c5475939e66}{Fp8\+\_\+set\+\_\+random} (\hyperlink{struct_fp8}{Fp8} $\ast$A, gmp\+\_\+randstate\+\_\+t \hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state})
+\item 
+void \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\+\_\+clear} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+void \hyperlink{fp8_8c_a172f19189cc0d445c9b4a073c962c757}{Fp8\+\_\+printf} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+void \hyperlink{fp8_8c_afea10642aedbcbe59ec9d5f4e53fdd93}{Fp8\+\_\+add} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, struct \hyperlink{struct_fp8}{Fp8} $\ast$B)
+\item 
+void \hyperlink{fp8_8c_a88ba434947285a9bf319dd044a5d08e6}{Fp8\+\_\+add\+\_\+ui} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, unsigned long int B)
+\item 
+void \hyperlink{fp8_8c_a745c4dcb08b6fd899eaba2f8024859dd}{Fp8\+\_\+sub} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, struct \hyperlink{struct_fp8}{Fp8} $\ast$B)
+\item 
+void \hyperlink{fp8_8c_a2a09afe00d7baedf86366e9b72ac9223}{Fp8\+\_\+sqr} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+void \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\+\_\+mul} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, struct \hyperlink{struct_fp8}{Fp8} $\ast$B)
+\item 
+void \hyperlink{fp8_8c_a8165e795ffc8ae9b017a2a14b7bfbcef}{Fp8\+\_\+mul\+\_\+v} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+void \hyperlink{fp8_8c_a32a812d1ed98f5c16ef4b04d26fd8621}{Fp8\+\_\+mul\+\_\+ui} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, unsigned long int B)
+\item 
+void \hyperlink{fp8_8c_acee1af035d283f34189e1b525f8cb8ce}{Fp8\+\_\+mul\+\_\+\+Fp} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, struct \hyperlink{struct_fp}{Fp} $\ast$B)
+\item 
+void \hyperlink{fp8_8c_a5b9bbd5357637947bddd1ee4dcdb36e5}{Fp8\+\_\+mul\+\_\+mpz} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, mpz\+\_\+t B)
+\item 
+void \hyperlink{fp8_8c_a85dbc8f48d51882816b26bc44426028f}{Fp8\+\_\+invert} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+void \hyperlink{fp8_8c_a208a409f7ba27e5c7e5b420df0d80ed0}{Fp8\+\_\+div} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, struct \hyperlink{struct_fp8}{Fp8} $\ast$B)
+\item 
+void \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\+\_\+pow} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A, mpz\+\_\+t B)
+\item 
+void \hyperlink{fp8_8c_a927ae6890233af95b2dbce38cfe9c80b}{Fp8\+\_\+sqrt} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A\+NS, struct \hyperlink{struct_fp8}{Fp8} $\ast$A)
+\item 
+int \hyperlink{fp8_8c_af9dc103e4bec76594a5412422a779563}{Fp8\+\_\+legendre} (struct \hyperlink{struct_fp8}{Fp8} $\ast$a)
+\item 
+int \hyperlink{fp8_8c_acb85189808ba155a3c758368bb6e2cad}{Fp8\+\_\+cmp} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A, struct \hyperlink{struct_fp8}{Fp8} $\ast$B)
+\item 
+int \hyperlink{fp8_8c_abd356ecf0196332cf89b60f40ac67dac}{Fp8\+\_\+cmp\+\_\+mpz} (struct \hyperlink{struct_fp8}{Fp8} $\ast$A, mpz\+\_\+t B)
+\item 
+void \hyperlink{fp8_8c_a62e164a1e657a8e2407b5343bb756cdc}{Fp8\+\_\+neg} (struct \hyperlink{struct_fp8}{Fp8} $\ast$ans, struct \hyperlink{struct_fp8}{Fp8} $\ast$a)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{fp8_8c_afea10642aedbcbe59ec9d5f4e53fdd93}\label{fp8_8c_afea10642aedbcbe59ec9d5f4e53fdd93}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+add@{Fp8\+\_\+add}}
+\index{Fp8\+\_\+add@{Fp8\+\_\+add}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+add()}{Fp8\_add()}}
+{\footnotesize\ttfamily void Fp8\+\_\+add (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+add(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+59                                                          \{
+60     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&ANS->x0,&A->x0,&B->x0);
+61     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&B->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+62 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a88ba434947285a9bf319dd044a5d08e6}\label{fp8_8c_a88ba434947285a9bf319dd044a5d08e6}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+add\+\_\+ui@{Fp8\+\_\+add\+\_\+ui}}
+\index{Fp8\+\_\+add\+\_\+ui@{Fp8\+\_\+add\+\_\+ui}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+add\+\_\+ui()}{Fp8\_add\_ui()}}
+{\footnotesize\ttfamily void Fp8\+\_\+add\+\_\+ui (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{unsigned long int}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+add\+\_\+ui(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+63                                                                   \{
+64     \hyperlink{fp4_8h_a5a984ed81b1df10ad436466783776d37}{Fp4\_add\_ui}(&ANS->x0,&A->x0,B);
+65     \hyperlink{fp4_8h_a5a984ed81b1df10ad436466783776d37}{Fp4\_add\_ui}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},B);
+66 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}\label{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+clear@{Fp8\+\_\+clear}}
+\index{Fp8\+\_\+clear@{Fp8\+\_\+clear}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+clear()}{Fp8\_clear()}}
+{\footnotesize\ttfamily void Fp8\+\_\+clear (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+clear(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+div(), Fp8\+\_\+invert(), Fp8\+\_\+legendre(), Fp8\+\_\+mul\+\_\+v(), Fp8\+\_\+pow(), and Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+51                              \{
+52     \hyperlink{fp4_8h_a03d2b0b0e770ae19d383a5e1f3348374}{Fp4\_clear}(&A->x0);
+53     \hyperlink{fp4_8h_a03d2b0b0e770ae19d383a5e1f3348374}{Fp4\_clear}(&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+54 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_acb85189808ba155a3c758368bb6e2cad}\label{fp8_8c_acb85189808ba155a3c758368bb6e2cad}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+cmp@{Fp8\+\_\+cmp}}
+\index{Fp8\+\_\+cmp@{Fp8\+\_\+cmp}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+cmp()}{Fp8\_cmp()}}
+{\footnotesize\ttfamily int Fp8\+\_\+cmp (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+cmp(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+300                                         \{
+301     \textcolor{keywordflow}{if}(\hyperlink{fp4_8h_a2b9ed97b371ba495529167303b1287f1}{Fp4\_cmp}(&A->x0,&B->x0)==0 && \hyperlink{fp4_8h_a2b9ed97b371ba495529167303b1287f1}{Fp4\_cmp}(&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&B->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1})==0)\{
+302         \textcolor{keywordflow}{return} 0;
+303     \}
+304     \textcolor{keywordflow}{return} 1;
+305 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_abd356ecf0196332cf89b60f40ac67dac}\label{fp8_8c_abd356ecf0196332cf89b60f40ac67dac}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+cmp\+\_\+mpz@{Fp8\+\_\+cmp\+\_\+mpz}}
+\index{Fp8\+\_\+cmp\+\_\+mpz@{Fp8\+\_\+cmp\+\_\+mpz}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+cmp\+\_\+mpz()}{Fp8\_cmp\_mpz()}}
+{\footnotesize\ttfamily int Fp8\+\_\+cmp\+\_\+mpz (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+cmp\+\_\+mpz(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+legendre(), and Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+306                                       \{
+307     \textcolor{keywordflow}{if}(\hyperlink{fp4_8h_a1db4faa057454f9a3683a3e4e19d434e}{Fp4\_cmp\_mpz}(&A->x0,B)==0 && \hyperlink{fp4_8h_a1db4faa057454f9a3683a3e4e19d434e}{Fp4\_cmp\_mpz}(&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},B)==0)\{
+308         \textcolor{keywordflow}{return} 0;
+309     \}
+310     \textcolor{keywordflow}{return} 1;
+311 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a208a409f7ba27e5c7e5b420df0d80ed0}\label{fp8_8c_a208a409f7ba27e5c7e5b420df0d80ed0}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+div@{Fp8\+\_\+div}}
+\index{Fp8\+\_\+div@{Fp8\+\_\+div}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+div()}{Fp8\_div()}}
+{\footnotesize\ttfamily void Fp8\+\_\+div (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp8\+\_\+clear(), Fp8\+\_\+init(), Fp8\+\_\+invert(), and Fp8\+\_\+mul().
+
+
+\begin{DoxyCode}
+163                                                          \{
+164     \textcolor{keyword}{struct }\hyperlink{struct_fp8}{Fp8} tmp;
+165     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&tmp);
+166     
+167     \hyperlink{fp8_8c_a85dbc8f48d51882816b26bc44426028f}{Fp8\_invert}(&tmp,B);
+168     \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\_mul}(ANS,A,&tmp);
+169     
+170     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&tmp);
+171 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}\label{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+init@{Fp8\+\_\+init}}
+\index{Fp8\+\_\+init@{Fp8\+\_\+init}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+init()}{Fp8\_init()}}
+{\footnotesize\ttfamily void Fp8\+\_\+init (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+init(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+div(), Fp8\+\_\+invert(), Fp8\+\_\+legendre(), Fp8\+\_\+mul\+\_\+v(), Fp8\+\_\+pow(), and Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+31                             \{
+32     \hyperlink{fp4_8h_ab8cc2d0cf7e22b41d3d205c51c7da52d}{Fp4\_init}(&A->x0);
+33     \hyperlink{fp4_8h_ab8cc2d0cf7e22b41d3d205c51c7da52d}{Fp4\_init}(&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+34 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a85dbc8f48d51882816b26bc44426028f}\label{fp8_8c_a85dbc8f48d51882816b26bc44426028f}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+invert@{Fp8\+\_\+invert}}
+\index{Fp8\+\_\+invert@{Fp8\+\_\+invert}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+invert()}{Fp8\_invert()}}
+{\footnotesize\ttfamily void Fp8\+\_\+invert (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+invert(), Fp4\+\_\+mul(), Fp4\+\_\+neg(), Fp4\+\_\+set(), Fp8\+\_\+clear(), Fp8\+\_\+init(), Fp8\+\_\+mul(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+div().
+
+
+\begin{DoxyCode}
+148                                               \{
+149     \textcolor{keyword}{struct }\hyperlink{struct_fp8}{Fp8} frob,buf;
+150     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&frob);
+151     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&buf);
+152     
+153     \hyperlink{fp4_8h_a5d55b416422c1319d1c1be2199051634}{Fp4\_set}(&frob.x0,&A->x0);
+154     \hyperlink{fp4_8h_a829eff853e3e4cbc09012d22ccc282a8}{Fp4\_neg}(&frob.x1,&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+155     \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\_mul}(&buf,A,&frob);
+156     \hyperlink{fp4_8h_a9f4f7b3fb3bdd743127e5234be334678}{Fp4\_invert}(&buf.x0,&buf.x0);
+157     \hyperlink{fp4_8h_acda35c976499035945e47d77d9a4a2a2}{Fp4\_mul}(&ANS->x0,&frob.x0,&buf.x0);
+158     \hyperlink{fp4_8h_acda35c976499035945e47d77d9a4a2a2}{Fp4\_mul}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&frob.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1},&buf.x0);
+159     
+160     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&frob);
+161     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&buf);
+162 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_af9dc103e4bec76594a5412422a779563}\label{fp8_8c_af9dc103e4bec76594a5412422a779563}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+legendre@{Fp8\+\_\+legendre}}
+\index{Fp8\+\_\+legendre@{Fp8\+\_\+legendre}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+legendre()}{Fp8\_legendre()}}
+{\footnotesize\ttfamily int Fp8\+\_\+legendre (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{a }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, Fp8\+\_\+clear(), Fp8\+\_\+cmp\+\_\+mpz(), Fp8\+\_\+init(), Fp8\+\_\+pow(), and curve\+\_\+params\+::prime.
+
+
+
+Referenced by Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+276                                \{
+277     mpz\_t i,cmp;
+278     \textcolor{keyword}{struct }\hyperlink{struct_fp8}{Fp8} tmp;
+279     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&tmp);
+280     mpz\_init(i);
+281     mpz\_init(cmp);
+282     mpz\_set\_ui(cmp,1);
+283     mpz\_pow\_ui(i,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},8);
+284     mpz\_sub\_ui(i,i,1);
+285     mpz\_tdiv\_q\_ui(i,i,2);
+286     \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\_pow}(&tmp,a,i);
+287     
+288     \textcolor{keywordflow}{if}((\hyperlink{fp8_8c_abd356ecf0196332cf89b60f40ac67dac}{Fp8\_cmp\_mpz}(&tmp,cmp))==0)\{
+289         \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&tmp);
+290         mpz\_clear(i);
+291         mpz\_clear(cmp);
+292         \textcolor{keywordflow}{return} 1;
+293     \}\textcolor{keywordflow}{else}\{
+294         \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&tmp);
+295         mpz\_clear(i);
+296         mpz\_clear(cmp);
+297         \textcolor{keywordflow}{return} -1;
+298     \}
+299 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}\label{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+mul@{Fp8\+\_\+mul}}
+\index{Fp8\+\_\+mul@{Fp8\+\_\+mul}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+mul()}{Fp8\_mul()}}
+{\footnotesize\ttfamily void Fp8\+\_\+mul (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+add(), Fp4\+\_\+clear(), Fp4\+\_\+init(), Fp4\+\_\+mul(), Fp4\+\_\+mul\+\_\+basis(), Fp4\+\_\+sub(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+div(), Fp8\+\_\+invert(), Fp8\+\_\+pow(), and Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+98                                                           \{
+99     \textcolor{keyword}{struct }\hyperlink{struct_fp4}{Fp4} tmp1,tmp2;
+100     \hyperlink{fp4_8h_ab8cc2d0cf7e22b41d3d205c51c7da52d}{Fp4\_init}(&tmp1);
+101     \hyperlink{fp4_8h_ab8cc2d0cf7e22b41d3d205c51c7da52d}{Fp4\_init}(&tmp2);
+102     
+103     \textcolor{comment}{//set}
+104     \hyperlink{fp4_8h_acda35c976499035945e47d77d9a4a2a2}{Fp4\_mul}(&tmp2,&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&B->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});\textcolor{comment}{//b*d}
+105     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&tmp1,&A->x0,&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});\textcolor{comment}{//a+b}
+106     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&B->x0,&B->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});\textcolor{comment}{//c+d}
+107     \hyperlink{fp4_8h_acda35c976499035945e47d77d9a4a2a2}{Fp4\_mul}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&tmp1,&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});\textcolor{comment}{//(a+b)(c+d)}
+108     \hyperlink{fp4_8h_acda35c976499035945e47d77d9a4a2a2}{Fp4\_mul}(&tmp1,&A->x0,&B->x0);\textcolor{comment}{//a*c}
+109     \textcolor{comment}{//x0}
+110     \hyperlink{fp4_8h_a752852d597154dc6bcbf6456bea79a80}{Fp4\_mul\_basis}(&ANS->x0,&tmp2);\textcolor{comment}{//b*d*v}
+111     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&ANS->x0,&ANS->x0,&tmp1);\textcolor{comment}{//a*c+b*d*v}
+112     \textcolor{comment}{//x1}
+113     \hyperlink{fp4_8h_af709cd3ae431d0378e26dbbdc59d673f}{Fp4\_sub}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&tmp1);
+114     \hyperlink{fp4_8h_af709cd3ae431d0378e26dbbdc59d673f}{Fp4\_sub}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&tmp2);
+115     
+116     \textcolor{comment}{//clear}
+117     \hyperlink{fp4_8h_a03d2b0b0e770ae19d383a5e1f3348374}{Fp4\_clear}(&tmp1);
+118     \hyperlink{fp4_8h_a03d2b0b0e770ae19d383a5e1f3348374}{Fp4\_clear}(&tmp2);
+119 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_acee1af035d283f34189e1b525f8cb8ce}\label{fp8_8c_acee1af035d283f34189e1b525f8cb8ce}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+mul\+\_\+\+Fp@{Fp8\+\_\+mul\+\_\+\+Fp}}
+\index{Fp8\+\_\+mul\+\_\+\+Fp@{Fp8\+\_\+mul\+\_\+\+Fp}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+mul\+\_\+\+Fp()}{Fp8\_mul\_Fp()}}
+{\footnotesize\ttfamily void Fp8\+\_\+mul\+\_\+\+Fp (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{struct \hyperlink{struct_fp}{Fp} $\ast$}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+mul\+\_\+\+Fp(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+140                                                            \{
+141     \hyperlink{fp4_8h_aa6e785dbaa6a1c15a7c16f7fa3f1fab5}{Fp4\_mul\_Fp}(&ANS->x0,&A->x0,B);
+142     \hyperlink{fp4_8h_aa6e785dbaa6a1c15a7c16f7fa3f1fab5}{Fp4\_mul\_Fp}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},B);
+143 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a5b9bbd5357637947bddd1ee4dcdb36e5}\label{fp8_8c_a5b9bbd5357637947bddd1ee4dcdb36e5}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+mul\+\_\+mpz@{Fp8\+\_\+mul\+\_\+mpz}}
+\index{Fp8\+\_\+mul\+\_\+mpz@{Fp8\+\_\+mul\+\_\+mpz}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+mul\+\_\+mpz()}{Fp8\_mul\_mpz()}}
+{\footnotesize\ttfamily void Fp8\+\_\+mul\+\_\+mpz (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+mul\+\_\+mpz(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+144                                                        \{
+145     \hyperlink{fp4_8h_aadfaad6f6742e1f0c8f966850d673215}{Fp4\_mul\_mpz}(&ANS->x0,&A->x0,B);
+146     \hyperlink{fp4_8h_aadfaad6f6742e1f0c8f966850d673215}{Fp4\_mul\_mpz}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},B);
+147 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a32a812d1ed98f5c16ef4b04d26fd8621}\label{fp8_8c_a32a812d1ed98f5c16ef4b04d26fd8621}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+mul\+\_\+ui@{Fp8\+\_\+mul\+\_\+ui}}
+\index{Fp8\+\_\+mul\+\_\+ui@{Fp8\+\_\+mul\+\_\+ui}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+mul\+\_\+ui()}{Fp8\_mul\_ui()}}
+{\footnotesize\ttfamily void Fp8\+\_\+mul\+\_\+ui (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{unsigned long int}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+mul\+\_\+ui(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+136                                                                   \{
+137     \hyperlink{fp4_8h_a33d4766bd2fbcda73c63a2ac78763dc3}{Fp4\_mul\_ui}(&ANS->x0,&A->x0,B);
+138     \hyperlink{fp4_8h_a33d4766bd2fbcda73c63a2ac78763dc3}{Fp4\_mul\_ui}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},B);
+139 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a8165e795ffc8ae9b017a2a14b7bfbcef}\label{fp8_8c_a8165e795ffc8ae9b017a2a14b7bfbcef}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+mul\+\_\+v@{Fp8\+\_\+mul\+\_\+v}}
+\index{Fp8\+\_\+mul\+\_\+v@{Fp8\+\_\+mul\+\_\+v}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+mul\+\_\+v()}{Fp8\_mul\_v()}}
+{\footnotesize\ttfamily void Fp8\+\_\+mul\+\_\+v (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References Fp8\+\_\+clear(), Fp8\+\_\+init(), Fp8\+\_\+set(), Fp\+\_\+mul\+\_\+basis(), Fp\+\_\+set(), Fp4\+::x1, Fp2\+::x1, and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+120                                              \{
+121     \textcolor{keyword}{struct }\hyperlink{struct_fp8}{Fp8} tmp;
+122     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&tmp);
+123     \hyperlink{fp8_8c_af31d9a1b66671d8707568117f280c7ba}{Fp8\_set}(&tmp,A);
+124     
+125     \hyperlink{bn__fp_8h_a2280c4f9e94184435f0dcc30bd85df9b}{Fp\_mul\_basis}(&ANS->x0.x0.x0,&tmp.\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.\hyperlink{struct_fp2_aae9ef6bfaa9a9a9b32a81f97f83c7dfd}{x1});
+126     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x0.\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&tmp.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.\hyperlink{struct_fp2_aae9ef6bfaa9a9a9b32a81f97f83c7dfd}{x1}.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+127     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.x0,&tmp.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.x0.x0);
+128     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1},&tmp.\hyperlink{struct_fp2_aae9ef6bfaa9a9a9b32a81f97f83c7dfd}{x1}.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0}.x1);
+129     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.x0.x0,&tmp.x0.x0.x0);
+130     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.x0.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1},&tmp.x0.x0.\hyperlink{struct_fp2_aae9ef6bfaa9a9a9b32a81f97f83c7dfd}{x1});
+131     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.x0,&tmp.x0.\hyperlink{struct_fp2_aae9ef6bfaa9a9a9b32a81f97f83c7dfd}{x1}.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+132     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.\hyperlink{struct_fp2_aae9ef6bfaa9a9a9b32a81f97f83c7dfd}{x1},&tmp.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0}.x1.x1);
+133     
+134     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&tmp);
+135 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a62e164a1e657a8e2407b5343bb756cdc}\label{fp8_8c_a62e164a1e657a8e2407b5343bb756cdc}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+neg@{Fp8\+\_\+neg}}
+\index{Fp8\+\_\+neg@{Fp8\+\_\+neg}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+neg()}{Fp8\_neg()}}
+{\footnotesize\ttfamily void Fp8\+\_\+neg (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{ans,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{a }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+neg(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+312                                            \{
+313     \hyperlink{fp4_8h_a829eff853e3e4cbc09012d22ccc282a8}{Fp4\_neg}(&ans->x0,&a->x0);
+314     \hyperlink{fp4_8h_a829eff853e3e4cbc09012d22ccc282a8}{Fp4\_neg}(&ans->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&a->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+315 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}\label{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+pow@{Fp8\+\_\+pow}}
+\index{Fp8\+\_\+pow@{Fp8\+\_\+pow}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+pow()}{Fp8\_pow()}}
+{\footnotesize\ttfamily void Fp8\+\_\+pow (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp8\+\_\+clear(), Fp8\+\_\+init(), Fp8\+\_\+mul(), Fp8\+\_\+set(), and Fp8\+\_\+sqr().
+
+
+
+Referenced by Fp8\+\_\+legendre(), and Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+172                                                    \{
+173     \textcolor{keywordtype}{int} i,length;
+174     length=(int)mpz\_sizeinbase(B,2);
+175     \textcolor{keywordtype}{char} binary[length];
+176     mpz\_get\_str(binary,2,B);
+177     \textcolor{keyword}{struct }\hyperlink{struct_fp8}{Fp8} buf;
+178     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&buf);
+179     \hyperlink{fp8_8c_af31d9a1b66671d8707568117f280c7ba}{Fp8\_set}(&buf,A);
+180     
+181     \textcolor{keywordflow}{for}(i=1; i<length; i++)\{
+182         \textcolor{comment}{//Fp2\_mul(&buf,&buf,&buf);}
+183         \hyperlink{fp8_8c_a2a09afe00d7baedf86366e9b72ac9223}{Fp8\_sqr}(&buf,&buf);
+184         \textcolor{keywordflow}{if}(binary[i]==\textcolor{charliteral}{'1'})\{
+185             \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\_mul}(&buf,A,&buf);
+186         \}
+187     \}
+188     
+189     \hyperlink{fp8_8c_af31d9a1b66671d8707568117f280c7ba}{Fp8\_set}(ANS,&buf);
+190     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&buf);
+191 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a172f19189cc0d445c9b4a073c962c757}\label{fp8_8c_a172f19189cc0d445c9b4a073c962c757}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+printf@{Fp8\+\_\+printf}}
+\index{Fp8\+\_\+printf@{Fp8\+\_\+printf}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+printf()}{Fp8\_printf()}}
+{\footnotesize\ttfamily void Fp8\+\_\+printf (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References Fp\+::x0, Fp4\+::x1, Fp2\+::x1, and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+55                               \{
+56     gmp\_printf(\textcolor{stringliteral}{"(%Zd,%Zd,%Zd,%Zd\(\backslash\)n"},A->x0.x0.x0.x0,A->x0.x0.\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.x0,A->x0.\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.x0.x0,A->x0.
+      \hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.x0);
+57     gmp\_printf(\textcolor{stringliteral}{"(%Zd,%Zd,%Zd,%Zd\(\backslash\)n"},A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.x0.x0.x0,A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.x0.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.x0,A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.
+      \hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.x0.x0,A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1}.\hyperlink{struct_fp4_a945c2f930e7cdd7057417762331fe9ed}{x1}.\hyperlink{struct_fp2_aae9ef6bfaa9a9a9b32a81f97f83c7dfd}{x1}.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+58 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_af31d9a1b66671d8707568117f280c7ba}\label{fp8_8c_af31d9a1b66671d8707568117f280c7ba}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+set@{Fp8\+\_\+set}}
+\index{Fp8\+\_\+set@{Fp8\+\_\+set}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+set()}{Fp8\_set()}}
+{\footnotesize\ttfamily void Fp8\+\_\+set (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+set(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+mul\+\_\+v(), Fp8\+\_\+pow(), and Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+35                                            \{
+36     \hyperlink{fp4_8h_a5d55b416422c1319d1c1be2199051634}{Fp4\_set}(&ANS->x0,&A->x0);
+37     \hyperlink{fp4_8h_a5d55b416422c1319d1c1be2199051634}{Fp4\_set}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+38 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_af568838563b006d07c4f6c5475939e66}\label{fp8_8c_af568838563b006d07c4f6c5475939e66}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+set\+\_\+random@{Fp8\+\_\+set\+\_\+random}}
+\index{Fp8\+\_\+set\+\_\+random@{Fp8\+\_\+set\+\_\+random}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+set\+\_\+random()}{Fp8\_set\_random()}}
+{\footnotesize\ttfamily void Fp8\+\_\+set\+\_\+random (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{gmp\+\_\+randstate\+\_\+t}]{state }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+set\+\_\+random(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+sqrt().
+
+
+\begin{DoxyCode}
+47                                                   \{
+48     \hyperlink{fp4_8h_a6a38265455fbe1e17383a64d496a03a9}{Fp4\_set\_random}(&A->x0,\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state});
+49     \hyperlink{fp4_8h_a6a38265455fbe1e17383a64d496a03a9}{Fp4\_set\_random}(&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state});
+50 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_add0a147935be0931aee581d6bed81041}\label{fp8_8c_add0a147935be0931aee581d6bed81041}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+set\+\_\+ui@{Fp8\+\_\+set\+\_\+ui}}
+\index{Fp8\+\_\+set\+\_\+ui@{Fp8\+\_\+set\+\_\+ui}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+set\+\_\+ui()}{Fp8\_set\_ui()}}
+{\footnotesize\ttfamily void Fp8\+\_\+set\+\_\+ui (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{signed long int}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+set\+\_\+ui(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+39                                                 \{
+40     \hyperlink{fp4_8h_afccaeb87dd6f2c55ec323d5c1622ccf4}{Fp4\_set\_ui}(&A->x0,B);
+41     \hyperlink{fp4_8h_afccaeb87dd6f2c55ec323d5c1622ccf4}{Fp4\_set\_ui}(&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},B);
+42 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a2a09afe00d7baedf86366e9b72ac9223}\label{fp8_8c_a2a09afe00d7baedf86366e9b72ac9223}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+sqr@{Fp8\+\_\+sqr}}
+\index{Fp8\+\_\+sqr@{Fp8\+\_\+sqr}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+sqr()}{Fp8\_sqr()}}
+{\footnotesize\ttfamily void Fp8\+\_\+sqr (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+add(), Fp4\+\_\+clear(), Fp4\+\_\+init(), Fp4\+\_\+mul(), Fp4\+\_\+mul\+\_\+basis(), Fp4\+\_\+sub(), and Fp8\+::x1.
+
+
+
+Referenced by Fp8\+\_\+pow().
+
+
+\begin{DoxyCode}
+72                                            \{
+73     
+74     \textcolor{keyword}{struct }\hyperlink{struct_fp4}{Fp4} tmp1,tmp2,tmp3;
+75     \hyperlink{fp4_8h_ab8cc2d0cf7e22b41d3d205c51c7da52d}{Fp4\_init}(&tmp1);
+76     \hyperlink{fp4_8h_ab8cc2d0cf7e22b41d3d205c51c7da52d}{Fp4\_init}(&tmp2);
+77     \hyperlink{fp4_8h_ab8cc2d0cf7e22b41d3d205c51c7da52d}{Fp4\_init}(&tmp3);
+78     
+79     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&tmp1,&A->x0,&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+80     \hyperlink{fp4_8h_a752852d597154dc6bcbf6456bea79a80}{Fp4\_mul\_basis}(&tmp2,&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+81     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&tmp2,&tmp2,&A->x0);
+82     \hyperlink{fp4_8h_acda35c976499035945e47d77d9a4a2a2}{Fp4\_mul}(&tmp3,&A->x0,&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+83     
+84     \textcolor{comment}{//x0}
+85     \hyperlink{fp4_8h_acda35c976499035945e47d77d9a4a2a2}{Fp4\_mul}(&ANS->x0,&tmp1,&tmp2);
+86     \hyperlink{fp4_8h_af709cd3ae431d0378e26dbbdc59d673f}{Fp4\_sub}(&ANS->x0,&ANS->x0,&tmp3);
+87     \hyperlink{fp4_8h_a752852d597154dc6bcbf6456bea79a80}{Fp4\_mul\_basis}(&tmp1,&tmp3);
+88     \hyperlink{fp4_8h_af709cd3ae431d0378e26dbbdc59d673f}{Fp4\_sub}(&ANS->x0,&ANS->x0,&tmp1);
+89     \textcolor{comment}{//x1}
+90     \hyperlink{fp4_8h_a158ed58dd859cb88722eb3c13458de4f}{Fp4\_add}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&tmp3,&tmp3);
+91     
+92     \hyperlink{fp4_8h_a03d2b0b0e770ae19d383a5e1f3348374}{Fp4\_clear}(&tmp1);
+93     \hyperlink{fp4_8h_a03d2b0b0e770ae19d383a5e1f3348374}{Fp4\_clear}(&tmp2);
+94     \hyperlink{fp4_8h_a03d2b0b0e770ae19d383a5e1f3348374}{Fp4\_clear}(&tmp3);
+95     
+96 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a927ae6890233af95b2dbce38cfe9c80b}\label{fp8_8c_a927ae6890233af95b2dbce38cfe9c80b}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+sqrt@{Fp8\+\_\+sqrt}}
+\index{Fp8\+\_\+sqrt@{Fp8\+\_\+sqrt}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+sqrt()}{Fp8\_sqrt()}}
+{\footnotesize\ttfamily void Fp8\+\_\+sqrt (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, Fp8\+\_\+clear(), Fp8\+\_\+cmp\+\_\+mpz(), Fp8\+\_\+init(), Fp8\+\_\+legendre(), Fp8\+\_\+mul(), Fp8\+\_\+pow(), Fp8\+\_\+set(), Fp8\+\_\+set\+\_\+random(), and curve\+\_\+params\+::prime.
+
+
+\begin{DoxyCode}
+192                                             \{
+193     \textcolor{keyword}{struct }\hyperlink{struct_fp8}{Fp8} n,y,x,b,t,tmp\_Fp4;
+194     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&n);
+195     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&y);
+196     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&x);
+197     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&b);
+198     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&t);
+199     \hyperlink{fp8_8c_aae9588bd379549e490d5d5b46b1bb260}{Fp8\_init}(&tmp\_Fp4);
+200     \hyperlink{fp8_8c_af31d9a1b66671d8707568117f280c7ba}{Fp8\_set}(&n,A);
+201     
+202     mpz\_t tmp\_mpz,q,e,r,set\_1,set\_2;
+203     mpz\_init(tmp\_mpz);
+204     mpz\_init(q);
+205     mpz\_init(e);
+206     mpz\_init(r);
+207     mpz\_init(set\_1);
+208     mpz\_init(set\_2);
+209     mpz\_set\_ui(set\_1,1);
+210     mpz\_set\_ui(set\_2,2);
+211     
+212     gmp\_randstate\_t \hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state};
+213     gmp\_randinit\_default(state);
+214     gmp\_randseed\_ui(state,(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long})time(NULL));
+215     
+216     \hyperlink{fp8_8c_af568838563b006d07c4f6c5475939e66}{Fp8\_set\_random}(&n,state);
+217     \textcolor{keywordflow}{while}(\hyperlink{fp8_8c_af9dc103e4bec76594a5412422a779563}{Fp8\_legendre}(&n)!=-1)\{
+218         \hyperlink{fp8_8c_af568838563b006d07c4f6c5475939e66}{Fp8\_set\_random}(&n,state);
+219     \}
+220     
+221     mpz\_pow\_ui(q,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},12);
+222     mpz\_sub\_ui(q,q,1);
+223     mpz\_set\_ui(e,0);
+224     \textcolor{keywordflow}{while}(mpz\_odd\_p(q)==0)\{
+225         mpz\_add\_ui(e,e,1);
+226         mpz\_div\_ui(q,q,2);
+227     \}
+228     \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\_pow}(&y,&n,q);
+229     
+230     mpz\_set(r,e);
+231     
+232     mpz\_sub\_ui(tmp\_mpz,q,1);
+233     mpz\_div\_ui(tmp\_mpz,tmp\_mpz,2);
+234     
+235     \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\_pow}(&x,A,tmp\_mpz);
+236     \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\_pow}(&tmp\_Fp4,&x,set\_2);
+237     \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\_mul}(&b,&tmp\_Fp4,A);
+238     \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\_mul}(&x,&x,A);
+239     
+240     \textcolor{keywordtype}{int} m;
+241     
+242     \textcolor{keywordflow}{while}(\hyperlink{fp8_8c_abd356ecf0196332cf89b60f40ac67dac}{Fp8\_cmp\_mpz}(&b,set\_1)==1)\{
+243         m=-1;
+244         \hyperlink{fp8_8c_af31d9a1b66671d8707568117f280c7ba}{Fp8\_set}(&tmp\_Fp4,&b);
+245         \textcolor{keywordflow}{while}(\hyperlink{fp8_8c_abd356ecf0196332cf89b60f40ac67dac}{Fp8\_cmp\_mpz}(&tmp\_Fp4,set\_1)==1)\{
+246             m++;
+247             mpz\_pow\_ui(tmp\_mpz,set\_2,m);
+248             \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\_pow}(&tmp\_Fp4,&b,tmp\_mpz);
+249         \}
+250         mpz\_sub\_ui(tmp\_mpz,r,m);
+251         mpz\_sub\_ui(tmp\_mpz,tmp\_mpz,1);
+252         mpz\_powm(tmp\_mpz,set\_2,tmp\_mpz,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+253         \textcolor{comment}{// gmp\_printf("%Zd,%Zd,%d\(\backslash\)n",tmp\_mpz,r,m);}
+254         \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\_pow}(&t,&y,tmp\_mpz);
+255         \hyperlink{fp8_8c_afc58a5c01d085b5a2c3f2e42e93d4be6}{Fp8\_pow}(&y,&t,set\_2);
+256         \textcolor{comment}{// gmp\_printf("%Zd,%Zd,\(\backslash\)n",y.x0.x0.x0,y.x0.x1.x0);}
+257         mpz\_set\_ui(r,m);
+258         \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\_mul}(&x,&x,&t);
+259         \hyperlink{fp8_8c_a48eb015a040a8cd6a4ce871b27bd2f6a}{Fp8\_mul}(&b,&b,&y);
+260     \}
+261     
+262     \hyperlink{fp8_8c_af31d9a1b66671d8707568117f280c7ba}{Fp8\_set}(ANS,&x);
+263     
+264     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&n);
+265     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&y);
+266     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&x);
+267     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&b);
+268     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&t);
+269     \hyperlink{fp8_8c_a92d198ed36cd629fd09c4d935a0c7795}{Fp8\_clear}(&tmp\_Fp4);
+270     mpz\_clear(tmp\_mpz);
+271     mpz\_clear(q);
+272     mpz\_clear(e);
+273     mpz\_clear(r);
+274     mpz\_clear(set\_1);
+275 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{fp8_8c_a745c4dcb08b6fd899eaba2f8024859dd}\label{fp8_8c_a745c4dcb08b6fd899eaba2f8024859dd}} 
+\index{fp8.\+c@{fp8.\+c}!Fp8\+\_\+sub@{Fp8\+\_\+sub}}
+\index{Fp8\+\_\+sub@{Fp8\+\_\+sub}!fp8.\+c@{fp8.\+c}}
+\subsubsection{\texorpdfstring{Fp8\+\_\+sub()}{Fp8\_sub()}}
+{\footnotesize\ttfamily void Fp8\+\_\+sub (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{A,  }\item[{struct \hyperlink{struct_fp8}{Fp8} $\ast$}]{B }\end{DoxyParamCaption})}
+
+
+
+References Fp4\+\_\+sub(), and Fp8\+::x1.
+
+
+\begin{DoxyCode}
+67                                                          \{
+68     \hyperlink{fp4_8h_af709cd3ae431d0378e26dbbdc59d673f}{Fp4\_sub}(&ANS->x0,&A->x0,&B->x0);
+69     \hyperlink{fp4_8h_af709cd3ae431d0378e26dbbdc59d673f}{Fp4\_sub}(&ANS->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&A->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1},&B->\hyperlink{struct_fp8_af69b358198f9653357a8d014855ba551}{x1});
+70 \}
+\end{DoxyCode}

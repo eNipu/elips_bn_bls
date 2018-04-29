@@ -37,10 +37,10 @@
 
 int main(int argc, const char * argv[]) {
     
-//    bls12_inits();
-//    bls12_print_parameters();
-//    bls12_test_opt_ate_pairing();
-//    clear_parameters();
+    bls12_inits();
+    bls12_print_parameters();
+    bls12_test_opt_ate_pairing();
+    clear_parameters();
     
     init_bn();
     print_curve_parameters();

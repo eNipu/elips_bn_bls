@@ -26,6 +26,14 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interaface for BLS12 Pairing implementations
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_pairings_h
 #define bls12_pairings_h
 
@@ -36,8 +44,35 @@
 #include <ELiPS_bn_bls/bls12_timeprint.h>
 #include <ELiPS_bn_bls/bn_utils.h>
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+
+/**
+ * Calculate tate pairing in BLS12 curve.
+ *
+ * @param[out] ANS			    -  output 
+ * @param[in] P			        - P in  G1 mapped to Fp12.
+ * @param[in] Q		            - Q in G2.
+ */
 extern void bls12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
+
+/**
+ * Calculate ate pairing in BLS12 curve.
+ *
+ * @param[out] ANS			    -  output 
+ * @param[in] P			        - P in  G1 mapped to Fp12.
+ * @param[in] Q		            - Q in G2.
+ */
 extern void bls12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q);
+
+/**
+ * Calculate optimal ate pairing in BLS12 curve.
+ *
+ * @param[out] ANS			    -  output 
+ * @param[in] P			        - P in  G1 mapped to Fp12.
+ * @param[in] Q		            - Q in G2.
+ */
 extern void bls12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
 
 #endif /* bls12_pairings_h */

@@ -1,0 +1,30 @@
+\hypertarget{bls12__inits_8c}{}\section{src/bls12\+\_\+inits.c File Reference}
+\label{bls12__inits_8c}\index{src/bls12\+\_\+inits.\+c@{src/bls12\+\_\+inits.\+c}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+inits.\+h$>$}\newline
+Include dependency graph for bls12\+\_\+inits.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bls12__inits_8c_a2587a675a83924fa92419230b0e3d4bd}{bls12\+\_\+inits} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bls12__inits_8c_a2587a675a83924fa92419230b0e3d4bd}\label{bls12__inits_8c_a2587a675a83924fa92419230b0e3d4bd}} 
+\index{bls12\+\_\+inits.\+c@{bls12\+\_\+inits.\+c}!bls12\+\_\+inits@{bls12\+\_\+inits}}
+\index{bls12\+\_\+inits@{bls12\+\_\+inits}!bls12\+\_\+inits.\+c@{bls12\+\_\+inits.\+c}}
+\subsubsection{\texorpdfstring{bls12\+\_\+inits()}{bls12\_inits()}}
+{\footnotesize\ttfamily void bls12\+\_\+inits (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+This methods needs to be called before using the B\+L\+S12 curve for pairing. It initialized the curve as y$^\wedge$2=x$^\wedge$3+4 with parameters suggested in \href{https://eprint.iacr.org/2017/334}{\tt https\+://eprint.\+iacr.\+org/2017/334}. 
+
+References init\+\_\+bls12\+\_\+settings(), and init\+\_\+precoms().
+
+
+\begin{DoxyCode}
+31                   \{
+32     \hyperlink{curve__settings_8h_adfb3a63a523ad6bb209fad3db7f20047}{init\_bls12\_settings}();
+33     \hyperlink{bn__bls12__precoms_8h_a6d8315d6721fda3d585086b15cf55cd8}{init\_precoms}(2);
+34 \}
+\end{DoxyCode}

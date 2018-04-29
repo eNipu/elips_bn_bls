@@ -26,20 +26,78 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Header of the Frobenius mapping implementation for BLS12 over Fp12 extension field.
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_frobenius_h
 #define bls12_frobenius_h
 
 #include <ELiPS_bn_bls/bn_efp12.h>
 #include <ELiPS_bn_bls/bn_bls12_precoms.h>
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
 
-//frobenius
+/**
+ * Calculate Frobenius map of A in Fp12 extension field as A^p where p is the BLS12 prime.
+ *
+ * @param[out] ANS				- the result.
+ * @param[in] A				    - the input vecotr.
+ */
 extern void bls12_Fp12_frobenius_map_p1(Fp12 *ANS,Fp12 *A);
+
+/**
+ * Calculate Frobenius map of A in Fp12 extension field as A^p^2 where p is the BLS12 prime.
+ *
+ * @param[out] ANS				- the result.
+ * @param[in] A				    - the input vecotr.
+ */
 extern void bls12_Fp12_frobenius_map_p2(Fp12 *ANS,Fp12 *A);
+
+/**
+ * Calculate Frobenius map of A in Fp12 extension field as A^p^3 where p is the BLS12 prime.
+ *
+ * @param[out] ANS				- the result.
+ * @param[in] A				    - the input vecotr.
+ */
 extern void bls12_Fp12_frobenius_map_p3(Fp12 *ANS,Fp12 *A);
+
+/**
+ * Calculate Frobenius map of A in Fp12 extension field as A^p^4 where p is the BLS12 prime.
+ *
+ * @param[out] ANS				- the result.
+ * @param[in] A				    - the input vecotr.
+ */
 extern void bls12_Fp12_frobenius_map_p4(Fp12 *ANS,Fp12 *A);
+
+/**
+ * Calculate Frobenius map of A in Fp12 extension field as A^p^6 where p is the BLS12 prime.
+ *
+ * @param[out] ANS				- the result.
+ * @param[in] A				    - the input vecotr.
+ */
 extern void bls12_Fp12_frobenius_map_p6(Fp12 *ANS,Fp12 *A);
+
+/**
+ * Calculate Frobenius map of A in Fp12 extension field as A^p^8 where p is the BLS12 prime.
+ *
+ * @param[out] ANS				- the result.
+ * @param[in] A				    - the input vecotr.
+ */
 extern void bls12_Fp12_frobenius_map_p8(Fp12 *ANS,Fp12 *A);
+
+/**
+ * Calculate Frobenius map of A in Fp12 extension field as A^p^10 where p is the BLS12 prime.
+ *
+ * @param[out] ANS				- the result.
+ * @param[in] A				    - the input vecotr.
+ */
 extern void bls12_Fp12_frobenius_map_p10(Fp12 *ANS,Fp12 *A);
 
 #endif /* bls12_frobenius_h */

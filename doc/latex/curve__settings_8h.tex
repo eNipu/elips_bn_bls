@@ -1,0 +1,1217 @@
+\hypertarget{curve__settings_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/curve\+\_\+settings.h File Reference}
+\label{curve__settings_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/curve\+\_\+settings.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/curve\+\_\+settings.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/\+Commont\+\_\+headers.\+h$>$}\newline
+Include dependency graph for curve\+\_\+settings.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structcurve__params}{curve\+\_\+params}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\+\_\+\+X\+\_\+length}~114
+\item 
+\#define \hyperlink{curve__settings_8h_aa8cecfc5c5c054d2875c03e77b7be15d}{T\+R\+UE}~1
+\item 
+\#define \hyperlink{curve__settings_8h_aa93f0eb578d23995850d61f7d61c55c1}{F\+A\+L\+SE}~0
+\item 
+\#define \hyperlink{curve__settings_8h_a80cb4474bb38bbac292ba0ce026a579a}{K\+S\+S16\+\_\+\+X\+\_\+length}~35
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{curve__settings_8h_a8107b3c4a1ffd201c295046d5ca9cdc1}{init\+\_\+bn\+\_\+settings} (void)
+\item 
+void \hyperlink{curve__settings_8h_ade0e2bdf8e679d274e8382034652e9bf}{init\+\_\+bn\+\_\+parameters} (void)
+\item 
+void \hyperlink{curve__settings_8h_a3d631b68c5a9a78e5e0af33be4881816}{generate\+\_\+bn\+\_\+mother\+\_\+parameter} (void)
+\item 
+int \hyperlink{curve__settings_8h_aa75121e0ce77955b8e552edc9dd4feb6}{generate\+\_\+bn\+\_\+prime} (void)
+\item 
+int \hyperlink{curve__settings_8h_ad68e57a7d472d717193d4ca4331f23cf}{generate\+\_\+bn\+\_\+order} (void)
+\item 
+void \hyperlink{curve__settings_8h_aaad4de0748d6117b7f665e08dc7a4d24}{generate\+\_\+bn\+\_\+trace} (void)
+\item 
+void \hyperlink{curve__settings_8h_a951b8514e53db0684c1e61fb3a1e10c4}{set\+\_\+bn\+\_\+curve\+\_\+parameter} (void)
+\item 
+void \hyperlink{curve__settings_8h_a7442b7929865235118e3abeb198fddcb}{weil} (void)
+\item 
+void \hyperlink{curve__settings_8h_aa14e03bcb61fc01903168f033c88fff9}{print\+\_\+curve\+\_\+parameters} (void)
+\item 
+void \hyperlink{curve__settings_8h_adfb3a63a523ad6bb209fad3db7f20047}{init\+\_\+bls12\+\_\+settings} (void)
+\item 
+void \hyperlink{curve__settings_8h_a17764e96f5eacb09c2edc2bf2eeaddeb}{init\+\_\+bls12\+\_\+parameters} (void)
+\item 
+void \hyperlink{curve__settings_8h_a3f6cf44a99eee03ecb0e8a4bb162c622}{bls12\+\_\+generate\+\_\+X} (void)
+\item 
+int \hyperlink{curve__settings_8h_a1b107bc5b647bc5d3861286fa2d3cc11}{bls12\+\_\+generate\+\_\+prime} (void)
+\item 
+int \hyperlink{curve__settings_8h_ad19981ec357b6c465cbd768f89b6d42e}{bls12\+\_\+generate\+\_\+order} (void)
+\item 
+void \hyperlink{curve__settings_8h_a91443c5d6e5c08599d2c9c0cae6b55c6}{bls12\+\_\+generate\+\_\+trace} (void)
+\item 
+void \hyperlink{curve__settings_8h_a2f976eaec9841301857ffc58c5ffd2d9}{bls12\+\_\+set\+\_\+curve\+\_\+parameter} (void)
+\item 
+void \hyperlink{curve__settings_8h_af8fa5f50ee9d77c834f78ec4e1b45c93}{bls12\+\_\+weil} (void)
+\item 
+void \hyperlink{curve__settings_8h_a6f9eba2c6183aee713b74ceaf74230b4}{bls12\+\_\+print\+\_\+parameters} (void)
+\item 
+void \hyperlink{curve__settings_8h_adb61fcbb9554f5dc45b81cb829e78018}{init\+\_\+kss16\+\_\+settings} (void)
+\item 
+void \hyperlink{curve__settings_8h_a6e4118013636d827603ab14346d3abec}{generate\+\_\+kss16\+\_\+motherparam} (void)
+\item 
+void \hyperlink{curve__settings_8h_ac26992b12cc5b2288e9119cfd64c4b3c}{generate\+\_\+kss16\+\_\+parameters} (void)
+\item 
+void \hyperlink{curve__settings_8h_a66e068c4cb60ac7a99579904462fac41}{init\+\_\+kss16\+\_\+parameters} (void)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{curve__settings_8h_a68de31896ef45631d7a2459c831fe836}{is\+Cleared}
+\item 
+struct \hyperlink{structcurve__params}{curve\+\_\+params} \hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\+\_\+parameters}
+\begin{DoxyCompactList}\small\item\em bn curve\textquotesingle{}s systematically obtained parameters. \end{DoxyCompactList}\item 
+gmp\+\_\+randstate\+\_\+t \hyperlink{curve__settings_8h_a9f8b71742e74bcfa6c4b6d38a690329d}{state}
+\item 
+char \hyperlink{curve__settings_8h_a7e6229b428ac099d12ef360d8ded4733}{X\+\_\+binary} \mbox{[}\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\+\_\+\+X\+\_\+length}+1\mbox{]}
+\item 
+char \hyperlink{curve__settings_8h_aeea8c3eeab507389c98ab76b5c715ae8}{X\+\_\+binary\+\_\+opt} \mbox{[}\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\+\_\+\+X\+\_\+length}+3\mbox{]}
+\item 
+int \hyperlink{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}{bls12\+\_\+\+X\+\_\+length}
+\item 
+mpz\+\_\+t \hyperlink{curve__settings_8h_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\+\_\+X}
+\item 
+int \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\+\_\+\+X\+\_\+binary} \mbox{[}78\mbox{]}
+\item 
+char \hyperlink{curve__settings_8h_a376d831bd08b25283a7349e6c8a345f1}{X\+\_\+bit\+\_\+binary\+\_\+kss16} \mbox{[}\hyperlink{curve__settings_8h_a80cb4474bb38bbac292ba0ce026a579a}{K\+S\+S16\+\_\+\+X\+\_\+length}+1\mbox{]}
+\item 
+mpz\+\_\+t \hyperlink{curve__settings_8h_aa2e2ca7870a17b7e814d46506d0178e6}{C1\+\_\+\+I\+NV}
+\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\mbox{\Hypertarget{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}\label{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bn\+\_\+\+X\+\_\+length@{bn\+\_\+\+X\+\_\+length}}
+\index{bn\+\_\+\+X\+\_\+length@{bn\+\_\+\+X\+\_\+length}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bn\+\_\+\+X\+\_\+length}{bn\_X\_length}}
+{\footnotesize\ttfamily \#define bn\+\_\+\+X\+\_\+length~114}
+
+
+
+Referenced by Fp12\+\_\+pow\+\_\+\+X(), generate\+\_\+bn\+\_\+mother\+\_\+parameter(), init\+\_\+bls12\+\_\+parameters(), init\+\_\+bn\+\_\+parameters(), Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate().
+
+\mbox{\Hypertarget{curve__settings_8h_aa93f0eb578d23995850d61f7d61c55c1}\label{curve__settings_8h_aa93f0eb578d23995850d61f7d61c55c1}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!F\+A\+L\+SE@{F\+A\+L\+SE}}
+\index{F\+A\+L\+SE@{F\+A\+L\+SE}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{F\+A\+L\+SE}{FALSE}}
+{\footnotesize\ttfamily \#define F\+A\+L\+SE~0}
+
+\mbox{\Hypertarget{curve__settings_8h_a80cb4474bb38bbac292ba0ce026a579a}\label{curve__settings_8h_a80cb4474bb38bbac292ba0ce026a579a}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!K\+S\+S16\+\_\+\+X\+\_\+length@{K\+S\+S16\+\_\+\+X\+\_\+length}}
+\index{K\+S\+S16\+\_\+\+X\+\_\+length@{K\+S\+S16\+\_\+\+X\+\_\+length}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{K\+S\+S16\+\_\+\+X\+\_\+length}{KSS16\_X\_length}}
+{\footnotesize\ttfamily \#define K\+S\+S16\+\_\+\+X\+\_\+length~35}
+
+
+
+Referenced by generate\+\_\+kss16\+\_\+motherparam(), and init\+\_\+kss16\+\_\+parameters().
+
+\mbox{\Hypertarget{curve__settings_8h_aa8cecfc5c5c054d2875c03e77b7be15d}\label{curve__settings_8h_aa8cecfc5c5c054d2875c03e77b7be15d}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!T\+R\+UE@{T\+R\+UE}}
+\index{T\+R\+UE@{T\+R\+UE}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{T\+R\+UE}{TRUE}}
+{\footnotesize\ttfamily \#define T\+R\+UE~1}
+
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{curve__settings_8h_ad19981ec357b6c465cbd768f89b6d42e}\label{curve__settings_8h_ad19981ec357b6c465cbd768f89b6d42e}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+generate\+\_\+order@{bls12\+\_\+generate\+\_\+order}}
+\index{bls12\+\_\+generate\+\_\+order@{bls12\+\_\+generate\+\_\+order}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+generate\+\_\+order()}{bls12\_generate\_order()}}
+{\footnotesize\ttfamily int bls12\+\_\+generate\+\_\+order (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bls12\+\_\+X, curve\+\_\+parameters, and curve\+\_\+params\+::order.
+
+
+
+Referenced by init\+\_\+bls12\+\_\+settings().
+
+
+\begin{DoxyCode}
+410                            \{
+411     mpz\_t buf1,buf2;
+412     mpz\_init(buf1);
+413     mpz\_init(buf2);
+414     
+415     mpz\_pow\_ui(buf1,\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},4);
+416     mpz\_pow\_ui(buf2,\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},2);
+417     mpz\_sub(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},buf1,buf2);
+418     mpz\_add\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},1);
+419     
+420     mpz\_clear(buf1);
+421     mpz\_clear(buf2);
+422     
+423     \textcolor{keywordflow}{return} 0;
+424 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a1b107bc5b647bc5d3861286fa2d3cc11}\label{curve__settings_8h_a1b107bc5b647bc5d3861286fa2d3cc11}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+generate\+\_\+prime@{bls12\+\_\+generate\+\_\+prime}}
+\index{bls12\+\_\+generate\+\_\+prime@{bls12\+\_\+generate\+\_\+prime}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+generate\+\_\+prime()}{bls12\_generate\_prime()}}
+{\footnotesize\ttfamily int bls12\+\_\+generate\+\_\+prime (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bls12\+\_\+X, curve\+\_\+parameters, and curve\+\_\+params\+::prime.
+
+
+
+Referenced by init\+\_\+bls12\+\_\+settings().
+
+
+\begin{DoxyCode}
+362                            \{
+363     mpz\_t result,buf1,buf2,modtest;
+364     mpz\_init(result);
+365     mpz\_init(buf1);
+366     mpz\_init(buf2);
+367     mpz\_init(modtest);
+368     
+369     mpz\_sub\_ui(result,\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},1);
+370     mpz\_pow\_ui(result,result,2);
+371     
+372     mpz\_pow\_ui(buf1,\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},4);
+373     mpz\_pow\_ui(buf2,\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},2);
+374     mpz\_sub(buf1,buf1,buf2);
+375     mpz\_add\_ui(buf1,buf1,1);
+376     
+377     mpz\_mul(result,result,buf1);
+378     
+379     \textcolor{comment}{//check div3}
+380     mpz\_mod\_ui(modtest,result,3);
+381     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(modtest,0)!=0)\{
+382         mpz\_init(result);
+383         mpz\_init(buf1);
+384         mpz\_init(buf2);
+385         mpz\_init(modtest);
+386         \textcolor{keywordflow}{return} 0;
+387     \}
+388     
+389     mpz\_tdiv\_q\_ui(result,result,3);
+390     mpz\_add(result,result,\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X});
+391     
+392     \textcolor{comment}{//isprime}
+393     \textcolor{keywordflow}{if}(mpz\_probab\_prime\_p(result,25)==0)\{
+394         mpz\_init(result);
+395         mpz\_init(buf1);
+396         mpz\_init(buf2);
+397         mpz\_init(modtest);
+398         \textcolor{keywordflow}{return} 0;
+399     \}
+400     
+401     mpz\_set(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},result);
+402     
+403     mpz\_init(result);
+404     mpz\_init(buf1);
+405     mpz\_init(buf2);
+406     mpz\_init(modtest);
+407     \textcolor{keywordflow}{return} 1;
+408 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a91443c5d6e5c08599d2c9c0cae6b55c6}\label{curve__settings_8h_a91443c5d6e5c08599d2c9c0cae6b55c6}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+generate\+\_\+trace@{bls12\+\_\+generate\+\_\+trace}}
+\index{bls12\+\_\+generate\+\_\+trace@{bls12\+\_\+generate\+\_\+trace}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+generate\+\_\+trace()}{bls12\_generate\_trace()}}
+{\footnotesize\ttfamily void bls12\+\_\+generate\+\_\+trace (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bls12\+\_\+X, curve\+\_\+parameters, and curve\+\_\+params\+::trace\+\_\+t.
+
+
+
+Referenced by init\+\_\+bls12\+\_\+settings().
+
+
+\begin{DoxyCode}
+426                            \{
+427     mpz\_add\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},1);
+428 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a3f6cf44a99eee03ecb0e8a4bb162c622}\label{curve__settings_8h_a3f6cf44a99eee03ecb0e8a4bb162c622}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+generate\+\_\+X@{bls12\+\_\+generate\+\_\+X}}
+\index{bls12\+\_\+generate\+\_\+X@{bls12\+\_\+generate\+\_\+X}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+generate\+\_\+\+X()}{bls12\_generate\_X()}}
+{\footnotesize\ttfamily void bls12\+\_\+generate\+\_\+X (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bls12\+\_\+X, bls12\+\_\+\+X\+\_\+binary, and bls12\+\_\+\+X\+\_\+length.
+
+
+
+Referenced by init\+\_\+bls12\+\_\+settings().
+
+
+\begin{DoxyCode}
+333                        \{
+334     \textcolor{keywordtype}{int} i;
+335     mpz\_t buf,set\_2;
+336     mpz\_init(buf);
+337     mpz\_init(set\_2);
+338     mpz\_set\_ui(set\_2,2);
+339     
+340     \textcolor{comment}{//bls12\_X\_binary}
+341     \hyperlink{curve__settings_8c_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[77]=-1;
+342     \hyperlink{curve__settings_8c_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[50]=1;
+343     \hyperlink{curve__settings_8c_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[33]=1;
+344     
+345     \textcolor{comment}{//bls12\_X}
+346     mpz\_init(\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X});
+347     mpz\_set\_ui(\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},0);
+348     \textcolor{keywordflow}{for}(i=\hyperlink{curve__settings_8c_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}; i>=0; i--)\{
+349         \textcolor{keywordflow}{if}(\hyperlink{curve__settings_8c_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[i]==1)\{
+350             mpz\_pow\_ui(buf,set\_2,i);
+351             mpz\_add(\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},buf);
+352         \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(\hyperlink{curve__settings_8c_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[i]==-1)\{
+353             mpz\_pow\_ui(buf,set\_2,i);
+354             mpz\_sub(\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},buf);
+355         \}
+356     \}
+357     
+358     mpz\_clear(buf);
+359     mpz\_clear(set\_2);
+360 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a6f9eba2c6183aee713b74ceaf74230b4}\label{curve__settings_8h_a6f9eba2c6183aee713b74ceaf74230b4}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+print\+\_\+parameters@{bls12\+\_\+print\+\_\+parameters}}
+\index{bls12\+\_\+print\+\_\+parameters@{bls12\+\_\+print\+\_\+parameters}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+print\+\_\+parameters()}{bls12\_print\_parameters()}}
+{\footnotesize\ttfamily void bls12\+\_\+print\+\_\+parameters (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Prints curve parameter\+: B\+L\+S12 curve 
+
+References bls12\+\_\+X, curve\+\_\+params\+::curve\+\_\+b, curve\+\_\+parameters, curve\+\_\+params\+::order, curve\+\_\+params\+::prime, and curve\+\_\+params\+::trace\+\_\+t.
+
+
+\begin{DoxyCode}
+478                              \{
+479     printf(\textcolor{stringliteral}{"====================================================================================\(\backslash\)n"});
+480     printf(\textcolor{stringliteral}{"bls12\(\backslash\)n\(\backslash\)n"});
+481     gmp\_printf(\textcolor{stringliteral}{"parameters\(\backslash\)n"});
+482     gmp\_printf(\textcolor{stringliteral}{"X     (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(\hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X},2),
+      \hyperlink{curve__settings_8c_a2973a65df2e83f9710ca6f6ed42df16c}{bls12\_X});
+483     gmp\_printf(\textcolor{stringliteral}{"prime (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},2),\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+484     gmp\_printf(\textcolor{stringliteral}{"order (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},2),\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
+485     gmp\_printf(\textcolor{stringliteral}{"trace (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},2),\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+486     
+487     gmp\_printf(\textcolor{stringliteral}{"\(\backslash\)nelliptic curve\(\backslash\)n"});
+488     gmp\_printf(\textcolor{stringliteral}{"E:y^2=x^3+4\(\backslash\)n"},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a60d46b23af98d15ddec3bb2e5150f686}{curve\_b});
+489     
+490     gmp\_printf(\textcolor{stringliteral}{"\(\backslash\)nmodulo polynomial\(\backslash\)n"});
+491     gmp\_printf(\textcolor{stringliteral}{"Fp2  : f(x) = x^2+1\(\backslash\)n"});
+492     gmp\_printf(\textcolor{stringliteral}{"Fp6  : f(x) = x^3-(alpha+1)\(\backslash\)n"});
+493     gmp\_printf(\textcolor{stringliteral}{"Fp12 : f(x) = x^2-beta\(\backslash\)n"});
+494     
+495 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a2f976eaec9841301857ffc58c5ffd2d9}\label{curve__settings_8h_a2f976eaec9841301857ffc58c5ffd2d9}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+set\+\_\+curve\+\_\+parameter@{bls12\+\_\+set\+\_\+curve\+\_\+parameter}}
+\index{bls12\+\_\+set\+\_\+curve\+\_\+parameter@{bls12\+\_\+set\+\_\+curve\+\_\+parameter}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+set\+\_\+curve\+\_\+parameter()}{bls12\_set\_curve\_parameter()}}
+{\footnotesize\ttfamily void bls12\+\_\+set\+\_\+curve\+\_\+parameter (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+params\+::curve\+\_\+b, and curve\+\_\+parameters.
+
+
+
+Referenced by init\+\_\+bls12\+\_\+settings().
+
+
+\begin{DoxyCode}
+430                                 \{
+431     mpz\_set\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a60d46b23af98d15ddec3bb2e5150f686}{curve\_b},4);
+432 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_af8fa5f50ee9d77c834f78ec4e1b45c93}\label{curve__settings_8h_af8fa5f50ee9d77c834f78ec4e1b45c93}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+weil@{bls12\+\_\+weil}}
+\index{bls12\+\_\+weil@{bls12\+\_\+weil}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+weil()}{bls12\_weil()}}
+{\footnotesize\ttfamily void bls12\+\_\+weil (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, curve\+\_\+params\+::\+E\+Fp\+\_\+total, curve\+\_\+params\+::\+E\+Fpd\+\_\+total, curve\+\_\+params\+::prime, and curve\+\_\+params\+::trace\+\_\+t.
+
+
+
+Referenced by init\+\_\+bls12\+\_\+settings().
+
+
+\begin{DoxyCode}
+434                  \{
+435     mpz\_t t2,t6,t12,p2,p6,buf;
+436     mpz\_init(t2);
+437     mpz\_init(t6);
+438     mpz\_init(t12);
+439     mpz\_init(p2);
+440     mpz\_init(p6);
+441     mpz\_init(buf);
+442     
+443     \textcolor{comment}{//EFp\_total}
+444     mpz\_add\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},1);
+445     mpz\_sub(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total},buf,
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+446     
+447     \textcolor{comment}{//t2←α^2+β^2}
+448     mpz\_pow\_ui(t2,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},2);
+449     mpz\_mul\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},2);
+450     mpz\_sub(t2,t2,buf);
+451     mpz\_pow\_ui(p2,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},2);
+452     
+453     \textcolor{comment}{//α^6+β^6}
+454     mpz\_pow\_ui(t6,t2,3);
+455     mpz\_mul(buf,t2,p2);
+456     mpz\_mul\_ui(buf,buf,3);
+457     mpz\_sub(t6,t6,buf);
+458     mpz\_pow\_ui(p6,p2,3);
+459     
+460     \textcolor{comment}{//α^12+β^12}
+461     mpz\_pow\_ui(t12,t6,2);
+462     mpz\_mul\_ui(buf,p6,2);
+463     mpz\_sub(t12,t12,buf);
+464     
+465     \textcolor{comment}{//EFp12\_total}
+466     mpz\_pow\_ui(buf,p6,2);
+467     mpz\_sub(buf,buf,t12);
+468     mpz\_add\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a1e0068ef1cc8d754e32867b6f3b8978b}{EFpd\_total},buf,1);
+469     
+470     mpz\_clear(t2);
+471     mpz\_clear(t6);
+472     mpz\_clear(t12);
+473     mpz\_clear(p2);
+474     mpz\_clear(p6);
+475     mpz\_clear(buf);
+476 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a3d631b68c5a9a78e5e0af33be4881816}\label{curve__settings_8h_a3d631b68c5a9a78e5e0af33be4881816}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!generate\+\_\+bn\+\_\+mother\+\_\+parameter@{generate\+\_\+bn\+\_\+mother\+\_\+parameter}}
+\index{generate\+\_\+bn\+\_\+mother\+\_\+parameter@{generate\+\_\+bn\+\_\+mother\+\_\+parameter}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{generate\+\_\+bn\+\_\+mother\+\_\+parameter()}{generate\_bn\_mother\_parameter()}}
+{\footnotesize\ttfamily void generate\+\_\+bn\+\_\+mother\+\_\+parameter (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bn\+\_\+\+X\+\_\+length, curve\+\_\+parameters, curve\+\_\+params\+::X, X\+\_\+binary, and X\+\_\+binary\+\_\+opt.
+
+
+
+Referenced by init\+\_\+bn\+\_\+settings().
+
+
+\begin{DoxyCode}
+133                                    \{
+134     \textcolor{keywordtype}{int} i;
+135     mpz\_t buf;
+136     mpz\_init(buf);
+137     
+138     \textcolor{comment}{//X\_binary}
+139     \hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[114]=1;
+140     \hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[101]=1;
+141     \hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[14]=-1;
+142     \hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[0]=-1;
+143     
+144     \textcolor{comment}{//X\_binary\_opt}
+145     \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[116]=1;
+146     \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[115]=1;
+147     \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[103]=1;
+148     \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[102]=1;
+149     \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[16]=-1;
+150     \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[15]=-1;
+151     \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[2]=-1;
+152     
+153     \textcolor{comment}{//X}
+154     mpz\_set\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},0);
+155     \textcolor{keywordflow}{for}(i=\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\_X\_length}; i>=0; i--)\{
+156         \textcolor{keywordflow}{if}(\hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[i]==1)\{
+157             mpz\_ui\_pow\_ui(buf,2,i);
+158             mpz\_add(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},buf);
+159         \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(\hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[i]==-1)\{
+160             mpz\_ui\_pow\_ui(buf,2,i);
+161             mpz\_sub(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},buf);
+162         \}
+163     \}
+164     
+165     mpz\_clear(buf);
+166 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_ad68e57a7d472d717193d4ca4331f23cf}\label{curve__settings_8h_ad68e57a7d472d717193d4ca4331f23cf}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!generate\+\_\+bn\+\_\+order@{generate\+\_\+bn\+\_\+order}}
+\index{generate\+\_\+bn\+\_\+order@{generate\+\_\+bn\+\_\+order}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{generate\+\_\+bn\+\_\+order()}{generate\_bn\_order()}}
+{\footnotesize\ttfamily int generate\+\_\+bn\+\_\+order (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, curve\+\_\+params\+::order, and curve\+\_\+params\+::X.
+
+
+
+Referenced by init\+\_\+bn\+\_\+settings().
+
+
+\begin{DoxyCode}
+200                         \{
+201     mpz\_t buf,result;
+202     mpz\_init(buf);
+203     mpz\_init(result);
+204     
+205     \textcolor{comment}{//prime}
+206     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},4);
+207     mpz\_mul\_ui(buf,buf,36);
+208     mpz\_set(result,buf);
+209     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},3);
+210     mpz\_mul\_ui(buf,buf,36);
+211     mpz\_add(result,result,buf);
+212     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},2);
+213     mpz\_mul\_ui(buf,buf,18);
+214     mpz\_add(result,result,buf);
+215     mpz\_mul\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},6);
+216     mpz\_add(result,result,buf);
+217     mpz\_add\_ui(result,result,1);
+218     
+219     \textcolor{comment}{//isprime}
+220     \textcolor{keywordflow}{if}(mpz\_probab\_prime\_p(result,25)==0)\{
+221         mpz\_clear(buf);
+222         mpz\_clear(result);
+223         \textcolor{keywordflow}{return} 0;
+224     \}\textcolor{keywordflow}{else}\{
+225         mpz\_set(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},result);
+226         mpz\_clear(buf);
+227         mpz\_clear(result);
+228         \textcolor{keywordflow}{return} 1;
+229     \}
+230 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_aa75121e0ce77955b8e552edc9dd4feb6}\label{curve__settings_8h_aa75121e0ce77955b8e552edc9dd4feb6}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!generate\+\_\+bn\+\_\+prime@{generate\+\_\+bn\+\_\+prime}}
+\index{generate\+\_\+bn\+\_\+prime@{generate\+\_\+bn\+\_\+prime}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{generate\+\_\+bn\+\_\+prime()}{generate\_bn\_prime()}}
+{\footnotesize\ttfamily int generate\+\_\+bn\+\_\+prime (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, curve\+\_\+params\+::prime, and curve\+\_\+params\+::X.
+
+
+
+Referenced by init\+\_\+bn\+\_\+settings().
+
+
+\begin{DoxyCode}
+168                        \{
+169     mpz\_t buf,result;
+170     mpz\_init(buf);
+171     mpz\_init(result);
+172     
+173     \textcolor{comment}{//prime}
+174     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},4);
+175     mpz\_mul\_ui(buf,buf,36);
+176     mpz\_set(result,buf);
+177     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},3);
+178     mpz\_mul\_ui(buf,buf,36);
+179     mpz\_add(result,result,buf);
+180     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},2);
+181     mpz\_mul\_ui(buf,buf,24);
+182     mpz\_add(result,result,buf);
+183     mpz\_mul\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},6);
+184     mpz\_add(result,result,buf);
+185     mpz\_add\_ui(result,result,1);
+186     
+187     \textcolor{comment}{//isprime}
+188     \textcolor{keywordflow}{if}(mpz\_probab\_prime\_p(result,25)==0)\{
+189         mpz\_clear(buf);
+190         mpz\_clear(result);
+191         \textcolor{keywordflow}{return} 0;
+192     \}\textcolor{keywordflow}{else}\{
+193         mpz\_set(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},result);
+194         mpz\_clear(buf);
+195         mpz\_clear(result);
+196         \textcolor{keywordflow}{return} 1;
+197     \}
+198 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_aaad4de0748d6117b7f665e08dc7a4d24}\label{curve__settings_8h_aaad4de0748d6117b7f665e08dc7a4d24}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!generate\+\_\+bn\+\_\+trace@{generate\+\_\+bn\+\_\+trace}}
+\index{generate\+\_\+bn\+\_\+trace@{generate\+\_\+bn\+\_\+trace}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{generate\+\_\+bn\+\_\+trace()}{generate\_bn\_trace()}}
+{\footnotesize\ttfamily void generate\+\_\+bn\+\_\+trace (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, curve\+\_\+params\+::trace\+\_\+t, and curve\+\_\+params\+::X.
+
+
+
+Referenced by init\+\_\+bn\+\_\+settings().
+
+
+\begin{DoxyCode}
+233                         \{
+234     mpz\_t buf;
+235     mpz\_init(buf);
+236     
+237     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},2);
+238     mpz\_mul\_ui(buf,buf,6);
+239     mpz\_add\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},buf,1);
+240     
+241     mpz\_clear(buf);
+242 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a6e4118013636d827603ab14346d3abec}\label{curve__settings_8h_a6e4118013636d827603ab14346d3abec}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!generate\+\_\+kss16\+\_\+motherparam@{generate\+\_\+kss16\+\_\+motherparam}}
+\index{generate\+\_\+kss16\+\_\+motherparam@{generate\+\_\+kss16\+\_\+motherparam}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{generate\+\_\+kss16\+\_\+motherparam()}{generate\_kss16\_motherparam()}}
+{\footnotesize\ttfamily void generate\+\_\+kss16\+\_\+motherparam (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, K\+S\+S16\+\_\+\+X\+\_\+length, curve\+\_\+params\+::X, and X\+\_\+bit\+\_\+binary\+\_\+kss16.
+
+
+
+Referenced by init\+\_\+kss16\+\_\+settings().
+
+
+\begin{DoxyCode}
+499                                      \{
+500     \textcolor{comment}{//c1 = 2}
+501     \textcolor{comment}{// 2^ -2^32-2^18+2^8+1}
+502     \hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[35]=1;
+503     \hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[32]=-1;
+504     \hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[18]=-1;
+505     \hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[8]=1;
+506     \hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[0]=1;
+507     \textcolor{comment}{//2^49+2^26+2^15-2^7-1}
+508 \textcolor{comment}{//        X\_bit\_binary\_kss16[49]=1;}
+509 \textcolor{comment}{//        X\_bit\_binary\_kss16[26]=1;}
+510 \textcolor{comment}{//        X\_bit\_binary\_kss16[15]=1;}
+511 \textcolor{comment}{//        X\_bit\_binary\_kss16[7]=-1;}
+512 \textcolor{comment}{//        X\_bit\_binary\_kss16[0]=-1;}
+513     
+514     mpz\_t tmp,set\_2;
+515     mpz\_init(tmp);
+516     mpz\_init(set\_2);
+517     mpz\_set\_ui(set\_2,2);
+518     
+519     \textcolor{keywordtype}{int} i;
+520     \textcolor{keywordflow}{for}(i=\hyperlink{curve__settings_8h_a80cb4474bb38bbac292ba0ce026a579a}{KSS16\_X\_length};i>=0;i--)\{
+521         printf(\textcolor{stringliteral}{"%d"},\hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[i]);
+522         \textcolor{keywordflow}{if}(\hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[i]==1)\{
+523             mpz\_pow\_ui(tmp,set\_2,i);
+524             mpz\_add(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},tmp);
+525         \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(\hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[i]==-1)\{
+526             mpz\_pow\_ui(tmp,set\_2,i);
+527             mpz\_sub(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},tmp);
+528         \}
+529     \}
+530     printf(\textcolor{stringliteral}{"\(\backslash\)n"});
+531     mpz\_out\_str(stdout,10,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+532     printf(\textcolor{stringliteral}{"\(\backslash\)n"});
+533     \textcolor{keywordflow}{return};
+534 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_ac26992b12cc5b2288e9119cfd64c4b3c}\label{curve__settings_8h_ac26992b12cc5b2288e9119cfd64c4b3c}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!generate\+\_\+kss16\+\_\+parameters@{generate\+\_\+kss16\+\_\+parameters}}
+\index{generate\+\_\+kss16\+\_\+parameters@{generate\+\_\+kss16\+\_\+parameters}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{generate\+\_\+kss16\+\_\+parameters()}{generate\_kss16\_parameters()}}
+{\footnotesize\ttfamily void generate\+\_\+kss16\+\_\+parameters (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+params\+::curve\+\_\+a, curve\+\_\+parameters, curve\+\_\+params\+::\+E\+Fp\+\_\+total, curve\+\_\+params\+::order, curve\+\_\+params\+::prime, curve\+\_\+params\+::trace\+\_\+t, and curve\+\_\+params\+::X.
+
+
+
+Referenced by init\+\_\+kss16\+\_\+settings().
+
+
+\begin{DoxyCode}
+536                                     \{
+537     
+538     mpz\_t tmp1,tmp2,two;
+539     mpz\_init(tmp1);
+540     mpz\_init(tmp2);
+541     mpz\_init(two);
+542     
+543     
+544     \textcolor{comment}{//set p,r}
+545     mpz\_t p\_tmp,r\_tmp,t\_tmp;
+546     mpz\_t xpow2,xpow4,xpow5,xpow6,xpow8,xpow9,xpow10;
+547     \textcolor{comment}{//    mpz\_t tmp1,tmp2;}
+548     
+549     mpz\_init(p\_tmp);
+550     mpz\_init(r\_tmp);
+551     mpz\_init(t\_tmp);
+552     mpz\_init(xpow2);
+553     mpz\_init(xpow4);
+554     mpz\_init(xpow5);
+555     mpz\_init(xpow6);
+556     mpz\_init(xpow8);
+557     mpz\_init(xpow9);
+558     mpz\_init(xpow10);
+559     mpz\_init(tmp1);
+560     mpz\_init(tmp2);
+561     
+562     mpz\_mul(xpow2,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+563     mpz\_mul(xpow4,xpow2,xpow2);
+564     mpz\_mul(xpow5,xpow4,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+565     mpz\_mul(xpow6,xpow5,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+566     mpz\_mul(xpow8,xpow6,xpow2);
+567     mpz\_mul(xpow9,xpow8,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+568     mpz\_mul(xpow10,xpow9,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+569     
+570     \textcolor{comment}{//t=1/35(2x^5+41x+35)}
+571     mpz\_mul\_ui(tmp1,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},41);
+572     mpz\_add\_ui(tmp1,tmp1,35);
+573     mpz\_mul\_ui(tmp2,xpow5,2);
+574     mpz\_add(t\_tmp,tmp1,tmp2);
+575     
+576     mpz\_div\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},t\_tmp,35);
+577     
+578     \textcolor{comment}{//r=x^8+48x^4+625}
+579     mpz\_mul\_ui(tmp1,xpow4,48);
+580     mpz\_add\_ui(r\_tmp,xpow8,625);
+581     mpz\_add(tmp2,tmp1,r\_tmp);
+582     mpz\_tdiv\_q\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},tmp2,61250);
+583     \textcolor{comment}{//     mpz\_tdiv\_q\_ui(order\_r,tmp2,49);}
+584     \textcolor{comment}{//     mpz\_set(order\_r,tmp2);}
+585     \textcolor{comment}{//    gmp\_printf ("order = %Zd\(\backslash\)n",order\_r);}
+586     \textcolor{comment}{// mpz\_set(r,r\_tmp);}
+587     
+588     \textcolor{comment}{//p=1/980(x^10+2x^9+5x^8+48x^6+152x^5+240x^4+625x^2+2398x+3125)}
+589     mpz\_mul\_ui(tmp1,xpow9,2);
+590     mpz\_add(p\_tmp,tmp1,xpow10);
+591     mpz\_mul\_ui(tmp1,xpow8,5);
+592     mpz\_add(p\_tmp,tmp1,p\_tmp);
+593     mpz\_mul\_ui(tmp1,xpow6,48);
+594     mpz\_add(p\_tmp,tmp1,p\_tmp);
+595     mpz\_mul\_ui(tmp1,xpow5,152);
+596     mpz\_add(p\_tmp,tmp1,p\_tmp);
+597     mpz\_mul\_ui(tmp1,xpow4,240);
+598     mpz\_add(p\_tmp,tmp1,p\_tmp);
+599     mpz\_mul\_ui(tmp1,xpow2,625);
+600     mpz\_add(p\_tmp,tmp1,p\_tmp);
+601     mpz\_mul\_ui(tmp1,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},2398);
+602     mpz\_add(p\_tmp,tmp1,p\_tmp);
+603     mpz\_add\_ui(p\_tmp,p\_tmp,3125);
+604     
+605     mpz\_div\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},p\_tmp,980);
+606     
+607     mpz\_add\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total},
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},1);
+608     mpz\_sub(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+609     
+610     \textcolor{keywordflow}{if}(mpz\_probab\_prime\_p(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},25)==0)\{
+611         gmp\_printf(\textcolor{stringliteral}{"p:%Zd\(\backslash\)n"},\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+612         printf(\textcolor{stringliteral}{"not  prime number!\(\backslash\)n"});
+613         exit(0);
+614     \}
+615 
+616     mpz\_set\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a791978f9ed4ab23b64896993f2462dfa}{curve\_a}, 1);
+617     
+618 \textcolor{comment}{//    struct EFp P,ANS;}
+619 \textcolor{comment}{//    int legendre;}
+620 \textcolor{comment}{//    struct Fp rhs,tmp\_ax,x;}
+621 \textcolor{comment}{//    mpz\_init(tmp\_a);}
+622 \textcolor{comment}{//    Fp\_init(&rhs);}
+623 \textcolor{comment}{//    Fp\_init(&tmp\_ax);}
+624 \textcolor{comment}{//    EFp\_init(&P);}
+625 \textcolor{comment}{//    EFp\_init(&ANS);}
+626 \textcolor{comment}{//    Fp\_init(&x);}
+627 \textcolor{comment}{//    mpz\_init(tmp\_a);}
+628 \textcolor{comment}{//    mpz\_set\_ui(tmp\_a,0);}
+629 \textcolor{comment}{//}
+630 \textcolor{comment}{//    for(;;)\{}
+631 \textcolor{comment}{//        mpz\_add\_ui(tmp\_a,tmp\_a,1);}
+632 \textcolor{comment}{//        Fp\_set\_ui(&x,1);}
+633 \textcolor{comment}{//        legendre=0;}
+634 \textcolor{comment}{//        while(legendre !=1)\{}
+635 \textcolor{comment}{//            mpz\_powm\_ui(rhs.x0,x.x0,3,PRIME\_P);}
+636 \textcolor{comment}{//            //            gmp\_printf("tmp %Zd\(\backslash\)n",tmp\_a);}
+637 \textcolor{comment}{//            mpz\_mul(tmp\_ax.x0,x.x0,tmp\_a);}
+638 \textcolor{comment}{//            Fp\_add(&rhs, &rhs, &tmp\_ax);}
+639 \textcolor{comment}{//            if((legendre = mpz\_legendre(rhs.x0,PRIME\_P))==1)\{}
+640 \textcolor{comment}{//                //gmp\_printf("a in while = %Zd\(\backslash\)n",rhs.x0);}
+641 \textcolor{comment}{//                Fp\_printf(&rhs);}
+642 \textcolor{comment}{//                Fp\_sqrt(&P.y,&rhs);}
+643 \textcolor{comment}{//                Fp\_set(&P.x,&x);}
+644 \textcolor{comment}{//                EFp\_SCM\_BIN(&ANS,&P,order\_EFp);}
+645 \textcolor{comment}{//                //                printf("SCM  ==\(\backslash\)n");}
+646 \textcolor{comment}{//                //                EFp\_printf(&ANS);}
+647 \textcolor{comment}{//                if(ANS.infity == TRUE)\{}
+648 \textcolor{comment}{//                    mpz\_set(a\_x,tmp\_a);}
+649 \textcolor{comment}{//                    // mpz\_clear(tmp\_a);}
+650 \textcolor{comment}{//                    Fp\_clear(&rhs);}
+651 \textcolor{comment}{//                    Fp\_clear(&x);}
+652 \textcolor{comment}{//                    EFp\_clear(&P);}
+653 \textcolor{comment}{//                    EFp\_clear(&ANS);}
+654 \textcolor{comment}{//                    return;}
+655 \textcolor{comment}{//                \}}
+656 \textcolor{comment}{//            \}}
+657 \textcolor{comment}{//            Fp\_add\_ui(&x,&x,1);}
+658 \textcolor{comment}{//        \}}
+659 \textcolor{comment}{//    \}}
+660 \textcolor{comment}{//    return;}
+661 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a17764e96f5eacb09c2edc2bf2eeaddeb}\label{curve__settings_8h_a17764e96f5eacb09c2edc2bf2eeaddeb}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!init\+\_\+bls12\+\_\+parameters@{init\+\_\+bls12\+\_\+parameters}}
+\index{init\+\_\+bls12\+\_\+parameters@{init\+\_\+bls12\+\_\+parameters}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{init\+\_\+bls12\+\_\+parameters()}{init\_bls12\_parameters()}}
+{\footnotesize\ttfamily void init\+\_\+bls12\+\_\+parameters (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bls12\+\_\+\+X\+\_\+binary, bls12\+\_\+\+X\+\_\+length, bn\+\_\+\+X\+\_\+length, curve\+\_\+params\+::curve\+\_\+b, curve\+\_\+parameters, curve\+\_\+params\+::\+E\+Fp12\+\_\+total, curve\+\_\+params\+::\+E\+Fp2\+\_\+total, curve\+\_\+params\+::\+E\+Fp6\+\_\+total, curve\+\_\+params\+::\+E\+Fp\+\_\+total, curve\+\_\+params\+::order, curve\+\_\+params\+::prime, curve\+\_\+params\+::trace\+\_\+t, curve\+\_\+params\+::X, X\+\_\+binary, and X\+\_\+binary\+\_\+opt.
+
+
+
+Referenced by init\+\_\+bls12\+\_\+settings().
+
+
+\begin{DoxyCode}
+84                             \{
+85     \textcolor{comment}{//parameters}
+86     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+87     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+88     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+89     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
+90     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total});
+91     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aa9220be60032fc3508c4c8b248a90a31}{EFp2\_total});
+92     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a091758be7123e690d403f91296ee6bac}{EFp6\_total});
+93     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aa88c0baaecf7b4af0fd1dc9b6848da11}{EFp12\_total});
+94     \textcolor{comment}{//    mpz\_init(curve\_parameters.curve\_a);}
+95     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a60d46b23af98d15ddec3bb2e5150f686}{curve\_b});
+96     
+97     \textcolor{keywordtype}{int} i;
+98     \textcolor{keywordflow}{for}(i=0; i<\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\_X\_length}+1; i++)\{
+99         \hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[i]=0;
+100     \}
+101     \textcolor{keywordflow}{for}(i=0; i<bn\_X\_length+3; i++)\{
+102         \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[i]=0;
+103     \}
+104     
+105     \hyperlink{curve__settings_8c_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}=77;
+106     \textcolor{keywordflow}{for}(i=0; i<\hyperlink{curve__settings_8c_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}+1; i++)\{
+107         \hyperlink{curve__settings_8c_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[i]=0;
+108     \}
+109 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_adfb3a63a523ad6bb209fad3db7f20047}\label{curve__settings_8h_adfb3a63a523ad6bb209fad3db7f20047}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!init\+\_\+bls12\+\_\+settings@{init\+\_\+bls12\+\_\+settings}}
+\index{init\+\_\+bls12\+\_\+settings@{init\+\_\+bls12\+\_\+settings}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{init\+\_\+bls12\+\_\+settings()}{init\_bls12\_settings()}}
+{\footnotesize\ttfamily void init\+\_\+bls12\+\_\+settings (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bls12\+\_\+generate\+\_\+order(), bls12\+\_\+generate\+\_\+prime(), bls12\+\_\+generate\+\_\+trace(), bls12\+\_\+generate\+\_\+\+X(), bls12\+\_\+set\+\_\+curve\+\_\+parameter(), bls12\+\_\+weil(), and init\+\_\+bls12\+\_\+parameters().
+
+
+
+Referenced by bls12\+\_\+inits().
+
+
+\begin{DoxyCode}
+36                           \{
+37     \hyperlink{curve__settings_8c_a3b1c8891fab990442749215116dd6bb5}{init\_bls12\_parameters}();
+38     
+39     \hyperlink{curve__settings_8c_aeea739d1337b63b11d75b44292b717a7}{bls12\_generate\_X}();
+40     \hyperlink{curve__settings_8c_a30ee47ef3c0ca377fcb8c980182c640c}{bls12\_generate\_prime}();
+41     \hyperlink{curve__settings_8c_ace8baeca0c35803ffc1cbf3acfcd412c}{bls12\_generate\_order}();
+42     \hyperlink{curve__settings_8c_a6073da439dab5d88028fa2e06cf37d08}{bls12\_generate\_trace}();
+43     
+44     \hyperlink{curve__settings_8c_a7c854f93a3e6d2b187d7b339a2fd9a52}{bls12\_weil}();
+45     \hyperlink{curve__settings_8c_adda5f98be0c5857e56de114bc9e0e3a7}{bls12\_set\_curve\_parameter}();
+46 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_ade0e2bdf8e679d274e8382034652e9bf}\label{curve__settings_8h_ade0e2bdf8e679d274e8382034652e9bf}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!init\+\_\+bn\+\_\+parameters@{init\+\_\+bn\+\_\+parameters}}
+\index{init\+\_\+bn\+\_\+parameters@{init\+\_\+bn\+\_\+parameters}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{init\+\_\+bn\+\_\+parameters()}{init\_bn\_parameters()}}
+{\footnotesize\ttfamily void init\+\_\+bn\+\_\+parameters (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References bn\+\_\+\+X\+\_\+length, C1\+\_\+\+I\+NV, curve\+\_\+params\+::curve\+\_\+b, curve\+\_\+parameters, curve\+\_\+params\+::\+E\+Fp12\+\_\+total, curve\+\_\+params\+::\+E\+Fp2\+\_\+total, curve\+\_\+params\+::\+E\+Fp6\+\_\+total, curve\+\_\+params\+::\+E\+Fp\+\_\+total, curve\+\_\+params\+::order, curve\+\_\+params\+::prime, curve\+\_\+params\+::trace\+\_\+t, curve\+\_\+params\+::X, X\+\_\+binary, and X\+\_\+binary\+\_\+opt.
+
+
+
+Referenced by init\+\_\+bn\+\_\+settings().
+
+
+\begin{DoxyCode}
+59                          \{
+60     \textcolor{comment}{//parameters}
+61     mpz\_init(\hyperlink{curve__settings_8c_aa2e2ca7870a17b7e814d46506d0178e6}{C1\_INV});
+62     mpz\_set\_str(\hyperlink{curve__settings_8c_aa2e2ca7870a17b7e814d46506d0178e6}{C1\_INV},\textcolor{stringliteral}{"
+      307811691015337575251033109375721719032053783174105059253970117417628354711317451266514326962619782791"},10);
+63     
+64     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+65     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+66     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+67     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
+68     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total});
+69     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aa9220be60032fc3508c4c8b248a90a31}{EFp2\_total});
+70     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a091758be7123e690d403f91296ee6bac}{EFp6\_total});
+71     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aa88c0baaecf7b4af0fd1dc9b6848da11}{EFp12\_total});
+72 \textcolor{comment}{//    mpz\_init(curve\_parameters.curve\_a);}
+73     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a60d46b23af98d15ddec3bb2e5150f686}{curve\_b});
+74     
+75     \textcolor{keywordtype}{int} i;
+76     \textcolor{keywordflow}{for}(i=0; i<\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\_X\_length}+1; i++)\{
+77         \hyperlink{curve__settings_8c_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[i]=0;
+78     \}
+79     \textcolor{keywordflow}{for}(i=0; i<bn\_X\_length+3; i++)\{
+80         \hyperlink{curve__settings_8c_aeea8c3eeab507389c98ab76b5c715ae8}{X\_binary\_opt}[i]=0;
+81     \}
+82 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a8107b3c4a1ffd201c295046d5ca9cdc1}\label{curve__settings_8h_a8107b3c4a1ffd201c295046d5ca9cdc1}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!init\+\_\+bn\+\_\+settings@{init\+\_\+bn\+\_\+settings}}
+\index{init\+\_\+bn\+\_\+settings@{init\+\_\+bn\+\_\+settings}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{init\+\_\+bn\+\_\+settings()}{init\_bn\_settings()}}
+{\footnotesize\ttfamily void init\+\_\+bn\+\_\+settings (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References generate\+\_\+bn\+\_\+mother\+\_\+parameter(), generate\+\_\+bn\+\_\+order(), generate\+\_\+bn\+\_\+prime(), generate\+\_\+bn\+\_\+trace(), init\+\_\+bn\+\_\+parameters(), set\+\_\+bn\+\_\+curve\+\_\+parameter(), and weil().
+
+
+
+Referenced by init\+\_\+bn().
+
+
+\begin{DoxyCode}
+24                        \{
+25     \hyperlink{curve__settings_8c_ada222c111bdbd2d94986d091e892e8fc}{init\_bn\_parameters}();
+26     
+27     \hyperlink{curve__settings_8c_ad71e3f1c8c60c65ac2301f0c1488e8f7}{generate\_bn\_mother\_parameter}();
+28     \hyperlink{curve__settings_8c_abe0a879ca8e472bd3d109037be67afd2}{generate\_bn\_prime}();
+29     \hyperlink{curve__settings_8c_a88fe16331199340df69ebfaa20f585a3}{generate\_bn\_order}();
+30     \hyperlink{curve__settings_8c_a824fdd43b9967ca5b2e51aba7d2f3e4f}{generate\_bn\_trace}();
+31     
+32     \hyperlink{curve__settings_8c_aa4816ccac7933eb31f04115aa2736022}{weil}();
+33     \hyperlink{curve__settings_8c_a26248542ec9c332dd3aaf9a22cc8a399}{set\_bn\_curve\_parameter}();
+34 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a66e068c4cb60ac7a99579904462fac41}\label{curve__settings_8h_a66e068c4cb60ac7a99579904462fac41}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!init\+\_\+kss16\+\_\+parameters@{init\+\_\+kss16\+\_\+parameters}}
+\index{init\+\_\+kss16\+\_\+parameters@{init\+\_\+kss16\+\_\+parameters}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{init\+\_\+kss16\+\_\+parameters()}{init\_kss16\_parameters()}}
+{\footnotesize\ttfamily void init\+\_\+kss16\+\_\+parameters (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+params\+::curve\+\_\+a, curve\+\_\+parameters, curve\+\_\+params\+::\+E\+Fp12\+\_\+total, curve\+\_\+params\+::\+E\+Fp2\+\_\+total, curve\+\_\+params\+::\+E\+Fp6\+\_\+total, curve\+\_\+params\+::\+E\+Fp\+\_\+total, K\+S\+S16\+\_\+\+X\+\_\+length, curve\+\_\+params\+::order, curve\+\_\+params\+::prime, curve\+\_\+params\+::trace\+\_\+t, curve\+\_\+params\+::X, and X\+\_\+bit\+\_\+binary\+\_\+kss16.
+
+
+
+Referenced by init\+\_\+kss16\+\_\+settings().
+
+
+\begin{DoxyCode}
+111                                 \{
+112     \textcolor{comment}{//parameters}
+113     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+114     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+115     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+116     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
+117     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total});
+118     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aa9220be60032fc3508c4c8b248a90a31}{EFp2\_total});
+119     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a091758be7123e690d403f91296ee6bac}{EFp6\_total});
+120     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aa88c0baaecf7b4af0fd1dc9b6848da11}{EFp12\_total});
+121     mpz\_init(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a791978f9ed4ab23b64896993f2462dfa}{curve\_a});
+122 \textcolor{comment}{//    mpz\_init(curve\_parameters.curve\_b);}
+123     
+124     \textcolor{keywordtype}{int} i;
+125     \textcolor{keywordflow}{for}(i=0; i<\hyperlink{curve__settings_8h_a80cb4474bb38bbac292ba0ce026a579a}{KSS16\_X\_length}+1; i++)\{
+126         \hyperlink{curve__settings_8c_a376d831bd08b25283a7349e6c8a345f1}{X\_bit\_binary\_kss16}[i]=0;
+127     \}
+128 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_adb61fcbb9554f5dc45b81cb829e78018}\label{curve__settings_8h_adb61fcbb9554f5dc45b81cb829e78018}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!init\+\_\+kss16\+\_\+settings@{init\+\_\+kss16\+\_\+settings}}
+\index{init\+\_\+kss16\+\_\+settings@{init\+\_\+kss16\+\_\+settings}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{init\+\_\+kss16\+\_\+settings()}{init\_kss16\_settings()}}
+{\footnotesize\ttfamily void init\+\_\+kss16\+\_\+settings (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References generate\+\_\+kss16\+\_\+motherparam(), generate\+\_\+kss16\+\_\+parameters(), and init\+\_\+kss16\+\_\+parameters().
+
+
+\begin{DoxyCode}
+48                               \{
+49     \hyperlink{curve__settings_8c_a66e068c4cb60ac7a99579904462fac41}{init\_kss16\_parameters}();
+50     
+51     \hyperlink{curve__settings_8c_a6e4118013636d827603ab14346d3abec}{generate\_kss16\_motherparam}();
+52     \hyperlink{curve__settings_8c_ac26992b12cc5b2288e9119cfd64c4b3c}{generate\_kss16\_parameters}();
+53 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_aa14e03bcb61fc01903168f033c88fff9}\label{curve__settings_8h_aa14e03bcb61fc01903168f033c88fff9}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!print\+\_\+curve\+\_\+parameters@{print\+\_\+curve\+\_\+parameters}}
+\index{print\+\_\+curve\+\_\+parameters@{print\+\_\+curve\+\_\+parameters}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{print\+\_\+curve\+\_\+parameters()}{print\_curve\_parameters()}}
+{\footnotesize\ttfamily void print\+\_\+curve\+\_\+parameters (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+params\+::curve\+\_\+a, curve\+\_\+params\+::curve\+\_\+b, curve\+\_\+parameters, curve\+\_\+params\+::order, curve\+\_\+params\+::prime, print\+\_\+bn\+\_\+blscurve(), print\+\_\+kss16curve(), curve\+\_\+params\+::trace\+\_\+t, and curve\+\_\+params\+::X.
+
+
+
+Referenced by main().
+
+
+\begin{DoxyCode}
+303                              \{
+304     printf(\textcolor{stringliteral}{"====================================================================================\(\backslash\)n"});
+305     printf(\textcolor{stringliteral}{"bn12\(\backslash\)n\(\backslash\)n"});
+306     gmp\_printf(\textcolor{stringliteral}{"parameters\(\backslash\)n"});
+307     gmp\_printf(\textcolor{stringliteral}{"X     (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X},2),\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5220bd7c8a64956ce42fbca896023570}{X});
+308     gmp\_printf(\textcolor{stringliteral}{"prime (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},2),\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+309     gmp\_printf(\textcolor{stringliteral}{"order (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},2),\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
+310     gmp\_printf(\textcolor{stringliteral}{"trace (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},2),\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+311     
+312     \textcolor{keywordflow}{if} (mpz\_cmp\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}. curve\_b, 0) > 0) \{
+313          \hyperlink{curve__settings_8c_ab1805d4610145d8c214f935e02aa1a7e}{print\_bn\_blscurve}();
+314     \}
+315     \textcolor{keywordflow}{if} (mpz\_cmp\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a791978f9ed4ab23b64896993f2462dfa}{curve\_a}, 0) > 0) \{
+316         \hyperlink{curve__settings_8c_ac9710098c6a1f9994ce11f1c5a107623}{print\_kss16curve}();
+317     \}
+318 \textcolor{comment}{//    gmp\_printf("\(\backslash\)nmodulo polynomial\(\backslash\)n");}
+319 \textcolor{comment}{//    gmp\_printf("Fp2  : f(x) = x^2+1\(\backslash\)n");}
+320 \textcolor{comment}{//    gmp\_printf("Fp6  : f(x) = x^3-(alpha+1)\(\backslash\)n");}
+321 \textcolor{comment}{//    gmp\_printf("Fp12 : f(x) = x^2-beta\(\backslash\)n");}
+322     
+323 \textcolor{comment}{//    gmp\_printf("\(\backslash\)nnumber of the total rational points\(\backslash\)n");}
+324 \textcolor{comment}{//    gmp\_printf("EFp total   : %Zd\(\backslash\)n",curve\_parameters.EFp\_total);}
+325 \textcolor{comment}{//    gmp\_printf("EFp12 total : %Zd\(\backslash\)n",curve\_parameters.EFpd\_total);}
+326     
+327 \textcolor{comment}{//    gmp\_printf("\(\backslash\)ncubic root of 1\(\backslash\)n");}
+328 \textcolor{comment}{//    gmp\_printf("epsilon1 : %Zd\(\backslash\)n",epsilon1);}
+329 \textcolor{comment}{//    gmp\_printf("epsilon2 : %Zd\(\backslash\)n",epsilon2);}
+330     
+331 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a951b8514e53db0684c1e61fb3a1e10c4}\label{curve__settings_8h_a951b8514e53db0684c1e61fb3a1e10c4}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!set\+\_\+bn\+\_\+curve\+\_\+parameter@{set\+\_\+bn\+\_\+curve\+\_\+parameter}}
+\index{set\+\_\+bn\+\_\+curve\+\_\+parameter@{set\+\_\+bn\+\_\+curve\+\_\+parameter}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{set\+\_\+bn\+\_\+curve\+\_\+parameter()}{set\_bn\_curve\_parameter()}}
+{\footnotesize\ttfamily void set\+\_\+bn\+\_\+curve\+\_\+parameter (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+params\+::curve\+\_\+b, and curve\+\_\+parameters.
+
+
+
+Referenced by init\+\_\+bn\+\_\+settings().
+
+
+\begin{DoxyCode}
+244                              \{
+245     mpz\_set\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a60d46b23af98d15ddec3bb2e5150f686}{curve\_b},4);
+246 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{curve__settings_8h_a7442b7929865235118e3abeb198fddcb}\label{curve__settings_8h_a7442b7929865235118e3abeb198fddcb}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!weil@{weil}}
+\index{weil@{weil}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{weil()}{weil()}}
+{\footnotesize\ttfamily void weil (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, curve\+\_\+params\+::\+E\+Fp\+\_\+total, curve\+\_\+params\+::\+E\+Fpd\+\_\+total, curve\+\_\+params\+::prime, and curve\+\_\+params\+::trace\+\_\+t.
+
+
+
+Referenced by init\+\_\+bn\+\_\+settings().
+
+
+\begin{DoxyCode}
+248            \{
+249     mpz\_t t2,t6,t12,p2,p6,buf;
+250     mpz\_init(t2);
+251     mpz\_init(t6);
+252     mpz\_init(t12);
+253     mpz\_init(p2);
+254     mpz\_init(p6);
+255     mpz\_init(buf);
+256     
+257     \textcolor{comment}{//EFp\_total}
+258     mpz\_add\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},1);
+259     mpz\_sub(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a841d416a661316f25c6a88099460eaa6}{EFp\_total},buf,
+      \hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t});
+260     
+261     \textcolor{comment}{//t2←α^2+β^2}
+262     mpz\_pow\_ui(t2,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},2);
+263     mpz\_mul\_ui(buf,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},2);
+264     mpz\_sub(t2,t2,buf);
+265     mpz\_pow\_ui(p2,\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},2);
+266     
+267     \textcolor{comment}{//α^6+β^6}
+268     mpz\_pow\_ui(t6,t2,3);
+269     mpz\_mul(buf,t2,p2);
+270     mpz\_mul\_ui(buf,buf,3);
+271     mpz\_sub(t6,t6,buf);
+272     mpz\_pow\_ui(p6,p2,3);
+273     
+274     \textcolor{comment}{//α^12+β^12}
+275     mpz\_pow\_ui(t12,t6,2);
+276     mpz\_mul\_ui(buf,p6,2);
+277     mpz\_sub(t12,t12,buf);
+278     
+279     \textcolor{comment}{//EFp12\_total}
+280     mpz\_pow\_ui(buf,p6,2);
+281     mpz\_sub(buf,buf,t12);
+282     mpz\_add\_ui(\hyperlink{curve__settings_8c_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a1e0068ef1cc8d754e32867b6f3b8978b}{EFpd\_total},buf,1);
+283     
+284     mpz\_clear(t2);
+285     mpz\_clear(t6);
+286     mpz\_clear(t12);
+287     mpz\_clear(p2);
+288     mpz\_clear(p6);
+289     mpz\_clear(buf);
+290 \}
+\end{DoxyCode}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{curve__settings_8h_a2973a65df2e83f9710ca6f6ed42df16c}\label{curve__settings_8h_a2973a65df2e83f9710ca6f6ed42df16c}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+X@{bls12\+\_\+X}}
+\index{bls12\+\_\+X@{bls12\+\_\+X}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+X}{bls12\_X}}
+{\footnotesize\ttfamily mpz\+\_\+t bls12\+\_\+X}
+
+
+
+Referenced by bls12\+\_\+2split\+\_\+\+G1\+\_\+scm(), bls12\+\_\+2split\+\_\+\+G2\+\_\+scm(), bls12\+\_\+2split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+4split\+\_\+\+G2\+\_\+scm(), bls12\+\_\+4split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+generate\+\_\+order(), bls12\+\_\+generate\+\_\+prime(), bls12\+\_\+generate\+\_\+trace(), bls12\+\_\+generate\+\_\+\+X(), and bls12\+\_\+print\+\_\+parameters().
+
+\mbox{\Hypertarget{curve__settings_8h_a47f9e732d242f43448a366be57286643}\label{curve__settings_8h_a47f9e732d242f43448a366be57286643}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+\+X\+\_\+binary@{bls12\+\_\+\+X\+\_\+binary}}
+\index{bls12\+\_\+\+X\+\_\+binary@{bls12\+\_\+\+X\+\_\+binary}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+X\+\_\+binary}{bls12\_X\_binary}}
+{\footnotesize\ttfamily int bls12\+\_\+\+X\+\_\+binary\mbox{[}78\mbox{]}}
+
+
+
+Referenced by bls12\+\_\+finalexp\+\_\+optimal(), bls12\+\_\+\+Fp12\+\_\+pow\+\_\+motherparam(), bls12\+\_\+generate\+\_\+\+X(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and init\+\_\+bls12\+\_\+parameters().
+
+\mbox{\Hypertarget{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}\label{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!bls12\+\_\+\+X\+\_\+length@{bls12\+\_\+\+X\+\_\+length}}
+\index{bls12\+\_\+\+X\+\_\+length@{bls12\+\_\+\+X\+\_\+length}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+\+X\+\_\+length}{bls12\_X\_length}}
+{\footnotesize\ttfamily int bls12\+\_\+\+X\+\_\+length}
+
+
+
+Referenced by bls12\+\_\+finalexp\+\_\+optimal(), bls12\+\_\+\+Fp12\+\_\+pow\+\_\+motherparam(), bls12\+\_\+generate\+\_\+\+X(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and init\+\_\+bls12\+\_\+parameters().
+
+\mbox{\Hypertarget{curve__settings_8h_aa2e2ca7870a17b7e814d46506d0178e6}\label{curve__settings_8h_aa2e2ca7870a17b7e814d46506d0178e6}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!C1\+\_\+\+I\+NV@{C1\+\_\+\+I\+NV}}
+\index{C1\+\_\+\+I\+NV@{C1\+\_\+\+I\+NV}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{C1\+\_\+\+I\+NV}{C1\_INV}}
+{\footnotesize\ttfamily mpz\+\_\+t C1\+\_\+\+I\+NV}
+
+
+
+Referenced by init\+\_\+bn\+\_\+parameters().
+
+\mbox{\Hypertarget{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}\label{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!curve\+\_\+parameters@{curve\+\_\+parameters}}
+\index{curve\+\_\+parameters@{curve\+\_\+parameters}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{curve\+\_\+parameters}{curve\_parameters}}
+{\footnotesize\ttfamily struct \hyperlink{structcurve__params}{curve\+\_\+params} curve\+\_\+parameters}
+
+
+
+bn curve\textquotesingle{}s systematically obtained parameters. 
+
+It\textquotesingle{}s a global variable that give access to bn public parameters. 
+
+Referenced by bls12\+\_\+finalexp\+\_\+plain(), bls12\+\_\+generate\+\_\+\+G1\+\_\+point(), bls12\+\_\+generate\+\_\+\+G2\+\_\+point(), bls12\+\_\+generate\+\_\+order(), bls12\+\_\+generate\+\_\+prime(), bls12\+\_\+generate\+\_\+trace(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate(), bls12\+\_\+print\+\_\+parameters(), bls12\+\_\+set\+\_\+curve\+\_\+parameter(), bls12\+\_\+test\+\_\+\+G1\+\_\+scm(), bls12\+\_\+test\+\_\+\+G2\+\_\+scm(), bls12\+\_\+test\+\_\+\+G3\+\_\+exp(), bls12\+\_\+test\+\_\+opt\+\_\+ate\+\_\+pairing(), bls12\+\_\+test\+\_\+plain\+\_\+ate\+\_\+pairing(), bls12\+\_\+test\+\_\+tate\+\_\+pairing(), bls12\+\_\+weil(), bn12\+\_\+generate\+\_\+\+G2\+\_\+point(), bn12\+\_\+test\+\_\+opt\+\_\+ate\+\_\+pairing(), bn12\+\_\+test\+\_\+plain\+\_\+ate\+\_\+pairing(), bn12\+\_\+test\+\_\+tate\+\_\+pairing(), bn12\+\_\+test\+\_\+x\+\_\+ate\+\_\+pairing(), clear\+\_\+parameters(), E\+Fp12\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp12\+\_\+rational\+\_\+point\+\_\+bn(), E\+Fp2\+\_\+rational\+\_\+point(), E\+Fp6\+\_\+rational\+\_\+point(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), Final\+\_\+exp\+\_\+plain(), Fp12\+\_\+legendre(), Fp12\+\_\+sqrt(), Fp2\+\_\+invert\+\_\+kss16(), Fp2\+\_\+is\+C\+N\+R(), Fp2\+\_\+legendre(), Fp2\+\_\+sqrt(), Fp4\+\_\+legendre(), Fp4\+\_\+mul\+\_\+betainv(), Fp4\+\_\+sqrt(), Fp6\+\_\+is\+C\+N\+R(), Fp6\+\_\+legendre(), Fp6\+\_\+sqrt(), Fp8\+\_\+legendre(), Fp8\+\_\+sqrt(), Fp\+\_\+add(), Fp\+\_\+add\+\_\+mpz(), Fp\+\_\+add\+\_\+ui(), Fp\+\_\+div(), Fp\+\_\+inv(), Fp\+\_\+is\+C\+N\+R(), Fp\+\_\+legendre(), Fp\+\_\+mul(), Fp\+\_\+mul\+\_\+basis(), Fp\+\_\+mul\+\_\+basis\+\_\+\+K\+S\+S16(), Fp\+\_\+mul\+\_\+mpz(), Fp\+\_\+mul\+\_\+ui(), Fp\+\_\+neg(), Fp\+\_\+set\+\_\+random(), Fp\+\_\+sqrt(), Fp\+\_\+sub(), Fp\+\_\+sub\+\_\+mpz(), Fp\+\_\+sub\+\_\+ui(), generate\+\_\+bn\+\_\+mother\+\_\+parameter(), generate\+\_\+bn\+\_\+order(), generate\+\_\+bn\+\_\+prime(), generate\+\_\+bn\+\_\+trace(), generate\+\_\+kss16\+\_\+motherparam(), generate\+\_\+kss16\+\_\+parameters(), init\+\_\+bls12\+\_\+parameters(), init\+\_\+bn\+\_\+parameters(), init\+\_\+kss16\+\_\+parameters(), init\+\_\+precoms(), Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+tate(), print\+\_\+bn\+\_\+blscurve(), print\+\_\+curve\+\_\+parameters(), print\+\_\+kss16curve(), set\+\_\+bn\+\_\+curve\+\_\+parameter(), and weil().
+
+\mbox{\Hypertarget{curve__settings_8h_a68de31896ef45631d7a2459c831fe836}\label{curve__settings_8h_a68de31896ef45631d7a2459c831fe836}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!is\+Cleared@{is\+Cleared}}
+\index{is\+Cleared@{is\+Cleared}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{is\+Cleared}{isCleared}}
+{\footnotesize\ttfamily int is\+Cleared}
+
+\mbox{\Hypertarget{curve__settings_8h_a9f8b71742e74bcfa6c4b6d38a690329d}\label{curve__settings_8h_a9f8b71742e74bcfa6c4b6d38a690329d}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!state@{state}}
+\index{state@{state}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{state}{state}}
+{\footnotesize\ttfamily gmp\+\_\+randstate\+\_\+t \hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state}}
+
+\mbox{\Hypertarget{curve__settings_8h_a7e6229b428ac099d12ef360d8ded4733}\label{curve__settings_8h_a7e6229b428ac099d12ef360d8ded4733}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!X\+\_\+binary@{X\+\_\+binary}}
+\index{X\+\_\+binary@{X\+\_\+binary}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{X\+\_\+binary}{X\_binary}}
+{\footnotesize\ttfamily char X\+\_\+binary\mbox{[}\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\+\_\+\+X\+\_\+length}+1\mbox{]}}
+
+
+
+Referenced by Final\+\_\+exp\+\_\+optimal(), Fp12\+\_\+pow\+\_\+\+X(), generate\+\_\+bn\+\_\+mother\+\_\+parameter(), init\+\_\+bls12\+\_\+parameters(), init\+\_\+bn\+\_\+parameters(), and Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate().
+
+\mbox{\Hypertarget{curve__settings_8h_aeea8c3eeab507389c98ab76b5c715ae8}\label{curve__settings_8h_aeea8c3eeab507389c98ab76b5c715ae8}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!X\+\_\+binary\+\_\+opt@{X\+\_\+binary\+\_\+opt}}
+\index{X\+\_\+binary\+\_\+opt@{X\+\_\+binary\+\_\+opt}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{X\+\_\+binary\+\_\+opt}{X\_binary\_opt}}
+{\footnotesize\ttfamily char X\+\_\+binary\+\_\+opt\mbox{[}\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\+\_\+\+X\+\_\+length}+3\mbox{]}}
+
+
+
+Referenced by generate\+\_\+bn\+\_\+mother\+\_\+parameter(), init\+\_\+bls12\+\_\+parameters(), init\+\_\+bn\+\_\+parameters(), and Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate().
+
+\mbox{\Hypertarget{curve__settings_8h_a376d831bd08b25283a7349e6c8a345f1}\label{curve__settings_8h_a376d831bd08b25283a7349e6c8a345f1}} 
+\index{curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}!X\+\_\+bit\+\_\+binary\+\_\+kss16@{X\+\_\+bit\+\_\+binary\+\_\+kss16}}
+\index{X\+\_\+bit\+\_\+binary\+\_\+kss16@{X\+\_\+bit\+\_\+binary\+\_\+kss16}!curve\+\_\+settings.\+h@{curve\+\_\+settings.\+h}}
+\subsubsection{\texorpdfstring{X\+\_\+bit\+\_\+binary\+\_\+kss16}{X\_bit\_binary\_kss16}}
+{\footnotesize\ttfamily char X\+\_\+bit\+\_\+binary\+\_\+kss16\mbox{[}\hyperlink{curve__settings_8h_a80cb4474bb38bbac292ba0ce026a579a}{K\+S\+S16\+\_\+\+X\+\_\+length}+1\mbox{]}}
+
+
+
+Referenced by generate\+\_\+kss16\+\_\+motherparam(), and init\+\_\+kss16\+\_\+parameters().
+

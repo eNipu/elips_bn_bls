@@ -1,0 +1,78 @@
+\hypertarget{bn__miller__ate_8c}{}\section{src/bn\+\_\+miller\+\_\+ate.c File Reference}
+\label{bn__miller__ate_8c}\index{src/bn\+\_\+miller\+\_\+ate.\+c@{src/bn\+\_\+miller\+\_\+ate.\+c}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+ate.\+h$>$}\newline
+Include dependency graph for bn\+\_\+miller\+\_\+ate.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bn__miller__ate_8c_a9840e5db6f702284fd45692d40557a28}{Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bn__miller__ate_8c_a9840e5db6f702284fd45692d40557a28}\label{bn__miller__ate_8c_a9840e5db6f702284fd45692d40557a28}} 
+\index{bn\+\_\+miller\+\_\+ate.\+c@{bn\+\_\+miller\+\_\+ate.\+c}!Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate@{Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate}}
+\index{Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate@{Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate}!bn\+\_\+miller\+\_\+ate.\+c@{bn\+\_\+miller\+\_\+ate.\+c}}
+\subsubsection{\texorpdfstring{Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate()}{Miller\_algo\_for\_plain\_ate()}}
+{\footnotesize\ttfamily void Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), E\+Fp2\+\_\+clear(), E\+Fp2\+\_\+init(), E\+Fp2\+\_\+set(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), f\+\_\+ltq(), ff\+\_\+ltt(), Fp12\+\_\+clear(), Fp12\+\_\+init(), Fp12\+\_\+set(), Fp12\+\_\+set\+\_\+ui(), Fp\+\_\+clear(), Fp\+\_\+init(), Fp\+\_\+set(), Fp\+\_\+set\+\_\+ui(), E\+Fp\+::infinity, E\+Fp2\+::infinity, E\+Fp12\+::infinity, Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), curve\+\_\+params\+::trace\+\_\+t, E\+Fp\+::x, E\+Fp12\+::x, Fp6\+::x0, Fp12\+::x0, E\+Fp\+::y, and E\+Fp12\+::y.
+
+
+
+Referenced by bn12\+\_\+plain\+\_\+ate().
+
+
+\begin{DoxyCode}
+31                                                            \{
+32     \hyperlink{struct_e_fp2}{EFp2} T;
+33     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&T);
+34     \hyperlink{struct_e_fp2}{EFp2} mapped\_Q;
+35     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q);
+36     \hyperlink{struct_e_fp}{EFp} mapped\_P;
+37     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&mapped\_P);
+38     \hyperlink{struct_fp12}{Fp12} f;
+39     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&f);
+40     \hyperlink{struct_fp}{Fp} L;
+41     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&L);
+42     mpz\_t loop;
+43     mpz\_init(loop);
+44     mpz\_sub\_ui(loop,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a937a9a11e30316112a0ab65b2454ffb9}{trace\_t},1);
+45     \textcolor{keywordtype}{int} i,length;
+46     length=(int)mpz\_sizeinbase(loop,2);
+47     \textcolor{keywordtype}{char} binary[length];
+48     mpz\_get\_str(binary,2,loop);
+49     
+50     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&mapped\_P.\hyperlink{struct_e_fp_a8618afb86482b3d0706034daf34bcb26}{x},&P->\hyperlink{struct_e_fp12_a2093c5bc5dbf6d031eb56a8854507ef0}{x}.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0);
+51     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&mapped\_P.\hyperlink{struct_e_fp_abf3b0f738e395442776f86293dd457d8}{y},&P->\hyperlink{struct_e_fp12_adc7c5acbe16cd3aafe56696ecf8be16c}{y}.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0);
+52     mapped\_P.\hyperlink{struct_e_fp_a909983155a262e8a19f2fb170676643f}{infinity}=P->\hyperlink{struct_e_fp12_a00227737aefc2c00985e2a4b5f417ca0}{infinity};
+53     \hyperlink{bn__twist_8h_acc077e1d0312fa29c246d52f6d2adac3}{EFp12\_to\_EFp2}(&mapped\_Q,Q);
+54     mapped\_Q.\hyperlink{struct_e_fp2_a21841a8eff911b94f67934baa686e975}{infinity}=Q->\hyperlink{struct_e_fp12_a00227737aefc2c00985e2a4b5f417ca0}{infinity};
+55     
+56     \hyperlink{bn__p8sparse_8h_a6c5f863e73bfbf6dbeaf402b1d188ea5}{Pseudo\_8\_sparse\_mapping}(&mapped\_P,&mapped\_Q,&L);
+57     
+58     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&T,&mapped\_Q);            \textcolor{comment}{//set T}
+59     \hyperlink{bn__fp12_8h_abab8338a90506aac6754cca5a661477f}{Fp12\_set\_ui}(&f,0);                \textcolor{comment}{//set f}
+60     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&f.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0,1);
+61     
+62     \textcolor{comment}{//miller}
+63     \textcolor{keywordflow}{for}(i=1; binary[i]!=\textcolor{charliteral}{'\(\backslash\)0'}; i++)\{
+64         \hyperlink{bn__line__ate_8h_ae514021863e1cc110bac41ecfdb8b23b}{ff\_ltt}(&f,&T,&mapped\_P,&L);
+65         \textcolor{keywordflow}{if}(binary[i]==\textcolor{charliteral}{'1'})\{
+66             \hyperlink{bn__line__ate_8h_adcdcfbd9c084e1d7f78a05d4d3bd5fbf}{f\_ltq}(&f,&T,&mapped\_Q,&mapped\_P,&L);
+67         \}
+68     \}
+69     
+70     \hyperlink{bn__fp12_8h_a95c271ea5c7c21d89c9a0123a896e47d}{Fp12\_set}(ANS,&f);
+71     
+72     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&f);
+73     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&T);
+74     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q);
+75     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&mapped\_P);
+76     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&L);
+77     mpz\_clear(loop);
+78 \}
+\end{DoxyCode}

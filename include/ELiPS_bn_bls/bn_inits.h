@@ -26,12 +26,32 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @defgroup bn12 Paring over BARRETO-NAEHRIG (BN) Curve related files
+ */
+
+/**
+ * @file
+ *
+ * Interaface for pairing using BLS12 curve. It needs to included for initializing BLS12 curve in the applications.
+ *
+ * @ingroup bn12
+ */
+
+
 #ifndef bn_inits_h
 #define bn_inits_h
 
 #include <ELiPS_bn_bls/bn_bls12_precoms.h>
 #include <ELiPS_bn_bls/curve_settings.h>
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+/**
+ * This methods needs to be called before using the BN curve for pairing.
+ * It initialized the curve as y^2=x^3-4 with parameters suggested in https://eprint.iacr.org/2017/334. 
+ */
 extern void init_bn(void);
 
 #endif /* bn_inits_h */

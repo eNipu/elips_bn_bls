@@ -1,0 +1,49 @@
+\hypertarget{bn__prints_8c}{}\section{src/bn\+\_\+prints.c File Reference}
+\label{bn__prints_8c}\index{src/bn\+\_\+prints.\+c@{src/bn\+\_\+prints.\+c}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+prints.\+h$>$}\newline
+Include dependency graph for bn\+\_\+prints.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bn__prints_8c_a6678bcaf9152b30ec6d4f419bf7a5443}{bn12\+\_\+print\+\_\+\+G1\+\_\+point} ()
+\item 
+void \hyperlink{bn__prints_8c_a1d8c32e82d029c7393150a3b222de83e}{bn12\+\_\+print\+\_\+\+G2\+\_\+point} ()
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bn__prints_8c_a6678bcaf9152b30ec6d4f419bf7a5443}\label{bn__prints_8c_a6678bcaf9152b30ec6d4f419bf7a5443}} 
+\index{bn\+\_\+prints.\+c@{bn\+\_\+prints.\+c}!bn12\+\_\+print\+\_\+\+G1\+\_\+point@{bn12\+\_\+print\+\_\+\+G1\+\_\+point}}
+\index{bn12\+\_\+print\+\_\+\+G1\+\_\+point@{bn12\+\_\+print\+\_\+\+G1\+\_\+point}!bn\+\_\+prints.\+c@{bn\+\_\+prints.\+c}}
+\subsubsection{\texorpdfstring{bn12\+\_\+print\+\_\+\+G1\+\_\+point()}{bn12\_print\_G1\_point()}}
+{\footnotesize\ttfamily void bn12\+\_\+print\+\_\+\+G1\+\_\+point (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References E\+Fp12\+\_\+printf(), and G1\+\_\+P.
+
+
+\begin{DoxyCode}
+31                           \{
+32     \hyperlink{bn__efp12_8h_a71ea4e076240e86eadc51073a714667c}{EFp12\_printf}(&\hyperlink{bn__generate__points_8h_a65c4d6ad4f859558060ef80ac176ecb8}{G1\_P},\textcolor{stringliteral}{"G1\_P\(\backslash\)n"});
+33     printf(\textcolor{stringliteral}{"\(\backslash\)n"});
+34 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bn__prints_8c_a1d8c32e82d029c7393150a3b222de83e}\label{bn__prints_8c_a1d8c32e82d029c7393150a3b222de83e}} 
+\index{bn\+\_\+prints.\+c@{bn\+\_\+prints.\+c}!bn12\+\_\+print\+\_\+\+G2\+\_\+point@{bn12\+\_\+print\+\_\+\+G2\+\_\+point}}
+\index{bn12\+\_\+print\+\_\+\+G2\+\_\+point@{bn12\+\_\+print\+\_\+\+G2\+\_\+point}!bn\+\_\+prints.\+c@{bn\+\_\+prints.\+c}}
+\subsubsection{\texorpdfstring{bn12\+\_\+print\+\_\+\+G2\+\_\+point()}{bn12\_print\_G2\_point()}}
+{\footnotesize\ttfamily void bn12\+\_\+print\+\_\+\+G2\+\_\+point (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+References E\+Fp12\+\_\+printf(), and G2\+\_\+Q.
+
+
+\begin{DoxyCode}
+36                           \{
+37     \hyperlink{bn__efp12_8h_a71ea4e076240e86eadc51073a714667c}{EFp12\_printf}(&\hyperlink{bn__generate__points_8h_af5d0b2529bbcea9ce184b1cf0c5b026a}{G2\_Q},\textcolor{stringliteral}{"G2\_Q\(\backslash\)n"});
+38     printf(\textcolor{stringliteral}{"\(\backslash\)n"});
+39 \}
+\end{DoxyCode}

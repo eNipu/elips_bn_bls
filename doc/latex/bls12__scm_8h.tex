@@ -1,0 +1,505 @@
+\hypertarget{bls12__scm_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+scm.h File Reference}
+\label{bls12__scm_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+scm.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+scm.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+efp12.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+utils.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+timeprint.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+twist.\+h$>$}\newline
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bls12\+\_\+skew\+\_\+frobenius.\+h$>$}\newline
+Include dependency graph for bls12\+\_\+scm.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bls12__scm_8h_ab42ad3cac9466541c248ac236a74159f}{bls12\+\_\+plain\+\_\+\+G1\+\_\+scm} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, mpz\+\_\+t scalar)
+\item 
+void \hyperlink{bls12__scm_8h_aae42e6e607e5af6339f4fc74acd931e3}{bls12\+\_\+2split\+\_\+\+G1\+\_\+scm} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, mpz\+\_\+t scalar)
+\item 
+void \hyperlink{bls12__scm_8h_a415bfbd46073fdf9f6af83c8e720a88b}{bls12\+\_\+plain\+\_\+\+G2\+\_\+scm} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q, mpz\+\_\+t scalar)
+\item 
+void \hyperlink{bls12__scm_8h_ac67c5ceeb3131c1f193da9092079d58f}{bls12\+\_\+2split\+\_\+\+G2\+\_\+scm} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q, mpz\+\_\+t scalar)
+\item 
+void \hyperlink{bls12__scm_8h_a4ba82479d082bed6f2f58f848d771bc7}{bls12\+\_\+4split\+\_\+\+G2\+\_\+scm} (\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q, mpz\+\_\+t scalar)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Interaface for B\+L\+S12 scalar multiplication implementations in G1 and G2 
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bls12__scm_8h_aae42e6e607e5af6339f4fc74acd931e3}\label{bls12__scm_8h_aae42e6e607e5af6339f4fc74acd931e3}} 
+\index{bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}!bls12\+\_\+2split\+\_\+\+G1\+\_\+scm@{bls12\+\_\+2split\+\_\+\+G1\+\_\+scm}}
+\index{bls12\+\_\+2split\+\_\+\+G1\+\_\+scm@{bls12\+\_\+2split\+\_\+\+G1\+\_\+scm}!bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+2split\+\_\+\+G1\+\_\+scm()}{bls12\_2split\_G1\_scm()}}
+{\footnotesize\ttfamily void bls12\+\_\+2split\+\_\+\+G1\+\_\+scm (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{mpz\+\_\+t}]{scalar }\end{DoxyParamCaption})}
+
+Calculate scalar multiplication G1 in B\+L\+S12 curve splitting of scallar into two parts.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ P in G1 mapped to \hyperlink{struct_fp12}{Fp12}. \\
+\hline
+\mbox{\tt in}  & {\em s} & -\/ gmp mpz\+\_\+t type big integer. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+set().
+
+
+
+Referenced by bls12\+\_\+test\+\_\+\+G1\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G3\+\_\+exp().
+
+
+\begin{DoxyCode}
+47                                                           \{
+48     gettimeofday(&t0,NULL);
+49     
+50     \textcolor{keywordtype}{int} i,length\_s[2],loop\_length;
+51     \hyperlink{struct_e_fp12}{EFp12} Buf;
+52     EFp12\_init(&Buf);
+53     \hyperlink{struct_e_fp}{EFp} next\_P,tmp\_P,skew\_P\_2;
+54     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&next\_P);
+55     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&tmp\_P);
+56     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&skew\_P\_2);
+57     mpz\_t s[2],buf;
+58     mpz\_init(buf);
+59     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+60         mpz\_init(s[i]);
+61     \}
+62     \textcolor{comment}{//table}
+63     \hyperlink{struct_e_fp}{EFp} table[4];
+64     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+65         \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&table[i]);
+66     \}
+67     
+68     \textcolor{comment}{//set}
+69     \hyperlink{bls12__twist_8h_ab400c20c7379b8092500f351fda16323}{bls12\_EFp12\_to\_EFp}(&tmp\_P,P);
+70     \hyperlink{bls12__skew__frobenius_8h_a27f5995aeb743e8ca184d8fdfe4dd819}{bls12\_EFp\_skew\_frobenius\_map\_p2}(&skew\_P\_2,&tmp\_P);
+71     \textcolor{comment}{//set table}
+72     table[0].infinity=1;    \textcolor{comment}{//00}
+73     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&table[1],&tmp\_P);    \textcolor{comment}{//01}
+74     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&table[2],&skew\_P\_2);    \textcolor{comment}{//10}
+75     \hyperlink{bn__efp_8h_a4b290a91bf913cf38dffee13f1db784b}{EFp\_ECA}(&table[3],&tmp\_P,&skew\_P\_2);    \textcolor{comment}{//11}
+76     
+77     \textcolor{comment}{//s0,s1}
+78     mpz\_neg(buf,bls12\_X);
+79     mpz\_pow\_ui(buf,buf,2);
+80     mpz\_tdiv\_qr(s[1],s[0],scalar,buf);
+81     \textcolor{comment}{//binary}
+82     loop\_length=0;
+83     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+84         length\_s[i]=(int)mpz\_sizeinbase(s[i],2);
+85         \textcolor{keywordflow}{if}(loop\_length<length\_s[i])\{
+86             loop\_length=length\_s[i];
+87         \}
+88     \}
+89     \textcolor{comment}{//set binary}
+90     \textcolor{keywordtype}{char} binary\_s[2][loop\_length+1];
+91     \textcolor{keywordtype}{char} str[5],*e;
+92     \textcolor{keywordtype}{int} binary[loop\_length+1];
+93     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+94         \textcolor{keywordflow}{if}(length\_s[i]==loop\_length)\{
+95             mpz\_get\_str(binary\_s[i],2,s[i]);
+96         \}\textcolor{keywordflow}{else}\{
+97             \textcolor{keywordtype}{char} binary\_buf[loop\_length+1];
+98             mpz\_get\_str(binary\_buf,2,s[i]);
+99             memset(binary\_s[i],\textcolor{charliteral}{'0'},\textcolor{keyword}{sizeof}(binary\_s[i]));
+100             memmove(binary\_s[i]+loop\_length-length\_s[i],binary\_buf,\textcolor{keyword}{sizeof}(binary\_buf));
+101         \}
+102     \}
+103     \textcolor{keywordflow}{for}(i=0; i<loop\_length; i++)\{
+104         sprintf(str,\textcolor{stringliteral}{"%c%c"},binary\_s[1][i],binary\_s[0][i]);
+105         binary[i]=(int)strtol(str,&e,2);
+106     \}
+107     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&next\_P,&table[binary[0]]);
+108     
+109     \textcolor{comment}{//SCM}
+110     \textcolor{keywordflow}{for}(i=1; i<loop\_length; i++)\{
+111         \hyperlink{bn__efp_8h_a9ba98cee075d39257ea190cbe340dec5}{EFp\_ECD}(&next\_P,&next\_P);
+112         \hyperlink{bn__efp_8h_a4b290a91bf913cf38dffee13f1db784b}{EFp\_ECA}(&next\_P,&next\_P,&table[binary[i]]);
+113     \}
+114     
+115     \hyperlink{bls12__twist_8h_a1fff3d9b5a4da8df91e68493d344cb6b}{bls12\_EFp\_to\_EFp12}(ANS,&next\_P);
+116     
+117     
+118     EFp12\_clear(&Buf);
+119     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&next\_P);
+120     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&tmp\_P);
+121     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&skew\_P\_2);
+122     mpz\_clear(buf);
+123     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+124         mpz\_clear(s[i]);
+125     \}
+126     \textcolor{comment}{//table}
+127     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+128         \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&table[i]);
+129     \}
+130     
+131     gettimeofday(&t1,NULL);
+132     bls12\_G1SCM\_2SPLIT=timedifference\_msec(t0,t1);
+133 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 2
+Here is the caller graph for this function\+:
+% FIG 3
+\mbox{\Hypertarget{bls12__scm_8h_ac67c5ceeb3131c1f193da9092079d58f}\label{bls12__scm_8h_ac67c5ceeb3131c1f193da9092079d58f}} 
+\index{bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}!bls12\+\_\+2split\+\_\+\+G2\+\_\+scm@{bls12\+\_\+2split\+\_\+\+G2\+\_\+scm}}
+\index{bls12\+\_\+2split\+\_\+\+G2\+\_\+scm@{bls12\+\_\+2split\+\_\+\+G2\+\_\+scm}!bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+2split\+\_\+\+G2\+\_\+scm()}{bls12\_2split\_G2\_scm()}}
+{\footnotesize\ttfamily void bls12\+\_\+2split\+\_\+\+G2\+\_\+scm (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q,  }\item[{mpz\+\_\+t}]{scalar }\end{DoxyParamCaption})}
+
+Calculate scalar multiplication G1 in B\+L\+S12 curve splitting of scallar into 2 parts.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ P in G1 mapped to \hyperlink{struct_fp12}{Fp12}. \\
+\hline
+\mbox{\tt in}  & {\em s} & -\/ gmp mpz\+\_\+t type big integer. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), and bls12\+\_\+\+E\+Fp2\+\_\+to\+\_\+\+E\+Fp12().
+
+
+
+Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm().
+
+
+\begin{DoxyCode}
+151                                                           \{
+152     gettimeofday(&t0,NULL);
+153     
+154     \textcolor{keywordtype}{int} i,length\_s[2],loop\_length;
+155     \hyperlink{struct_e_fp2}{EFp2} next\_twisted\_Q,twisted\_Q,twisted\_Q\_2x;
+156     EFp2\_init(&next\_twisted\_Q);
+157     EFp2\_init(&twisted\_Q);
+158     EFp2\_init(&twisted\_Q\_2x);
+159     mpz\_t s[2],buf;
+160     mpz\_init(buf);
+161     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+162         mpz\_init(s[i]);
+163     \}
+164     \textcolor{comment}{//table}
+165     \hyperlink{struct_e_fp2}{EFp2} table[4];
+166     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+167         EFp2\_init(&table[i]);
+168     \}
+169     
+170     \textcolor{comment}{//set}
+171     \hyperlink{bls12__twist_8h_a069ee5f353c96be9b1821af349731fe3}{bls12\_EFp12\_to\_EFp2}(&twisted\_Q,Q);                \textcolor{comment}{//twisted\_Q}
+172     \hyperlink{bls12__skew__frobenius_8h_a53a7cd126428aa8a94732b2c521ad0f7}{bls12\_EFp2\_skew\_frobenius\_map\_p2}(&twisted\_Q\_2x,&twisted\_Q);\textcolor{comment}{//
+      twisted\_Q\_2x}
+173     \textcolor{comment}{//set table}
+174     table[0].infinity=1;                        \textcolor{comment}{//00}
+175     EFp2\_set(&table[1],&twisted\_Q);            \textcolor{comment}{//01}
+176     EFp2\_set(&table[2],&twisted\_Q\_2x);            \textcolor{comment}{//10}
+177     EFp2\_ECA(&table[3],&twisted\_Q,&twisted\_Q\_2x);    \textcolor{comment}{//11}
+178     
+179     \textcolor{comment}{//s0,s1}
+180     mpz\_neg(buf,bls12\_X);
+181     mpz\_pow\_ui(buf,buf,2);
+182     mpz\_tdiv\_qr(s[1],s[0],scalar,buf);
+183     \textcolor{comment}{//binary}
+184     loop\_length=0;
+185     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+186         length\_s[i]=(int)mpz\_sizeinbase(s[i],2);
+187         \textcolor{keywordflow}{if}(loop\_length<length\_s[i])\{
+188             loop\_length=length\_s[i];
+189         \}
+190     \}
+191     \textcolor{comment}{//set binary}
+192     \textcolor{keywordtype}{char} binary\_s[2][loop\_length+1];
+193     \textcolor{keywordtype}{char} str[5],*e;
+194     \textcolor{keywordtype}{int} binary[loop\_length+1];
+195     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+196         \textcolor{keywordflow}{if}(length\_s[i]==loop\_length)\{
+197             mpz\_get\_str(binary\_s[i],2,s[i]);
+198         \}\textcolor{keywordflow}{else}\{
+199             \textcolor{keywordtype}{char} binary\_buf[loop\_length+1];
+200             mpz\_get\_str(binary\_buf,2,s[i]);
+201             memset(binary\_s[i],\textcolor{charliteral}{'0'},\textcolor{keyword}{sizeof}(binary\_s[i]));
+202             memmove(binary\_s[i]+loop\_length-length\_s[i],binary\_buf,\textcolor{keyword}{sizeof}(binary\_buf));
+203         \}
+204     \}
+205     \textcolor{keywordflow}{for}(i=0; i<loop\_length; i++)\{
+206         sprintf(str,\textcolor{stringliteral}{"%c%c"},binary\_s[1][i],binary\_s[0][i]);
+207         binary[i]=(int)strtol(str,&e,2);
+208     \}
+209     EFp2\_set(&next\_twisted\_Q,&table[binary[0]]);
+210     
+211     \textcolor{comment}{//SCM}
+212     \textcolor{keywordflow}{for}(i=1; i<loop\_length; i++)\{
+213         EFp2\_ECD(&next\_twisted\_Q,&next\_twisted\_Q);
+214         EFp2\_ECA(&next\_twisted\_Q,&next\_twisted\_Q,&table[binary[i]]);
+215     \}
+216     
+217     \hyperlink{bls12__twist_8h_aa558f3e6f2284e657e3218c9e713c018}{bls12\_EFp2\_to\_EFp12}(ANS,&next\_twisted\_Q);
+218     
+219     mpz\_clear(buf);
+220     EFp2\_clear(&next\_twisted\_Q);
+221     EFp2\_clear(&twisted\_Q);
+222     EFp2\_clear(&twisted\_Q\_2x);
+223     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
+224         mpz\_clear(s[i]);
+225     \}
+226     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+227         EFp2\_clear(&table[i]);
+228     \}
+229     
+230     gettimeofday(&t1,NULL);
+231     bls12\_G2SCM\_2SPLIT=timedifference\_msec(t0,t1);
+232 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 4
+Here is the caller graph for this function\+:
+% FIG 5
+\mbox{\Hypertarget{bls12__scm_8h_a4ba82479d082bed6f2f58f848d771bc7}\label{bls12__scm_8h_a4ba82479d082bed6f2f58f848d771bc7}} 
+\index{bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}!bls12\+\_\+4split\+\_\+\+G2\+\_\+scm@{bls12\+\_\+4split\+\_\+\+G2\+\_\+scm}}
+\index{bls12\+\_\+4split\+\_\+\+G2\+\_\+scm@{bls12\+\_\+4split\+\_\+\+G2\+\_\+scm}!bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+4split\+\_\+\+G2\+\_\+scm()}{bls12\_4split\_G2\_scm()}}
+{\footnotesize\ttfamily void bls12\+\_\+4split\+\_\+\+G2\+\_\+scm (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q,  }\item[{mpz\+\_\+t}]{scalar }\end{DoxyParamCaption})}
+
+Calculate scalar multiplication G1 in B\+L\+S12 curve splitting of scallar into 4 parts.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ P in G1 mapped to \hyperlink{struct_fp12}{Fp12}. \\
+\hline
+\mbox{\tt in}  & {\em s} & -\/ gmp mpz\+\_\+t type big integer. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), and bls12\+\_\+\+E\+Fp2\+\_\+to\+\_\+\+E\+Fp12().
+
+
+
+Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G3\+\_\+exp().
+
+
+\begin{DoxyCode}
+234                                                           \{
+235     gettimeofday(&t0,NULL);
+236     
+237     \textcolor{keywordtype}{int} i,length\_s[4],loop\_length;
+238     \hyperlink{struct_e_fp2}{EFp2} next\_twisted\_Q,twisted\_Q,twisted\_Q\_x,twisted\_Q\_2x,twisted\_Q\_3x;
+239     EFp2\_init(&next\_twisted\_Q);
+240     EFp2\_init(&twisted\_Q);
+241     EFp2\_init(&twisted\_Q\_x);
+242     EFp2\_init(&twisted\_Q\_2x);
+243     EFp2\_init(&twisted\_Q\_3x);
+244     mpz\_t A,B,s[4],x\_2,x\_1;
+245     mpz\_init(A);
+246     mpz\_init(B);
+247     mpz\_init(x\_1);
+248     mpz\_init(x\_2);
+249     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+250         mpz\_init(s[i]);
+251     \}
+252     \textcolor{comment}{//table}
+253     \hyperlink{struct_e_fp2}{EFp2} table[16];
+254     \textcolor{keywordflow}{for}(i=0; i<16; i++)\{
+255         EFp2\_init(&table[i]);
+256     \}
+257     
+258     \textcolor{comment}{//set twisted\_Q}
+259     \hyperlink{bls12__twist_8h_a069ee5f353c96be9b1821af349731fe3}{bls12\_EFp12\_to\_EFp2}(&twisted\_Q,Q);                    \textcolor{comment}{//twisted\_Q}
+260     \hyperlink{bls12__skew__frobenius_8h_a8d89c42f0d2898af5639f908ebc6ad72}{bls12\_EFp2\_skew\_frobenius\_map\_p1}(&twisted\_Q\_x,&twisted\_Q);        \textcolor{comment}{//
+      twisted\_Q\_x}
+261     EFp2\_set\_neg(&twisted\_Q\_x,&twisted\_Q\_x);
+262     \hyperlink{bls12__skew__frobenius_8h_a53a7cd126428aa8a94732b2c521ad0f7}{bls12\_EFp2\_skew\_frobenius\_map\_p2}(&twisted\_Q\_2x,&twisted\_Q);    \textcolor{comment}{//
+      twisted\_Q\_2x}
+263     \hyperlink{bls12__skew__frobenius_8h_a87f87eeb97f9ba92718de8561d8a486d}{bls12\_EFp2\_skew\_frobenius\_map\_p3}(&twisted\_Q\_3x,&twisted\_Q);    \textcolor{comment}{//
+      twisted\_Q\_3x}
+264     EFp2\_set\_neg(&twisted\_Q\_3x,&twisted\_Q\_3x);
+265     
+266     \textcolor{comment}{//set table}
+267     table[0].infinity=1;                            \textcolor{comment}{//0000}
+268     EFp2\_set(&table[1],&twisted\_Q);                \textcolor{comment}{//0001}
+269     EFp2\_set(&table[2],&twisted\_Q\_x);                \textcolor{comment}{//0010}
+270     EFp2\_ECA(&table[3],&twisted\_Q\_x,&twisted\_Q);        \textcolor{comment}{//0011}
+271     EFp2\_set(&table[4],&twisted\_Q\_2x);                \textcolor{comment}{//0100}
+272     EFp2\_ECA(&table[5],&twisted\_Q\_2x,&twisted\_Q);        \textcolor{comment}{//0101}
+273     EFp2\_ECA(&table[6],&twisted\_Q\_2x,&twisted\_Q\_x);        \textcolor{comment}{//0110}
+274     EFp2\_ECA(&table[7],&table[6],&twisted\_Q);            \textcolor{comment}{//0111}
+275     EFp2\_set(&table[8],&twisted\_Q\_3x);                \textcolor{comment}{//1000}
+276     EFp2\_ECA(&table[9],&twisted\_Q\_3x,&twisted\_Q);        \textcolor{comment}{//1001}
+277     EFp2\_ECA(&table[10],&twisted\_Q\_3x,&twisted\_Q\_x);    \textcolor{comment}{//1010}
+278     EFp2\_ECA(&table[11],&twisted\_Q\_3x,&table[3]);        \textcolor{comment}{//1011}
+279     EFp2\_ECA(&table[12],&twisted\_Q\_3x,&twisted\_Q\_2x);    \textcolor{comment}{//1100}
+280     EFp2\_ECA(&table[13],&table[12],&twisted\_Q);        \textcolor{comment}{//1101}
+281     EFp2\_ECA(&table[14],&table[12],&twisted\_Q\_x);        \textcolor{comment}{//1110}
+282     EFp2\_ECA(&table[15],&table[14],&twisted\_Q);        \textcolor{comment}{//1111}
+283     
+284     \textcolor{comment}{//set}
+285     \textcolor{comment}{//s0,s1,s2,s3}
+286     mpz\_neg(x\_1,bls12\_X);
+287     mpz\_mul(x\_2,x\_1,x\_1);
+288     mpz\_tdiv\_qr(B,A,scalar,x\_2);
+289     mpz\_tdiv\_qr(s[1],s[0],A,x\_1);
+290     mpz\_tdiv\_qr(s[3],s[2],B,x\_1);
+291     
+292     \textcolor{comment}{//binary}
+293     loop\_length=0;
+294     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+295         length\_s[i]=(int)mpz\_sizeinbase(s[i],2);
+296         \textcolor{keywordflow}{if}(loop\_length<length\_s[i])\{
+297             loop\_length=length\_s[i];
+298         \}
+299     \}
+300     \textcolor{comment}{//set binary}
+301     \textcolor{keywordtype}{char} binary\_s[4][loop\_length+1];
+302     \textcolor{keywordtype}{char} str[5],*e;
+303     \textcolor{keywordtype}{int} binary[loop\_length+1];
+304     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+305         \textcolor{keywordflow}{if}(length\_s[i]==loop\_length)\{
+306             mpz\_get\_str(binary\_s[i],2,s[i]);
+307         \}\textcolor{keywordflow}{else}\{
+308             \textcolor{keywordtype}{char} binary\_buf[loop\_length+1];
+309             mpz\_get\_str(binary\_buf,2,s[i]);
+310             memset(binary\_s[i],\textcolor{charliteral}{'0'},\textcolor{keyword}{sizeof}(binary\_s[i]));
+311             memmove(binary\_s[i]+loop\_length-length\_s[i],binary\_buf,\textcolor{keyword}{sizeof}(binary\_buf));
+312         \}
+313     \}
+314     \textcolor{keywordflow}{for}(i=0; i<loop\_length; i++)\{
+315         sprintf(str,\textcolor{stringliteral}{"%c%c%c%c"},binary\_s[3][i],binary\_s[2][i],binary\_s[1][i],binary\_s[0][i]);
+316         binary[i]=(int)strtol(str,&e,2);
+317     \}
+318     
+319     EFp2\_set(&next\_twisted\_Q,&table[binary[0]]);
+320     
+321     \textcolor{comment}{//SCM}
+322     \textcolor{keywordflow}{for}(i=1; i<loop\_length; i++)\{
+323         EFp2\_ECD(&next\_twisted\_Q,&next\_twisted\_Q);
+324         EFp2\_ECA(&next\_twisted\_Q,&next\_twisted\_Q,&table[binary[i]]);
+325     \}
+326     
+327     \hyperlink{bls12__twist_8h_aa558f3e6f2284e657e3218c9e713c018}{bls12\_EFp2\_to\_EFp12}(ANS,&next\_twisted\_Q);
+328     
+329     EFp2\_clear(&next\_twisted\_Q);
+330     EFp2\_clear(&twisted\_Q);
+331     EFp2\_clear(&twisted\_Q\_x);
+332     EFp2\_clear(&twisted\_Q\_2x);
+333     EFp2\_init(&twisted\_Q\_3x);
+334     mpz\_clear(x\_1);
+335     mpz\_clear(x\_2);
+336     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
+337         mpz\_clear(s[i]);
+338     \}
+339     \textcolor{keywordflow}{for}(i=0; i<16; i++)\{
+340         EFp2\_clear(&table[i]);
+341     \}
+342     
+343     gettimeofday(&t1,NULL);
+344     bls12\_G2SCM\_4SPLIT=timedifference\_msec(t0,t1);
+345 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 6
+Here is the caller graph for this function\+:
+% FIG 7
+\mbox{\Hypertarget{bls12__scm_8h_ab42ad3cac9466541c248ac236a74159f}\label{bls12__scm_8h_ab42ad3cac9466541c248ac236a74159f}} 
+\index{bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}!bls12\+\_\+plain\+\_\+\+G1\+\_\+scm@{bls12\+\_\+plain\+\_\+\+G1\+\_\+scm}}
+\index{bls12\+\_\+plain\+\_\+\+G1\+\_\+scm@{bls12\+\_\+plain\+\_\+\+G1\+\_\+scm}!bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+plain\+\_\+\+G1\+\_\+scm()}{bls12\_plain\_G1\_scm()}}
+{\footnotesize\ttfamily void bls12\+\_\+plain\+\_\+\+G1\+\_\+scm (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{mpz\+\_\+t}]{scalar }\end{DoxyParamCaption})}
+
+Calculate scalar multiplication G1 in B\+L\+S12 curve without any optimization/splitting of scallar.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ P in G1 mapped to \hyperlink{struct_fp12}{Fp12}. \\
+\hline
+\mbox{\tt in}  & {\em s} & -\/ gmp mpz\+\_\+t type big integer. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+\+S\+C\+M().
+
+
+
+Referenced by bls12\+\_\+test\+\_\+\+G1\+\_\+scm().
+
+
+\begin{DoxyCode}
+31                                                          \{
+32     gettimeofday(&t0,NULL);
+33     
+34     \hyperlink{struct_e_fp}{EFp} Tmp\_P;
+35     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&Tmp\_P);
+36     
+37     \hyperlink{bls12__twist_8h_ab400c20c7379b8092500f351fda16323}{bls12\_EFp12\_to\_EFp}(&Tmp\_P,P);
+38     \hyperlink{bn__efp_8h_a39968088354e07b3bff879ea6ce7eea3}{EFp\_SCM}(&Tmp\_P,&Tmp\_P,scalar);
+39     \hyperlink{bls12__twist_8h_a1fff3d9b5a4da8df91e68493d344cb6b}{bls12\_EFp\_to\_EFp12}(ANS,&Tmp\_P);
+40     
+41     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Tmp\_P);
+42     
+43     gettimeofday(&t1,NULL);
+44     bls12\_G1SCM\_PLAIN=timedifference\_msec(t0,t1);
+45 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 8
+Here is the caller graph for this function\+:
+% FIG 9
+\mbox{\Hypertarget{bls12__scm_8h_a415bfbd46073fdf9f6af83c8e720a88b}\label{bls12__scm_8h_a415bfbd46073fdf9f6af83c8e720a88b}} 
+\index{bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}!bls12\+\_\+plain\+\_\+\+G2\+\_\+scm@{bls12\+\_\+plain\+\_\+\+G2\+\_\+scm}}
+\index{bls12\+\_\+plain\+\_\+\+G2\+\_\+scm@{bls12\+\_\+plain\+\_\+\+G2\+\_\+scm}!bls12\+\_\+scm.\+h@{bls12\+\_\+scm.\+h}}
+\subsubsection{\texorpdfstring{bls12\+\_\+plain\+\_\+\+G2\+\_\+scm()}{bls12\_plain\_G2\_scm()}}
+{\footnotesize\ttfamily void bls12\+\_\+plain\+\_\+\+G2\+\_\+scm (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q,  }\item[{mpz\+\_\+t}]{scalar }\end{DoxyParamCaption})}
+
+Calculate scalar multiplication G2 in B\+L\+S12 curve without any optimization/splitting of scallar.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output \\
+\hline
+\mbox{\tt in}  & {\em Q} & -\/ Q in G2 mapped to \hyperlink{struct_fp12}{Fp12}. \\
+\hline
+\mbox{\tt in}  & {\em s} & -\/ gmp mpz\+\_\+t type big integer. \\
+\hline
+\end{DoxyParams}
+
+
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), and bls12\+\_\+\+E\+Fp2\+\_\+to\+\_\+\+E\+Fp12().
+
+
+
+Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm().
+
+
+\begin{DoxyCode}
+135                                                          \{
+136     gettimeofday(&t0,NULL);
+137     
+138     \hyperlink{struct_e_fp2}{EFp2} twisted\_Q;
+139     EFp2\_init(&twisted\_Q);
+140     
+141     \hyperlink{bls12__twist_8h_a069ee5f353c96be9b1821af349731fe3}{bls12\_EFp12\_to\_EFp2}(&twisted\_Q,Q);
+142     EFp2\_SCM(&twisted\_Q,&twisted\_Q,scalar);
+143     \hyperlink{bls12__twist_8h_aa558f3e6f2284e657e3218c9e713c018}{bls12\_EFp2\_to\_EFp12}(ANS,&twisted\_Q);
+144     
+145     EFp2\_clear(&twisted\_Q);
+146     
+147     gettimeofday(&t1,NULL);
+148     bls12\_G2SCM\_PLAIN=timedifference\_msec(t0,t1);
+149 \}
+\end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 10
+Here is the caller graph for this function\+:
+% FIG 11

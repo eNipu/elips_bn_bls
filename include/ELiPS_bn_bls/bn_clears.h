@@ -26,11 +26,24 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interaface to clear curve params and constants after using curves for pairing.
+ *
+ */
 #ifndef bn_clears_h
 #define bn_clears_h
 
 #include <ELiPS_bn_bls/bn_inits.h>
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+
+/**
+ * Clear curve parameter and constants
+ */
 extern void clear_parameters(void);
 
 #endif /* bn_clears_h */

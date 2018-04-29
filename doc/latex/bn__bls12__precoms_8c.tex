@@ -1,0 +1,436 @@
+\hypertarget{bn__bls12__precoms_8c}{}\section{src/bn\+\_\+bls12\+\_\+precoms.c File Reference}
+\label{bn__bls12__precoms_8c}\index{src/bn\+\_\+bls12\+\_\+precoms.\+c@{src/bn\+\_\+bls12\+\_\+precoms.\+c}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+bls12\+\_\+precoms.\+h$>$}\newline
+Include dependency graph for bn\+\_\+bls12\+\_\+precoms.\+c\+:
+% FIG 0
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bn__bls12__precoms_8c_a6d8315d6721fda3d585086b15cf55cd8}{init\+\_\+precoms} (int curvetype)
+\item 
+void \hyperlink{bn__bls12__precoms_8c_a80f7f7bd2c517cd7eb1e86e1d6687e76}{get\+\_\+epsilon} ()
+\item 
+void \hyperlink{bn__bls12__precoms_8c_afaed5c95cded6e050f9439aafc701b50}{set\+\_\+basis} ()
+\item 
+void \hyperlink{bn__bls12__precoms_8c_ae671f6550af05a06254e8efbe152c10a}{set\+\_\+frobenius\+\_\+constant} ()
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+gmp\+\_\+randstate\+\_\+t \hyperlink{bn__bls12__precoms_8c_a9f8b71742e74bcfa6c4b6d38a690329d}{state}
+\item 
+struct \hyperlink{struct_fp}{Fp} \hyperlink{bn__bls12__precoms_8c_aa749221c0b50bbde9cb15836c8d91a93}{Fp\+\_\+basis}
+\item 
+struct \hyperlink{struct_fp2}{Fp2} \hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\+\_\+basis}
+\item 
+struct \hyperlink{struct_fp2}{Fp2} \hyperlink{bn__bls12__precoms_8c_a2d027e63b15655f4127ad0fb09c10466}{Fp2\+\_\+basis\+\_\+inv}
+\item 
+struct \hyperlink{struct_fp6}{Fp6} \hyperlink{bn__bls12__precoms_8c_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\+\_\+basis}
+\item 
+mpz\+\_\+t \hyperlink{bn__bls12__precoms_8c_a0e028790b8ecdcbc4208efb5da6bf7f1}{epsilon1}
+\item 
+mpz\+\_\+t \hyperlink{bn__bls12__precoms_8c_a38abbebcc534933ce730ba5215d5c9fd}{epsilon2}
+\item 
+\hyperlink{struct_fp2}{Fp2} \hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\+\_\+frobenius\+\_\+constant} \mbox{[}\hyperlink{bn__bls12__precoms_8h_aa663bbfdcf0c3ad643b7fc3d9696f24e}{d12}\mbox{]}\mbox{[}6\mbox{]}
+\item 
+\hyperlink{struct_fp2}{Fp2} \hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\+\_\+skew\+\_\+frobenius\+\_\+constant} \mbox{[}\hyperlink{bn__bls12__precoms_8h_aa663bbfdcf0c3ad643b7fc3d9696f24e}{d12}\mbox{]}\mbox{[}2\mbox{]}
+\item 
+static mpz\+\_\+t \hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\+\_\+p}
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a80f7f7bd2c517cd7eb1e86e1d6687e76}\label{bn__bls12__precoms_8c_a80f7f7bd2c517cd7eb1e86e1d6687e76}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!get\+\_\+epsilon@{get\+\_\+epsilon}}
+\index{get\+\_\+epsilon@{get\+\_\+epsilon}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{get\+\_\+epsilon()}{get\_epsilon()}}
+{\footnotesize\ttfamily void get\+\_\+epsilon (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Calculate primitive cubic root of 1 in \hyperlink{struct_fp}{Fp}. 
+
+References epsilon1, epsilon2, Fp\+\_\+clear(), Fp\+\_\+init(), Fp\+\_\+inv(), Fp\+\_\+mul(), Fp\+\_\+set\+\_\+ui(), Fp\+\_\+sqrt(), Fp\+\_\+sub\+\_\+ui(), prime\+\_\+p, and Fp\+::x0.
+
+
+
+Referenced by init\+\_\+precoms().
+
+
+\begin{DoxyCode}
+78                   \{
+79     \hyperlink{struct_fp}{Fp} inv,buf,result1,result2;
+80     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&inv);
+81     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&buf);
+82     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&result1);
+83     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&result2);
+84     
+85     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&buf,2);
+86     \hyperlink{bn__fp_8h_aed138c92bbb10803bffd0f8eb0c090ce}{Fp\_inv}(&inv,&buf);
+87     mpz\_sub\_ui(buf.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p},3);
+88     
+89     \hyperlink{bn__fp_8h_acfc7bfa81b3f370904680568d52a54cd}{Fp\_sqrt}(&buf,&buf);
+90     \hyperlink{bn__fp_8h_a3d6d4295ee158750aac0d3fd7d3a90d7}{Fp\_sub\_ui}(&buf,&buf,1);
+91     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&result1,&buf,&inv);
+92     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&result2,&result1,&result1);
+93     
+94     mpz\_set(\hyperlink{bn__bls12__precoms_8c_a0e028790b8ecdcbc4208efb5da6bf7f1}{epsilon1},result1.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+95     mpz\_set(\hyperlink{bn__bls12__precoms_8c_a38abbebcc534933ce730ba5215d5c9fd}{epsilon2},result2.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+96     
+97     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&inv);
+98     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&buf);
+99     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&result1);
+100     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&result2);
+101 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a6d8315d6721fda3d585086b15cf55cd8}\label{bn__bls12__precoms_8c_a6d8315d6721fda3d585086b15cf55cd8}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!init\+\_\+precoms@{init\+\_\+precoms}}
+\index{init\+\_\+precoms@{init\+\_\+precoms}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{init\+\_\+precoms()}{init\_precoms()}}
+{\footnotesize\ttfamily void init\+\_\+precoms (\begin{DoxyParamCaption}\item[{int}]{curvetype }\end{DoxyParamCaption})}
+
+Initialize B\+L\+S12 curve pre-\/computations
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em curvetype} & -\/ send 2 for B\+L\+S12 and 1 for BN \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, d12, epsilon1, epsilon2, Fp2\+\_\+basis, Fp2\+\_\+basis\+\_\+inv, Fp2\+\_\+init(), Fp6\+\_\+basis, Fp6\+\_\+init(), Fp\+\_\+basis, Fp\+\_\+init(), get\+\_\+epsilon(), curve\+\_\+params\+::prime, prime\+\_\+p, set\+\_\+basis(), and set\+\_\+frobenius\+\_\+constant().
+
+
+
+Referenced by bls12\+\_\+inits(), and init\+\_\+bn().
+
+
+\begin{DoxyCode}
+45                                 \{
+46     
+47     mpz\_init(\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p});
+48     \textcolor{keywordflow}{if} (curvetype == 1) \{
+49         mpz\_set(\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+50     \}
+51     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (curvetype == 2)\{
+52         mpz\_set(\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+53     \}
+54     
+55     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&\hyperlink{bn__bls12__precoms_8c_aa749221c0b50bbde9cb15836c8d91a93}{Fp\_basis});
+56     \hyperlink{bn__fp2_8h_a3e3f039eb9b9874e5a4cc30d37f6546c}{Fp2\_init}(&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis});
+57     \hyperlink{bn__fp2_8h_a3e3f039eb9b9874e5a4cc30d37f6546c}{Fp2\_init}(&\hyperlink{bn__bls12__precoms_8c_a2d027e63b15655f4127ad0fb09c10466}{Fp2\_basis\_inv});
+58     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&\hyperlink{bn__bls12__precoms_8c_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\_basis});
+59     mpz\_init(\hyperlink{bn__bls12__precoms_8c_a0e028790b8ecdcbc4208efb5da6bf7f1}{epsilon1});
+60     mpz\_init(\hyperlink{bn__bls12__precoms_8c_a38abbebcc534933ce730ba5215d5c9fd}{epsilon2});
+61     
+62     \textcolor{keywordtype}{int} i,j;
+63     \textcolor{keywordflow}{for}(i=0; i<\hyperlink{bn__bls12__precoms_8h_aa663bbfdcf0c3ad643b7fc3d9696f24e}{d12}; i++)\{
+64         \textcolor{keywordflow}{for}(j=0; j<6; j++)\{
+65             \hyperlink{bn__fp2_8h_a3e3f039eb9b9874e5a4cc30d37f6546c}{Fp2\_init}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[i][j]);
+66         \}
+67         \textcolor{keywordflow}{for}(j=0; j<2; j++)\{
+68             \hyperlink{bn__fp2_8h_a3e3f039eb9b9874e5a4cc30d37f6546c}{Fp2\_init}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[i][j]);
+69         \}
+70     \}
+71     
+72     
+73     \hyperlink{bn__bls12__precoms_8c_a80f7f7bd2c517cd7eb1e86e1d6687e76}{get\_epsilon}();
+74     \hyperlink{bn__bls12__precoms_8c_afaed5c95cded6e050f9439aafc701b50}{set\_basis}();
+75     \hyperlink{bn__bls12__precoms_8c_ae671f6550af05a06254e8efbe152c10a}{set\_frobenius\_constant}();
+76 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bn__bls12__precoms_8c_afaed5c95cded6e050f9439aafc701b50}\label{bn__bls12__precoms_8c_afaed5c95cded6e050f9439aafc701b50}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!set\+\_\+basis@{set\+\_\+basis}}
+\index{set\+\_\+basis@{set\+\_\+basis}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{set\+\_\+basis()}{set\_basis()}}
+{\footnotesize\ttfamily void set\+\_\+basis (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Set basis elements 
+
+References Fp2\+\_\+basis, Fp2\+\_\+basis\+\_\+inv, Fp2\+\_\+inv(), Fp2\+\_\+set\+\_\+ui(), Fp6\+\_\+basis, Fp6\+\_\+set\+\_\+ui(), Fp\+\_\+basis, Fp\+\_\+set\+\_\+ui(), and Fp6\+::x1.
+
+
+
+Referenced by init\+\_\+precoms().
+
+
+\begin{DoxyCode}
+103                 \{
+104     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_aa749221c0b50bbde9cb15836c8d91a93}{Fp\_basis},1);
+105     \hyperlink{bn__fp2_8h_a26bc626066ef007def29395206212745}{Fp2\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},1);
+106     \hyperlink{bn__fp6_8h_a6396eb28e03e9cf06cdc15309e884bac}{Fp6\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\_basis},0);
+107     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\_basis}.\hyperlink{struct_fp6_ad149e3733977c804cc8dd63c207bfcee}{x1}.x0,1);
+108     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&\hyperlink{bn__bls12__precoms_8c_a2d027e63b15655f4127ad0fb09c10466}{Fp2\_basis\_inv},&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis});
+109 \}
+\end{DoxyCode}
+\mbox{\Hypertarget{bn__bls12__precoms_8c_ae671f6550af05a06254e8efbe152c10a}\label{bn__bls12__precoms_8c_ae671f6550af05a06254e8efbe152c10a}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!set\+\_\+frobenius\+\_\+constant@{set\+\_\+frobenius\+\_\+constant}}
+\index{set\+\_\+frobenius\+\_\+constant@{set\+\_\+frobenius\+\_\+constant}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{set\+\_\+frobenius\+\_\+constant()}{set\_frobenius\_constant()}}
+{\footnotesize\ttfamily void set\+\_\+frobenius\+\_\+constant (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+Set Frobenius map constants 
+
+References f\+\_\+p1, f\+\_\+p10, f\+\_\+p2, f\+\_\+p3, f\+\_\+p4, f\+\_\+p8, Fp2\+\_\+basis, Fp2\+\_\+clear(), Fp2\+\_\+init(), Fp2\+\_\+inv(), Fp2\+\_\+mul(), Fp2\+\_\+pow(), Fp2\+\_\+set(), Fp\+\_\+set\+\_\+ui(), prime\+\_\+p, and Fp6\+::x0.
+
+
+
+Referenced by init\+\_\+precoms().
+
+
+\begin{DoxyCode}
+111                              \{
+112     \hyperlink{struct_fp2}{Fp2} tmp1,tmp2,tmp3;
+113     \hyperlink{bn__fp2_8h_a3e3f039eb9b9874e5a4cc30d37f6546c}{Fp2\_init}(&tmp1);
+114     \hyperlink{bn__fp2_8h_a3e3f039eb9b9874e5a4cc30d37f6546c}{Fp2\_init}(&tmp2);
+115     \hyperlink{bn__fp2_8h_a3e3f039eb9b9874e5a4cc30d37f6546c}{Fp2\_init}(&tmp3);
+116     
+117     mpz\_t exp,buf,p2,p3,p4,p6,p8,p10;
+118     mpz\_init(exp);
+119     mpz\_init(buf);
+120     mpz\_init(p2);
+121     mpz\_init(p3);
+122     mpz\_init(p4);
+123     mpz\_init(p6);
+124     mpz\_init(p8);
+125     mpz\_init(p10);
+126     
+127     mpz\_mul(p2,\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p},\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p});
+128     mpz\_mul(p3,p2,\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p});
+129     mpz\_mul(p4,p3,\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p});
+130     mpz\_mul(p6,p4,p2);
+131     mpz\_mul(p8,p6,p2);
+132     mpz\_mul(p10,p8,p2);
+133     
+134     \textcolor{comment}{//frobenius\_1}
+135     mpz\_sub\_ui(exp,\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p},1);
+136     mpz\_tdiv\_q\_ui(exp,exp,3);
+137     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp1,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+138     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&tmp2,&tmp1,&tmp1);
+139     mpz\_tdiv\_q\_ui(exp,exp,2);
+140     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp3,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+141     \textcolor{comment}{//set f\_p1}
+142     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][0].x0,1);
+143     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][1],&tmp1);
+144     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][2],&tmp2);
+145     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][3],&tmp3);
+146     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][4],&tmp1,&tmp3);
+147     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][5],&tmp2,&tmp3);
+148     \textcolor{comment}{//set skew\_f\_p1}
+149     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp1,&tmp1);
+150     mpz\_sub\_ui(exp,\hyperlink{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}{prime\_p},1);
+151     mpz\_tdiv\_q\_ui(exp,exp,2);
+152     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp2,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+153     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp2,&tmp2);
+154     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][0],&tmp1);
+155     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a6b2a7e5835b06b2b60f20ec787e32e25}{f\_p1}][1],&tmp2);
+156     
+157     \textcolor{comment}{//frobenius\_2}
+158     mpz\_sub\_ui(exp,p2,1);
+159     mpz\_tdiv\_q\_ui(exp,exp,3);
+160     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp1,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+161     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&tmp2,&tmp1,&tmp1);
+162     mpz\_tdiv\_q\_ui(exp,exp,2);
+163     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp3,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+164     \textcolor{comment}{//set f\_p2}
+165     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][0].x0,1);
+166     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][1],&tmp1);
+167     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][2],&tmp2);
+168     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][3],&tmp3);
+169     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][4],&tmp1,&tmp3);
+170     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][5],&tmp2,&tmp3);
+171     \textcolor{comment}{//set skew\_f\_p2}
+172     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp1,&tmp1);
+173     mpz\_sub\_ui(exp,p2,1);
+174     mpz\_tdiv\_q\_ui(exp,exp,2);
+175     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp2,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+176     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp2,&tmp2);
+177     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][0],&tmp1);
+178     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a220a0bc6bdbece2018552a2f98b26981}{f\_p2}][1],&tmp2);
+179     
+180     \textcolor{comment}{//frobenius\_3}
+181     mpz\_sub\_ui(exp,p3,1);
+182     mpz\_tdiv\_q\_ui(exp,exp,3);
+183     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp1,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+184     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&tmp2,&tmp1,&tmp1);
+185     mpz\_tdiv\_q\_ui(exp,exp,2);
+186     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp3,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+187     \textcolor{comment}{//set f\_p3}
+188     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][0].x0,1);
+189     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][1],&tmp1);
+190     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][2],&tmp2);
+191     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][3],&tmp3);
+192     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][4],&tmp1,&tmp3);
+193     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][5],&tmp2,&tmp3);
+194     \textcolor{comment}{//set skew\_f\_p3}
+195     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp1,&tmp1);
+196     mpz\_sub\_ui(exp,p3,1);
+197     mpz\_tdiv\_q\_ui(exp,exp,2);
+198     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp2,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+199     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp2,&tmp2);
+200     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][0],&tmp1);
+201     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a0b24745a3f800f50f2d69f2643ba02c9}{f\_p3}][1],&tmp2);
+202     
+203     \textcolor{comment}{//d12\_frobenius\_constant[f\_p4]}
+204     mpz\_sub\_ui(exp,p4,1);
+205     mpz\_tdiv\_q\_ui(exp,exp,3);
+206     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp1,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+207     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&tmp2,&tmp1,&tmp1);
+208     mpz\_tdiv\_q\_ui(exp,exp,2);
+209     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp3,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+210     \textcolor{comment}{//set d12\_frobenius\_constant[f\_p4]}
+211     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a3c8327f0ff0d771d936f045a73f8fa36}{f\_p4}][0].x0,1);
+212     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a3c8327f0ff0d771d936f045a73f8fa36}{f\_p4}][1],&tmp1);
+213     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a3c8327f0ff0d771d936f045a73f8fa36}{f\_p4}][2],&tmp2);
+214     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a3c8327f0ff0d771d936f045a73f8fa36}{f\_p4}][3],&tmp3);
+215     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a3c8327f0ff0d771d936f045a73f8fa36}{f\_p4}][4],&tmp1,&tmp3);
+216     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a3c8327f0ff0d771d936f045a73f8fa36}{f\_p4}][5],&tmp2,&tmp3);
+217     
+218     \textcolor{comment}{//d12\_frobenius\_constant[f\_p8]}
+219     mpz\_sub\_ui(exp,p8,1);
+220     mpz\_tdiv\_q\_ui(exp,exp,3);
+221     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp1,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+222     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&tmp2,&tmp1,&tmp1);
+223     mpz\_tdiv\_q\_ui(exp,exp,2);
+224     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp3,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+225     \textcolor{comment}{//set d12\_frobenius\_constant[f\_p8]}
+226     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a7ca46f5abc1cc236dcdd22a3e6c975bd}{f\_p8}][0].x0,1);
+227     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a7ca46f5abc1cc236dcdd22a3e6c975bd}{f\_p8}][1],&tmp1);
+228     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a7ca46f5abc1cc236dcdd22a3e6c975bd}{f\_p8}][2],&tmp2);
+229     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a7ca46f5abc1cc236dcdd22a3e6c975bd}{f\_p8}][3],&tmp3);
+230     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a7ca46f5abc1cc236dcdd22a3e6c975bd}{f\_p8}][4],&tmp1,&tmp3);
+231     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a7ca46f5abc1cc236dcdd22a3e6c975bd}{f\_p8}][5],&tmp2,&tmp3);
+232     
+233     \textcolor{comment}{//frobenius\_10}
+234     mpz\_sub\_ui(exp,p10,1);
+235     mpz\_tdiv\_q\_ui(exp,exp,3);
+236     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp1,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+237     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&tmp2,&tmp1,&tmp1);
+238     mpz\_tdiv\_q\_ui(exp,exp,2);
+239     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp3,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+240     \textcolor{comment}{//set frobenius\_10}
+241     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][0].x0,1);
+242     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][1],&tmp1);
+243     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][2],&tmp2);
+244     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][3],&tmp3);
+245     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][4],&tmp1,&tmp3);
+246     \hyperlink{bn__fp2_8h_ae50d2c78465c0e5b292d3f702026edd1}{Fp2\_mul}(&\hyperlink{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][5],&tmp2,&tmp3);
+247     \textcolor{comment}{//set skew\_f\_10}
+248     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp1,&tmp1);
+249     mpz\_sub\_ui(exp,p10,1);
+250     mpz\_tdiv\_q\_ui(exp,exp,2);
+251     \hyperlink{bn__fp2_8h_ae74c3c626556a36bcfa28e1458d12f45}{Fp2\_pow}(&tmp2,&\hyperlink{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
+252     \hyperlink{bn__fp2_8h_a7612a61b05565139bbdd9833fe3d9a20}{Fp2\_inv}(&tmp2,&tmp2);
+253     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][0],&tmp1);
+254     \hyperlink{bn__fp2_8h_a7d6f34091363334426c45b9e1ee4503c}{Fp2\_set}(&\hyperlink{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90a589107f7d611c128a7d44a1fcec27129}{f\_p10}][1],&tmp2);
+255     
+256     \hyperlink{bn__fp2_8h_ad8fa15596936c4fecfb26dc0d702ad22}{Fp2\_clear}(&tmp1);
+257     \hyperlink{bn__fp2_8h_ad8fa15596936c4fecfb26dc0d702ad22}{Fp2\_clear}(&tmp2);
+258     \hyperlink{bn__fp2_8h_ad8fa15596936c4fecfb26dc0d702ad22}{Fp2\_clear}(&tmp3);
+259     mpz\_clear(exp);
+260     mpz\_clear(buf);
+261     mpz\_clear(p2);
+262     mpz\_clear(p3);
+263     mpz\_clear(p4);
+264     mpz\_clear(p6);
+265     mpz\_clear(p8);
+266     mpz\_clear(p10);
+267 \}
+\end{DoxyCode}
+
+
+\subsection{Variable Documentation}
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}\label{bn__bls12__precoms_8c_a668f0650e0bebe3e289fb6b842eb0f8b}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!d12\+\_\+frobenius\+\_\+constant@{d12\+\_\+frobenius\+\_\+constant}}
+\index{d12\+\_\+frobenius\+\_\+constant@{d12\+\_\+frobenius\+\_\+constant}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{d12\+\_\+frobenius\+\_\+constant}{d12\_frobenius\_constant}}
+{\footnotesize\ttfamily \hyperlink{struct_fp2}{Fp2} d12\+\_\+frobenius\+\_\+constant\mbox{[}\hyperlink{bn__bls12__precoms_8h_aa663bbfdcf0c3ad643b7fc3d9696f24e}{d12}\mbox{]}\mbox{[}6\mbox{]}}
+
+Constant values for Frobenius map (FM) to multiplied during FM calculations. 
+
+Referenced by bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p10(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p4(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p8(), clear\+\_\+parameters(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p10(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p4(), and Fp12\+\_\+frobenius\+\_\+map\+\_\+p8().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}\label{bn__bls12__precoms_8c_a2edd47729be9eb7efbc03dc7e8770513}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!d12\+\_\+skew\+\_\+frobenius\+\_\+constant@{d12\+\_\+skew\+\_\+frobenius\+\_\+constant}}
+\index{d12\+\_\+skew\+\_\+frobenius\+\_\+constant@{d12\+\_\+skew\+\_\+frobenius\+\_\+constant}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{d12\+\_\+skew\+\_\+frobenius\+\_\+constant}{d12\_skew\_frobenius\_constant}}
+{\footnotesize\ttfamily \hyperlink{struct_fp2}{Fp2} d12\+\_\+skew\+\_\+frobenius\+\_\+constant\mbox{[}\hyperlink{bn__bls12__precoms_8h_aa663bbfdcf0c3ad643b7fc3d9696f24e}{d12}\mbox{]}\mbox{[}2\mbox{]}}
+
+Constant values for skew Frobenius map (FM) to multiplied during skew FM calculations. 
+
+Referenced by bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), clear\+\_\+parameters(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), and E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a0e028790b8ecdcbc4208efb5da6bf7f1}\label{bn__bls12__precoms_8c_a0e028790b8ecdcbc4208efb5da6bf7f1}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!epsilon1@{epsilon1}}
+\index{epsilon1@{epsilon1}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{epsilon1}{epsilon1}}
+{\footnotesize\ttfamily mpz\+\_\+t epsilon1}
+
+Primitive Cube root of 1. 
+
+Referenced by bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), clear\+\_\+parameters(), E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), Fp6\+\_\+inv(), get\+\_\+epsilon(), and init\+\_\+precoms().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a38abbebcc534933ce730ba5215d5c9fd}\label{bn__bls12__precoms_8c_a38abbebcc534933ce730ba5215d5c9fd}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!epsilon2@{epsilon2}}
+\index{epsilon2@{epsilon2}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{epsilon2}{epsilon2}}
+{\footnotesize\ttfamily mpz\+\_\+t epsilon2}
+
+
+
+Referenced by clear\+\_\+parameters(), Fp6\+\_\+inv(), get\+\_\+epsilon(), and init\+\_\+precoms().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}\label{bn__bls12__precoms_8c_ac7674cdb599a70b07ea48cf3964d98db}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!Fp2\+\_\+basis@{Fp2\+\_\+basis}}
+\index{Fp2\+\_\+basis@{Fp2\+\_\+basis}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{Fp2\+\_\+basis}{Fp2\_basis}}
+{\footnotesize\ttfamily struct \hyperlink{struct_fp2}{Fp2} Fp2\+\_\+basis}
+
+Basis element in \hyperlink{struct_fp2}{Fp2} extension field. 
+
+Referenced by clear\+\_\+parameters(), init\+\_\+precoms(), set\+\_\+basis(), and set\+\_\+frobenius\+\_\+constant().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a2d027e63b15655f4127ad0fb09c10466}\label{bn__bls12__precoms_8c_a2d027e63b15655f4127ad0fb09c10466}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!Fp2\+\_\+basis\+\_\+inv@{Fp2\+\_\+basis\+\_\+inv}}
+\index{Fp2\+\_\+basis\+\_\+inv@{Fp2\+\_\+basis\+\_\+inv}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{Fp2\+\_\+basis\+\_\+inv}{Fp2\_basis\_inv}}
+{\footnotesize\ttfamily struct \hyperlink{struct_fp2}{Fp2} Fp2\+\_\+basis\+\_\+inv}
+
+Inverted \hyperlink{struct_fp2}{Fp2} basis element. 
+
+Referenced by Fp2\+\_\+inv\+\_\+basis(), init\+\_\+precoms(), and set\+\_\+basis().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_abeaba57e2fac3468cc4e0af12a9930b5}\label{bn__bls12__precoms_8c_abeaba57e2fac3468cc4e0af12a9930b5}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!Fp6\+\_\+basis@{Fp6\+\_\+basis}}
+\index{Fp6\+\_\+basis@{Fp6\+\_\+basis}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{Fp6\+\_\+basis}{Fp6\_basis}}
+{\footnotesize\ttfamily struct \hyperlink{struct_fp6}{Fp6} Fp6\+\_\+basis}
+
+Basis element in \hyperlink{struct_fp6}{Fp6} extension field. 
+
+Referenced by clear\+\_\+parameters(), init\+\_\+precoms(), and set\+\_\+basis().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_aa749221c0b50bbde9cb15836c8d91a93}\label{bn__bls12__precoms_8c_aa749221c0b50bbde9cb15836c8d91a93}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!Fp\+\_\+basis@{Fp\+\_\+basis}}
+\index{Fp\+\_\+basis@{Fp\+\_\+basis}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{Fp\+\_\+basis}{Fp\_basis}}
+{\footnotesize\ttfamily struct \hyperlink{struct_fp}{Fp} Fp\+\_\+basis}
+
+Basis element in prime field. 
+
+Referenced by clear\+\_\+parameters(), init\+\_\+precoms(), and set\+\_\+basis().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}\label{bn__bls12__precoms_8c_a79b30343dc5c6a1ddcbb9d8f762595ac}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!prime\+\_\+p@{prime\+\_\+p}}
+\index{prime\+\_\+p@{prime\+\_\+p}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{prime\+\_\+p}{prime\_p}}
+{\footnotesize\ttfamily mpz\+\_\+t prime\+\_\+p\hspace{0.3cm}{\ttfamily [static]}}
+
+
+
+Referenced by get\+\_\+epsilon(), init\+\_\+precoms(), and set\+\_\+frobenius\+\_\+constant().
+
+\mbox{\Hypertarget{bn__bls12__precoms_8c_a9f8b71742e74bcfa6c4b6d38a690329d}\label{bn__bls12__precoms_8c_a9f8b71742e74bcfa6c4b6d38a690329d}} 
+\index{bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}!state@{state}}
+\index{state@{state}!bn\+\_\+bls12\+\_\+precoms.\+c@{bn\+\_\+bls12\+\_\+precoms.\+c}}
+\subsubsection{\texorpdfstring{state}{state}}
+{\footnotesize\ttfamily gmp\+\_\+randstate\+\_\+t \hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state}}
+

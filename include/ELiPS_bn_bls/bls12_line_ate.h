@@ -26,12 +26,42 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+/**
+ * @file
+ *
+ * Interaface for BLS12 line evaluation for ate pairing.
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_line_ate_h
 #define bls12_line_ate_h
 
 #include <ELiPS_bn_bls/bls12_p8sparse.h>
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+/**
+ * Calculate line equation ltt that goes through T and P in Miller's algo.
+ *
+ * @param[out] f			    - output in Fp12 
+ * @param[in] T			        - Input rational point T in Fp2.
+ * @param[in] P		            - Input rational point P in mapped Fp.
+ * @param[in] L			        - Input element L in mapped Fp after precomputation in Miller's algo.
+ */
 extern void bls12_ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L);
+
+/**
+ * Calculate line equation ltq that goes through T,Q and P in Miller's algo.
+ *
+ * @param[out] f			    - output in Fp12 
+ * @param[in] T			        - Input rational point T in Fp2.
+ * @param[in] Q		            - Input rational point Q mapped in Fp2.
+ * @param[in] P		            - Input rational point P mapped in Fp.
+ * @param[in] L			        - Input element L in mapped Fp after precomputation in Miller's algo.
+ */
 extern void bls12_f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L);
 
 #endif /* bls12_line_ate_h */

@@ -26,12 +26,38 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interaface for BLS12 Pseudo 8-sparse multplication in Miller's algo of tate pairing https://eprint.iacr.org/2017/1174.pdf
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_p8sparse_h
 #define bls12_p8sparse_h
 
 #include <ELiPS_bn_bls/bn_efp2.h>
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
 
+/**
+ * Calculate Precomputations for Pseudo 8-sparse multplication and Millers algo.
+ *
+ * @param[in] P			        - P in G1 
+ * @param[in] Q			        - Q in G2.
+ * @param[in] L		            - L in Fp from Miller's algo.
+ */
 extern void bls12_Pseudo_8_sparse_mapping(EFp *P,EFp2 *Q,Fp *L);
+
+/**
+ * Calculate Precomputations for Pseudo 8-sparse multplication and Millers algo.
+ *
+ * @param[out] ANS			    - output of Pseudo 8-sparse multplication
+ * @param[in] A			        - Fp12 vector.
+ * @param[in] B		            - Fp12 vector.
+ */
 extern void bls12_Pseudo_8_sparse_mul(Fp12 *ANS,Fp12 *A,Fp12 *B);
 
 #endif /* bls12_p8sparse_h */

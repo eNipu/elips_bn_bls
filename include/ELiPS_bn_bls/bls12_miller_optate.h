@@ -26,6 +26,14 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interaface for BLS12 Miller's algo of optimal-ate pairing.
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_miller_optate_h
 #define bls12_miller_optate_h
 
@@ -33,8 +41,16 @@
 #include <ELiPS_bn_bls/bls12_p8sparse.h>
 #include <ELiPS_bn_bls/bls12_line_ate.h>
 
-
-//miller algo for opt-ate
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+/**
+ * Calculate Miller's loop for optimal ate pairing in BLS12 curve.
+ *
+ * @param[out] ANS			    - output in Fp12
+ * @param[in] Q			        - Input rational point Q in G2.
+ * @param[in] P		            - Input rational point P in G1.
+ */
 extern void bls12_Miller_algo_for_opt_ate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
 
 #endif /* bls12_miller_optate_h */

@@ -1,0 +1,64 @@
+\hypertarget{bn__miller__tate_8h}{}\section{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+tate.h File Reference}
+\label{bn__miller__tate_8h}\index{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+tate.\+h@{include/\+E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+miller\+\_\+tate.\+h}}
+{\ttfamily \#include $<$E\+Li\+P\+S\+\_\+bn\+\_\+bls/bn\+\_\+line\+\_\+tate.\+h$>$}\newline
+Include dependency graph for bn\+\_\+miller\+\_\+tate.\+h\+:
+% FIG 0
+This graph shows which files directly or indirectly include this file\+:
+% FIG 1
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{bn__miller__tate_8h_ab485b4a06e4e9532d91909c443a3ad3d}{Miller\+\_\+algo\+\_\+for\+\_\+tate} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$P, \hyperlink{struct_e_fp12}{E\+Fp12} $\ast$Q)
+\end{DoxyCompactItemize}
+
+
+\subsection{Function Documentation}
+\mbox{\Hypertarget{bn__miller__tate_8h_ab485b4a06e4e9532d91909c443a3ad3d}\label{bn__miller__tate_8h_ab485b4a06e4e9532d91909c443a3ad3d}} 
+\index{bn\+\_\+miller\+\_\+tate.\+h@{bn\+\_\+miller\+\_\+tate.\+h}!Miller\+\_\+algo\+\_\+for\+\_\+tate@{Miller\+\_\+algo\+\_\+for\+\_\+tate}}
+\index{Miller\+\_\+algo\+\_\+for\+\_\+tate@{Miller\+\_\+algo\+\_\+for\+\_\+tate}!bn\+\_\+miller\+\_\+tate.\+h@{bn\+\_\+miller\+\_\+tate.\+h}}
+\subsubsection{\texorpdfstring{Miller\+\_\+algo\+\_\+for\+\_\+tate()}{Miller\_algo\_for\_tate()}}
+{\footnotesize\ttfamily void Miller\+\_\+algo\+\_\+for\+\_\+tate (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{P,  }\item[{\hyperlink{struct_e_fp12}{E\+Fp12} $\ast$}]{Q }\end{DoxyParamCaption})}
+
+
+
+References curve\+\_\+parameters, E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), E\+Fp\+\_\+set(), f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), Fp12\+\_\+clear(), Fp12\+\_\+init(), Fp12\+\_\+set(), Fp12\+\_\+set\+\_\+ui(), Fp\+\_\+set(), Fp\+\_\+set\+\_\+ui(), E\+Fp\+::infinity, E\+Fp12\+::infinity, curve\+\_\+params\+::order, E\+Fp\+::x, E\+Fp12\+::x, Fp6\+::x0, Fp12\+::x0, E\+Fp\+::y, and E\+Fp12\+::y.
+
+
+
+Referenced by bn12\+\_\+tate().
+
+
+\begin{DoxyCode}
+31                                                       \{
+32     \hyperlink{struct_e_fp}{EFp} Tmp\_P,T;
+33     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&Tmp\_P);
+34     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&T);
+35     \hyperlink{struct_fp12}{Fp12} f;
+36     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&f);
+37     \textcolor{keywordtype}{int} i,length;
+38     length=(int)mpz\_sizeinbase(\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order},2);
+39     \textcolor{keywordtype}{char} binary[length];
+40     mpz\_get\_str(binary,2,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
+41     
+42     \textcolor{comment}{//set}
+43     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&Tmp\_P.\hyperlink{struct_e_fp_a8618afb86482b3d0706034daf34bcb26}{x},&P->\hyperlink{struct_e_fp12_a2093c5bc5dbf6d031eb56a8854507ef0}{x}.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0);
+44     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&Tmp\_P.\hyperlink{struct_e_fp_abf3b0f738e395442776f86293dd457d8}{y},&P->\hyperlink{struct_e_fp12_adc7c5acbe16cd3aafe56696ecf8be16c}{y}.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0);
+45     Tmp\_P.\hyperlink{struct_e_fp_a909983155a262e8a19f2fb170676643f}{infinity}=P->\hyperlink{struct_e_fp12_a00227737aefc2c00985e2a4b5f417ca0}{infinity};
+46     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&T,&Tmp\_P);
+47     \hyperlink{bn__fp12_8h_abab8338a90506aac6754cca5a661477f}{Fp12\_set\_ui}(&f,0);
+48     \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\_set\_ui}(&f.\hyperlink{struct_fp12_ab8234c224ef46c39a7f8001c87dddeb7}{x0}.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0,1);
+49     
+50     \textcolor{comment}{//miller}
+51     \textcolor{keywordflow}{for}(i=1; i<length; i++)\{
+52         \hyperlink{bn__line__tate_8h_a3d6eec760dcba5f9396e2eff233df834}{ff\_ltt\_vtt\_for\_tate}(&f,&T,Q);
+53         \textcolor{keywordflow}{if}(binary[i]==\textcolor{charliteral}{'1'})\{
+54             \hyperlink{bn__line__tate_8h_a19b221b2b4d553adcd6f5d2c13cefbcd}{f\_ltp\_vtp\_for\_tate}(&f,&T,&Tmp\_P,Q);
+55         \}
+56     \}
+57     \hyperlink{bn__fp12_8h_a95c271ea5c7c21d89c9a0123a896e47d}{Fp12\_set}(ANS,&f);
+58     
+59     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&f);
+60     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&T);
+61     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Tmp\_P);
+62 \}
+\end{DoxyCode}

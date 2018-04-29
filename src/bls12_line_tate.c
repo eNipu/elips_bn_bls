@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bls12_line_tate.h>
 
-void bls12_EFp_ECD_return_lambda(EFp *ANS,Fp *lambda,EFp *P){
+static void bls12_EFp_ECD_return_lambda(EFp *ANS,Fp *lambda,EFp *P){
     if(Fp_cmp_zero(&P->y)==0){
         ANS->infinity=1;
         return;
@@ -59,7 +59,7 @@ void bls12_EFp_ECD_return_lambda(EFp *ANS,Fp *lambda,EFp *P){
     EFp_clear(&Tmp_P);
 }
 
-void bls12_EFp_ECA_return_lambda(EFp *ANS,Fp *lambda,EFp *P1, EFp *P2){
+static void bls12_EFp_ECA_return_lambda(EFp *ANS,Fp *lambda,EFp *P1, EFp *P2){
     if(P1->infinity==1){
         EFp_set(ANS,P2);
         return;

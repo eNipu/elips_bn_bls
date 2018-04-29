@@ -26,8 +26,18 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interaface for BLS12's Usefull pairing and scm functionality
+ *
+ * @ingroup bls12
+ */
+
 #ifndef bls12_test_pairings_h
 #define bls12_test_pairings_h
+
+
 
 #include <ELiPS_bn_bls/bls12_pairings.h>
 #include <ELiPS_bn_bls/bls12_generate_points.h>
@@ -35,11 +45,38 @@
 #include <ELiPS_bn_bls/bls12_scm.h>
 #include <ELiPS_bn_bls/bls12_G3_exp.h>
 
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+
+/**
+ * Test tate pairing in BLS12 curve
+ */
 extern void bls12_test_tate_pairing(void);
+
+/**
+ * Test ate pairing in BLS12 curve
+ */
 extern void bls12_test_plain_ate_pairing(void);
+
+/**
+ * Test opt-ate pairing in BLS12 curve
+ */
 extern void bls12_test_opt_ate_pairing(void);
+
+/**
+ * Test G1 scm  in BLS12 curve
+ */
 extern void bls12_test_G1_scm(void);
+
+/**
+ * Test G2 scm  in BLS12 curve
+ */
 extern void bls12_test_G2_scm(void);
+
+/**
+ * Test G3 exponentiation in BLS12 curve
+ */
 extern void bls12_test_G3_exp(void);
 
 #endif /* bls12_test_pairings_h */
