@@ -36,9 +36,9 @@
 #include <ELiPS_bn_bls/bn_final_exp.h>
 #include <ELiPS_bn_bls/bn_utils.h>
 
-extern void BN12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
-extern void BN12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q);
-extern void BN12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
-extern void BN12_x_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
+extern void bn12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
+extern void bn12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q);
+extern void bn12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
+extern void bn12_x_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
 
 #endif /* bn_pairings_h */

@@ -302,7 +302,7 @@ static void print_kss16curve() {
 
 void print_curve_parameters(){
     printf("====================================================================================\n");
-    printf("BN12\n\n");
+    printf("bn12\n\n");
     gmp_printf("parameters\n");
     gmp_printf("X     (%dbit length) : %Zd \n",(int)mpz_sizeinbase(curve_parameters.X,2),curve_parameters.X);
     gmp_printf("prime (%dbit length) : %Zd \n",(int)mpz_sizeinbase(curve_parameters.prime,2),curve_parameters.prime);

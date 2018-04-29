@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bn_pairings.h>
 
-void BN12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
+void bn12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     //miller
     gettimeofday(&t0,NULL);
     Miller_algo_for_tate(ANS,P,Q);
@@ -42,7 +42,7 @@ void BN12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     FINALEXP_OPT=timedifference_msec(t0,t1);
 }
 
-void BN12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
+void bn12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     //miller
     gettimeofday(&t0,NULL);
     Miller_algo_for_plain_ate(ANS,P,Q);
@@ -56,7 +56,7 @@ void BN12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     FINALEXP_OPT=timedifference_msec(t0,t1);
 }
 
-void BN12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
+void bn12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     //miller
     gettimeofday(&t0,NULL);
     Miller_algo_for_opt_ate(ANS,P,Q);
@@ -70,7 +70,7 @@ void BN12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     FINALEXP_OPT=timedifference_msec(t0,t1);
 }
 
-void BN12_x_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
+void bn12_x_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     //miller
     gettimeofday(&t0,NULL);
     Miller_algo_for_x_ate(ANS,P,Q);

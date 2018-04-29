@@ -32,7 +32,7 @@ EFp12 G1_P;
 EFp12 G2_Q;
 EFp12 Random_R;
 
-void BN12_generate_G1_point(EFp12 *P){
+void bn12_generate_G1_point(EFp12 *P){
     EFp12_init(P);
     EFp Tmp;
     EFp_init(&Tmp);
@@ -47,7 +47,7 @@ void BN12_generate_G1_point(EFp12 *P){
 }
 
 //TODO
-void BN12_generate_G2_point(EFp12 *Q){
+void bn12_generate_G2_point(EFp12 *Q){
     EFp12_init(Q);
     EFp12 random_P,P,frobenius_P;
     EFp12_init(&random_P);
@@ -71,7 +71,7 @@ void BN12_generate_G2_point(EFp12 *Q){
     EFp12_clear(&frobenius_P);
 }
 
-void BN12_generate_random_point(EFp12 *R){
+void bn12_generate_random_point(EFp12 *R){
     EFp12_init(R);
     EFp12_rational_point_BN(R);
 }

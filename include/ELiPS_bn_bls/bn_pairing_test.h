@@ -32,9 +32,9 @@
 #include <ELiPS_bn_bls/bn_pairings.h>
 #include <ELiPS_bn_bls/bn_generate_points.h>
 
-extern void BN12_test_tate_pairing(void);
-extern void BN12_test_plain_ate_pairing(void);
-extern void BN12_test_opt_ate_pairing(void);
-extern void BN12_test_x_ate_pairing(void);
+extern void bn12_test_tate_pairing(void);
+extern void bn12_test_plain_ate_pairing(void);
+extern void bn12_test_opt_ate_pairing(void);
+extern void bn12_test_x_ate_pairing(void);
 
 #endif /* bn_pairing_test_h */

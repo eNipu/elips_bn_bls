@@ -44,22 +44,22 @@ extern double timedifference_msec(struct timeval t0, struct timeval t1);
 extern double timedifference_usec(struct timeval t0, struct timeval t1);
 
 //print pairing
-extern void BN12_print_parameters(void);
-extern void BN12_print_G1_point(void);
-extern void BN12_print_G2_point(void);
-extern void BN12_print_tate_time(void);
-extern void BN12_print_plain_ate_time(void);
-extern void BN12_print_opt_ate_time(void);
-extern void BN12_print_x_ate_time(void);
-extern void BN12_print_final_exp_plain_time(void);
-extern void BN12_print_final_exp_optimal_time(void);
-extern void BN12_print_G1_plain_time(void);
-extern void BN12_print_G1_2split_time(void);
-extern void BN12_print_G2_plain_time(void);
-extern void BN12_print_G2_2split_time(void);
-extern void BN12_print_G2_4split_time(void);
-extern void BN12_print_G3_plain_time(void);
-extern void BN12_print_G3_2split_time(void);
-extern void BN12_print_G3_4split_time(void);
+extern void bn12_print_parameters(void);
+extern void bn12_print_G1_point(void);
+extern void bn12_print_G2_point(void);
+extern void bn12_print_tate_time(void);
+extern void bn12_print_plain_ate_time(void);
+extern void bn12_print_opt_ate_time(void);
+extern void bn12_print_x_ate_time(void);
+extern void bn12_print_final_exp_plain_time(void);
+extern void bn12_print_final_exp_optimal_time(void);
+extern void bn12_print_G1_plain_time(void);
+extern void bn12_print_G1_2split_time(void);
+extern void bn12_print_G2_plain_time(void);
+extern void bn12_print_G2_2split_time(void);
+extern void bn12_print_G2_4split_time(void);
+extern void bn12_print_G3_plain_time(void);
+extern void bn12_print_G3_2split_time(void);
+extern void bn12_print_G3_4split_time(void);
 
 #endif /* bn_utils_h */
