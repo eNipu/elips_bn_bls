@@ -1,6 +1,6 @@
 //
 //  bn_settings.c
-//  BN_Single_File_Elips
+//  bn_Single_File_Elips
 //
 //  Created by Y.Nanjo and M.A.A Khandaker on 1/25/18.
 //  Copyright © 2018 Khandaker Md. Al-Amin. All rights reserved.
@@ -11,8 +11,8 @@
 
 
 struct curve_params curve_parameters;
-char X_binary[BN_X_length+1];
-char X_binary_opt[BN_X_length+3];
+char X_binary[bn_X_length+1];
+char X_binary_opt[bn_X_length+3];
 char X_bit_binary_kss16[KSS16_X_length+1];
 //---------------------------------------------------------------------
 int bls12_X_length;
@@ -73,10 +73,10 @@ void init_bn_parameters(){
     mpz_init(curve_parameters.curve_b);
     
     int i;
-    for(i=0; i<BN_X_length+1; i++){
+    for(i=0; i<bn_X_length+1; i++){
         X_binary[i]=0;
     }
-    for(i=0; i<BN_X_length+3; i++){
+    for(i=0; i<bn_X_length+3; i++){
         X_binary_opt[i]=0;
     }
 }
@@ -95,10 +95,10 @@ void init_bls12_parameters(){
     mpz_init(curve_parameters.curve_b);
     
     int i;
-    for(i=0; i<BN_X_length+1; i++){
+    for(i=0; i<bn_X_length+1; i++){
         X_binary[i]=0;
     }
-    for(i=0; i<BN_X_length+3; i++){
+    for(i=0; i<bn_X_length+3; i++){
         X_binary_opt[i]=0;
     }
     
@@ -152,7 +152,7 @@ void generate_bn_mother_parameter(){
     
     //X
     mpz_set_ui(curve_parameters.X,0);
-    for(i=BN_X_length; i>=0; i--){
+    for(i=bn_X_length; i>=0; i--){
         if(X_binary[i]==1){
             mpz_ui_pow_ui(buf,2,i);
             mpz_add(curve_parameters.X,curve_parameters.X,buf);

@@ -34,7 +34,7 @@
 
 #define d12 12
 #define d24 24
-//#define BN_X_length 114
+//#define bn_X_length 114
 
 enum state{
     f_p1,f_p2,f_p3,f_p4,f_p5,f_p6,f_p7,f_p8,f_p9,f_p10,f_p11,f_p12

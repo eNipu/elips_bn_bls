@@ -121,7 +121,7 @@ void Fp12_pow_X(Fp12 *ANS,Fp12 *A){
     Fp12_frobenius_map_p6(&A_inv,A);
     
     Fp12_set(&tmp,A);
-    for(i=BN_X_length-1; i>=0; i--){
+    for(i=bn_X_length-1; i>=0; i--){
         switch(X_binary[i]){
             case 0:
                 Fp12_sqr(&tmp,&tmp);

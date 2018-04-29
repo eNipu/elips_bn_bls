@@ -38,7 +38,7 @@ extern void EFp_set(EFp *ANS,EFp *P);
 extern void EFp_set_ui(EFp *ANS,unsigned long int UI);
 extern void EFp_set_mpz(EFp *ANS,mpz_t A);
 extern void EFp_set_neg(EFp *ANS,EFp *P);
-extern void EFp_rational_point_BN(EFp *P);
+extern void EFp_rational_point_bn(EFp *P);
 extern void EFp_rational_point_bls12(EFp *P);
 extern void EFp_ECD(EFp *ANS,EFp *P);
 extern void EFp_ECA(EFp *ANS,EFp *P1,EFp *P2);

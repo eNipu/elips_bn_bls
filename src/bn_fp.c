@@ -1,6 +1,6 @@
 //
 //  bn_fp.c
-//  BN_Single_File_Elips
+//  bn_Single_File_Elips
 //
 //  Created by Y.Nanjo and M.A.A Khandaker on 1/25/18.
 //  Copyright © 2018 Khandaker Md. Al-Amin. All rights reserved.

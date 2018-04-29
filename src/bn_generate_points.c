@@ -37,7 +37,7 @@ void bn12_generate_G1_point(EFp12 *P){
     EFp Tmp;
     EFp_init(&Tmp);
     
-    EFp_rational_point_BN(&Tmp);
+    EFp_rational_point_bn(&Tmp);
     EFp12_set_ui(P,0);
     Fp_set(&P->x.x0.x0.x0,&Tmp.x);
     Fp_set(&P->y.x0.x0.x0,&Tmp.y);
@@ -56,7 +56,7 @@ void bn12_generate_G2_point(EFp12 *Q){
     mpz_t exp;
     mpz_init(exp);
     
-    EFp12_rational_point_BN(&random_P);
+    EFp12_rational_point_bn(&random_P);
     mpz_pow_ui(exp,curve_parameters.order,2);
     mpz_tdiv_q(exp,curve_parameters.EFpd_total,exp);
     EFp12_SCM(&P,&random_P,exp);
@@ -73,5 +73,5 @@ void bn12_generate_G2_point(EFp12 *Q){
 
 void bn12_generate_random_point(EFp12 *R){
     EFp12_init(R);
-    EFp12_rational_point_BN(R);
+    EFp12_rational_point_bn(R);
 }

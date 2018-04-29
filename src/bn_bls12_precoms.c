@@ -42,7 +42,7 @@ Fp2 d12_skew_frobenius_constant[d12][2];
 
 static mpz_t prime_p;
 
-//curve type 1 denotes BN and Curve type 2 is bls12
+//curve type 1 denotes bn and Curve type 2 is bls12
 void init_precoms(int curvetype){
     
     mpz_init(prime_p);

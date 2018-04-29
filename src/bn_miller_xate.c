@@ -61,7 +61,7 @@ void Miller_algo_for_x_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     Fp12_set_ui(&f,0);            //set f
     Fp_set_ui(&f.x0.x0.x0,1);
     //miller
-    for(i=BN_X_length-1; i>=0; i--){
+    for(i=bn_X_length-1; i>=0; i--){
         switch(X_binary[i]){
             case 0:
                 ff_ltt(&f,&T,&mapped_P,&L);

@@ -29,18 +29,18 @@ struct curve_params {
     mpz_t curve_b;
 };
 /**
- * @brief BN curve's systematically obtained parameters.
+ * @brief bn curve's systematically obtained parameters.
  *
- * It's a global variable that give access to BN public parameters.
+ * It's a global variable that give access to bn public parameters.
  */
 extern struct curve_params curve_parameters;
 
-#define BN_X_length 114
+#define bn_X_length 114
 
 extern gmp_randstate_t state;
 
-extern char X_binary[BN_X_length+1];
-extern char X_binary_opt[BN_X_length+3];
+extern char X_binary[bn_X_length+1];
+extern char X_binary_opt[bn_X_length+3];
 
 //bls12
 extern int bls12_X_length;

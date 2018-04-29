@@ -75,7 +75,7 @@ void EFp12_set_neg(EFp12 *ANS,EFp12 *P){
     ANS->infinity=P->infinity;
 }
 
-void EFp12_rational_point_BN(EFp12 *P){
+void EFp12_rational_point_bn(EFp12 *P){
     Fp12 tmp1,tmp2;
     Fp12_init(&tmp1);
     Fp12_init(&tmp2);

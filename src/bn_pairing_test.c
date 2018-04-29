@@ -60,7 +60,7 @@ void bn12_test_tate_pairing(){
     bn12_generate_G1_point(&P);
     EFp12_printf(&P,"P : G1 rational point\n");
     printf("\n\n");
-    EFp12_rational_point_BN(&Q);
+    EFp12_rational_point_bn(&Q);
     EFp12_printf(&Q,"Q : random rational point\n");
     printf("\n\n");
     
