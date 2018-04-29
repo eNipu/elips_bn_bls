@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bls12_line_tate.h>
 
-void BLS12_EFp_ECD_return_lambda(EFp *ANS,Fp *lambda,EFp *P){
+void bls12_EFp_ECD_return_lambda(EFp *ANS,Fp *lambda,EFp *P){
     if(Fp_cmp_zero(&P->y)==0){
         ANS->infinity=1;
         return;
@@ -59,7 +59,7 @@ void BLS12_EFp_ECD_return_lambda(EFp *ANS,Fp *lambda,EFp *P){
     EFp_clear(&Tmp_P);
 }
 
-void BLS12_EFp_ECA_return_lambda(EFp *ANS,Fp *lambda,EFp *P1, EFp *P2){
+void bls12_EFp_ECA_return_lambda(EFp *ANS,Fp *lambda,EFp *P1, EFp *P2){
     if(P1->infinity==1){
         EFp_set(ANS,P2);
         return;
@@ -103,7 +103,7 @@ void BLS12_EFp_ECA_return_lambda(EFp *ANS,Fp *lambda,EFp *P1, EFp *P2){
     EFp_clear(&Tmp_P2);
 }
 
-void BLS12_ff_ltt_vtt_for_tate(Fp12 *f,EFp *T,EFp12 *Q){
+void bls12_ff_ltt_vtt_for_tate(Fp12 *f,EFp *T,EFp12 *Q){
     EFp Next_T;
     EFp_init(&Next_T);
     Fp12 tmp1,tmp2,tmp3;
@@ -113,7 +113,7 @@ void BLS12_ff_ltt_vtt_for_tate(Fp12 *f,EFp *T,EFp12 *Q){
     Fp lambda;
     Fp_init(&lambda);
     
-    BLS12_EFp_ECD_return_lambda(&Next_T,&lambda,T);
+    bls12_EFp_ECD_return_lambda(&Next_T,&lambda,T);
     switch(Next_T.infinity){
         case 0:
             Fp12_sqr(&tmp1,f);
@@ -148,7 +148,7 @@ void BLS12_ff_ltt_vtt_for_tate(Fp12 *f,EFp *T,EFp12 *Q){
     Fp_clear(&lambda);
 }
 
-void BLS12_f_ltp_vtp_for_tate(Fp12 *f,EFp *T,EFp *P,EFp12 *Q){
+void bls12_f_ltp_vtp_for_tate(Fp12 *f,EFp *T,EFp *P,EFp12 *Q){
     EFp Next_T;
     EFp_init(&Next_T);
     Fp12 tmp1,tmp2,tmp3;
@@ -158,7 +158,7 @@ void BLS12_f_ltp_vtp_for_tate(Fp12 *f,EFp *T,EFp *P,EFp12 *Q){
     Fp lambda;
     Fp_init(&lambda);
     
-    BLS12_EFp_ECA_return_lambda(&Next_T,&lambda,T,P);
+    bls12_EFp_ECA_return_lambda(&Next_T,&lambda,T,P);
     
     switch(Next_T.infinity){
         case 0:

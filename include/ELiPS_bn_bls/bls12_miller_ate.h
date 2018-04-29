@@ -34,7 +34,7 @@
 #include <ELiPS_bn_bls/bls12_line_ate.h>
 
 //miller algo for plain ate
-extern void BLS12_Miller_algo_for_plain_ate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
+extern void bls12_Miller_algo_for_plain_ate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
 
 
 #endif /* bls12_miller_ate_h */

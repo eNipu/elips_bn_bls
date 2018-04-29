@@ -28,23 +28,23 @@
 
 #include <ELiPS_bn_bls/bls12_scm.h>
 
-void BLS12_plain_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
+void bls12_plain_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     EFp Tmp_P;
     EFp_init(&Tmp_P);
     
-    BLS12_EFp12_to_EFp(&Tmp_P,P);
+    bls12_EFp12_to_EFp(&Tmp_P,P);
     EFp_SCM(&Tmp_P,&Tmp_P,scalar);
-    BLS12_EFp_to_EFp12(ANS,&Tmp_P);
+    bls12_EFp_to_EFp12(ANS,&Tmp_P);
     
     EFp_clear(&Tmp_P);
     
     gettimeofday(&t1,NULL);
-    BLS12_G1SCM_PLAIN=timedifference_msec(t0,t1);
+    bls12_G1SCM_PLAIN=timedifference_msec(t0,t1);
 }
 
-void BLS12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
+void bls12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     int i,length_s[2],loop_length;
@@ -66,8 +66,8 @@ void BLS12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
     }
     
     //set
-    BLS12_EFp12_to_EFp(&tmp_P,P);
-    BLS12_EFp_skew_frobenius_map_p2(&skew_P_2,&tmp_P);
+    bls12_EFp12_to_EFp(&tmp_P,P);
+    bls12_EFp_skew_frobenius_map_p2(&skew_P_2,&tmp_P);
     //set table
     table[0].infinity=1;    //00
     EFp_set(&table[1],&tmp_P);    //01
@@ -75,7 +75,7 @@ void BLS12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
     EFp_ECA(&table[3],&tmp_P,&skew_P_2);    //11
     
     //s0,s1
-    mpz_neg(buf,BLS12_X);
+    mpz_neg(buf,bls12_X);
     mpz_pow_ui(buf,buf,2);
     mpz_tdiv_qr(s[1],s[0],scalar,buf);
     //binary
@@ -112,7 +112,7 @@ void BLS12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
         EFp_ECA(&next_P,&next_P,&table[binary[i]]);
     }
     
-    BLS12_EFp_to_EFp12(ANS,&next_P);
+    bls12_EFp_to_EFp12(ANS,&next_P);
     
     
     EFp12_clear(&Buf);
@@ -129,26 +129,26 @@ void BLS12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
     }
     
     gettimeofday(&t1,NULL);
-    BLS12_G1SCM_2SPLIT=timedifference_msec(t0,t1);
+    bls12_G1SCM_2SPLIT=timedifference_msec(t0,t1);
 }
 
-void BLS12_plain_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
+void bls12_plain_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     EFp2 twisted_Q;
     EFp2_init(&twisted_Q);
     
-    BLS12_EFp12_to_EFp2(&twisted_Q,Q);
+    bls12_EFp12_to_EFp2(&twisted_Q,Q);
     EFp2_SCM(&twisted_Q,&twisted_Q,scalar);
-    BLS12_EFp2_to_EFp12(ANS,&twisted_Q);
+    bls12_EFp2_to_EFp12(ANS,&twisted_Q);
     
     EFp2_clear(&twisted_Q);
     
     gettimeofday(&t1,NULL);
-    BLS12_G2SCM_PLAIN=timedifference_msec(t0,t1);
+    bls12_G2SCM_PLAIN=timedifference_msec(t0,t1);
 }
 
-void BLS12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
+void bls12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     int i,length_s[2],loop_length;
@@ -168,8 +168,8 @@ void BLS12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     }
     
     //set
-    BLS12_EFp12_to_EFp2(&twisted_Q,Q);                //twisted_Q
-    BLS12_EFp2_skew_frobenius_map_p2(&twisted_Q_2x,&twisted_Q);//twisted_Q_2x
+    bls12_EFp12_to_EFp2(&twisted_Q,Q);                //twisted_Q
+    bls12_EFp2_skew_frobenius_map_p2(&twisted_Q_2x,&twisted_Q);//twisted_Q_2x
     //set table
     table[0].infinity=1;                        //00
     EFp2_set(&table[1],&twisted_Q);            //01
@@ -177,7 +177,7 @@ void BLS12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     EFp2_ECA(&table[3],&twisted_Q,&twisted_Q_2x);    //11
     
     //s0,s1
-    mpz_neg(buf,BLS12_X);
+    mpz_neg(buf,bls12_X);
     mpz_pow_ui(buf,buf,2);
     mpz_tdiv_qr(s[1],s[0],scalar,buf);
     //binary
@@ -214,7 +214,7 @@ void BLS12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
         EFp2_ECA(&next_twisted_Q,&next_twisted_Q,&table[binary[i]]);
     }
     
-    BLS12_EFp2_to_EFp12(ANS,&next_twisted_Q);
+    bls12_EFp2_to_EFp12(ANS,&next_twisted_Q);
     
     mpz_clear(buf);
     EFp2_clear(&next_twisted_Q);
@@ -228,10 +228,10 @@ void BLS12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     }
     
     gettimeofday(&t1,NULL);
-    BLS12_G2SCM_2SPLIT=timedifference_msec(t0,t1);
+    bls12_G2SCM_2SPLIT=timedifference_msec(t0,t1);
 }
 
-void BLS12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
+void bls12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     int i,length_s[4],loop_length;
@@ -256,11 +256,11 @@ void BLS12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     }
     
     //set twisted_Q
-    BLS12_EFp12_to_EFp2(&twisted_Q,Q);                    //twisted_Q
-    BLS12_EFp2_skew_frobenius_map_p1(&twisted_Q_x,&twisted_Q);        //twisted_Q_x
+    bls12_EFp12_to_EFp2(&twisted_Q,Q);                    //twisted_Q
+    bls12_EFp2_skew_frobenius_map_p1(&twisted_Q_x,&twisted_Q);        //twisted_Q_x
     EFp2_set_neg(&twisted_Q_x,&twisted_Q_x);
-    BLS12_EFp2_skew_frobenius_map_p2(&twisted_Q_2x,&twisted_Q);    //twisted_Q_2x
-    BLS12_EFp2_skew_frobenius_map_p3(&twisted_Q_3x,&twisted_Q);    //twisted_Q_3x
+    bls12_EFp2_skew_frobenius_map_p2(&twisted_Q_2x,&twisted_Q);    //twisted_Q_2x
+    bls12_EFp2_skew_frobenius_map_p3(&twisted_Q_3x,&twisted_Q);    //twisted_Q_3x
     EFp2_set_neg(&twisted_Q_3x,&twisted_Q_3x);
     
     //set table
@@ -283,7 +283,7 @@ void BLS12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     
     //set
     //s0,s1,s2,s3
-    mpz_neg(x_1,BLS12_X);
+    mpz_neg(x_1,bls12_X);
     mpz_mul(x_2,x_1,x_1);
     mpz_tdiv_qr(B,A,scalar,x_2);
     mpz_tdiv_qr(s[1],s[0],A,x_1);
@@ -324,7 +324,7 @@ void BLS12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
         EFp2_ECA(&next_twisted_Q,&next_twisted_Q,&table[binary[i]]);
     }
     
-    BLS12_EFp2_to_EFp12(ANS,&next_twisted_Q);
+    bls12_EFp2_to_EFp12(ANS,&next_twisted_Q);
     
     EFp2_clear(&next_twisted_Q);
     EFp2_clear(&twisted_Q);
@@ -341,7 +341,7 @@ void BLS12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     }
     
     gettimeofday(&t1,NULL);
-    BLS12_G2SCM_4SPLIT=timedifference_msec(t0,t1);
+    bls12_G2SCM_4SPLIT=timedifference_msec(t0,t1);
 }
 
 

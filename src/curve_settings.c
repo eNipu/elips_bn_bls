@@ -15,9 +15,9 @@ char X_binary[BN_X_length+1];
 char X_binary_opt[BN_X_length+3];
 char X_bit_binary_kss16[KSS16_X_length+1];
 //---------------------------------------------------------------------
-int BLS12_X_length;
-mpz_t BLS12_X;
-int BLS12_X_binary[78];
+int bls12_X_length;
+mpz_t bls12_X;
+int bls12_X_binary[78];
 
 mpz_t C1_INV;
 
@@ -36,13 +36,13 @@ void init_bn_settings(){
 void init_bls12_settings(){
     init_bls12_parameters();
     
-    BLS12_generate_X();
-    BLS12_generate_prime();
-    BLS12_generate_order();
-    BLS12_generate_trace();
+    bls12_generate_X();
+    bls12_generate_prime();
+    bls12_generate_order();
+    bls12_generate_trace();
     
-    BLS12_weil();
-    BLS12_set_curve_parameter();
+    bls12_weil();
+    bls12_set_curve_parameter();
 }
 
 void init_kss16_settings(void){
@@ -102,9 +102,9 @@ void init_bls12_parameters(){
         X_binary_opt[i]=0;
     }
     
-    BLS12_X_length=77;
-    for(i=0; i<BLS12_X_length+1; i++){
-        BLS12_X_binary[i]=0;
+    bls12_X_length=77;
+    for(i=0; i<bls12_X_length+1; i++){
+        bls12_X_binary[i]=0;
     }
 }
 
@@ -330,28 +330,28 @@ void print_curve_parameters(){
     
 }
 
-void BLS12_generate_X(){
+void bls12_generate_X(){
     int i;
     mpz_t buf,set_2;
     mpz_init(buf);
     mpz_init(set_2);
     mpz_set_ui(set_2,2);
     
-    //BLS12_X_binary
-    BLS12_X_binary[77]=-1;
-    BLS12_X_binary[50]=1;
-    BLS12_X_binary[33]=1;
+    //bls12_X_binary
+    bls12_X_binary[77]=-1;
+    bls12_X_binary[50]=1;
+    bls12_X_binary[33]=1;
     
-    //BLS12_X
-    mpz_init(BLS12_X);
-    mpz_set_ui(BLS12_X,0);
-    for(i=BLS12_X_length; i>=0; i--){
-        if(BLS12_X_binary[i]==1){
+    //bls12_X
+    mpz_init(bls12_X);
+    mpz_set_ui(bls12_X,0);
+    for(i=bls12_X_length; i>=0; i--){
+        if(bls12_X_binary[i]==1){
             mpz_pow_ui(buf,set_2,i);
-            mpz_add(BLS12_X,BLS12_X,buf);
-        }else if(BLS12_X_binary[i]==-1){
+            mpz_add(bls12_X,bls12_X,buf);
+        }else if(bls12_X_binary[i]==-1){
             mpz_pow_ui(buf,set_2,i);
-            mpz_sub(BLS12_X,BLS12_X,buf);
+            mpz_sub(bls12_X,bls12_X,buf);
         }
     }
     
@@ -359,18 +359,18 @@ void BLS12_generate_X(){
     mpz_clear(set_2);
 }
 
-int  BLS12_generate_prime(){
+int  bls12_generate_prime(){
     mpz_t result,buf1,buf2,modtest;
     mpz_init(result);
     mpz_init(buf1);
     mpz_init(buf2);
     mpz_init(modtest);
     
-    mpz_sub_ui(result,BLS12_X,1);
+    mpz_sub_ui(result,bls12_X,1);
     mpz_pow_ui(result,result,2);
     
-    mpz_pow_ui(buf1,BLS12_X,4);
-    mpz_pow_ui(buf2,BLS12_X,2);
+    mpz_pow_ui(buf1,bls12_X,4);
+    mpz_pow_ui(buf2,bls12_X,2);
     mpz_sub(buf1,buf1,buf2);
     mpz_add_ui(buf1,buf1,1);
     
@@ -387,7 +387,7 @@ int  BLS12_generate_prime(){
     }
     
     mpz_tdiv_q_ui(result,result,3);
-    mpz_add(result,result,BLS12_X);
+    mpz_add(result,result,bls12_X);
     
     //isprime
     if(mpz_probab_prime_p(result,25)==0){
@@ -407,13 +407,13 @@ int  BLS12_generate_prime(){
     return 1;
 }
 
-int  BLS12_generate_order(){
+int  bls12_generate_order(){
     mpz_t buf1,buf2;
     mpz_init(buf1);
     mpz_init(buf2);
     
-    mpz_pow_ui(buf1,BLS12_X,4);
-    mpz_pow_ui(buf2,BLS12_X,2);
+    mpz_pow_ui(buf1,bls12_X,4);
+    mpz_pow_ui(buf2,bls12_X,2);
     mpz_sub(curve_parameters.order,buf1,buf2);
     mpz_add_ui(curve_parameters.order,curve_parameters.order,1);
     
@@ -423,15 +423,15 @@ int  BLS12_generate_order(){
     return 0;
 }
 
-void BLS12_generate_trace(){
-    mpz_add_ui(curve_parameters.trace_t,BLS12_X,1);
+void bls12_generate_trace(){
+    mpz_add_ui(curve_parameters.trace_t,bls12_X,1);
 }
 
-void BLS12_set_curve_parameter(){
+void bls12_set_curve_parameter(){
     mpz_set_ui(curve_parameters.curve_b,4);
 }
 
-void BLS12_weil(){
+void bls12_weil(){
     mpz_t t2,t6,t12,p2,p6,buf;
     mpz_init(t2);
     mpz_init(t6);
@@ -475,11 +475,11 @@ void BLS12_weil(){
     mpz_clear(buf);
 }
 
-void BLS12_print_parameters(){
+void bls12_print_parameters(){
     printf("====================================================================================\n");
-    printf("BLS12\n\n");
+    printf("bls12\n\n");
     gmp_printf("parameters\n");
-    gmp_printf("X     (%dbit length) : %Zd \n",(int)mpz_sizeinbase(BLS12_X,2),BLS12_X);
+    gmp_printf("X     (%dbit length) : %Zd \n",(int)mpz_sizeinbase(bls12_X,2),bls12_X);
     gmp_printf("prime (%dbit length) : %Zd \n",(int)mpz_sizeinbase(curve_parameters.prime,2),curve_parameters.prime);
     gmp_printf("order (%dbit length) : %Zd \n",(int)mpz_sizeinbase(curve_parameters.order,2),curve_parameters.order);
     gmp_printf("trace (%dbit length) : %Zd \n",(int)mpz_sizeinbase(curve_parameters.trace_t,2),curve_parameters.trace_t);

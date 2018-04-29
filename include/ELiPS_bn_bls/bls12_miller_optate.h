@@ -35,6 +35,6 @@
 
 
 //miller algo for opt-ate
-extern void BLS12_Miller_algo_for_opt_ate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
+extern void bls12_Miller_algo_for_opt_ate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
 
 #endif /* bls12_miller_optate_h */

@@ -38,16 +38,16 @@
 int main(int argc, const char * argv[]) {
     
     bls12_inits();
-    BLS12_print_parameters();
-    BLS12_test_opt_ate_pairing();
+    bls12_print_parameters();
+    bls12_test_opt_ate_pairing();
     clear_parameters();
     
-//    init_bn();
-//    print_curve_parameters();
-//    BN12_test_x_ate_pairing();
-//    BN12_test_plain_ate_pairing();
-//    BN12_test_opt_ate_pairing();
-//    clear_parameters();
+    init_bn();
+    print_curve_parameters();
+    BN12_test_x_ate_pairing();
+    BN12_test_plain_ate_pairing();
+    BN12_test_opt_ate_pairing();
+    clear_parameters();
  
     
     return 0;

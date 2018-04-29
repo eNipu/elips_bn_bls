@@ -42,10 +42,10 @@ extern gmp_randstate_t state;
 extern char X_binary[BN_X_length+1];
 extern char X_binary_opt[BN_X_length+3];
 
-//BLS12
-extern int BLS12_X_length;
-extern mpz_t BLS12_X;
-extern int BLS12_X_binary[78];
+//bls12
+extern int bls12_X_length;
+extern mpz_t bls12_X;
+extern int bls12_X_binary[78];
 
 
 //init
@@ -61,13 +61,13 @@ extern void print_curve_parameters(void);
 
 extern void init_bls12_settings(void);
 extern void init_bls12_parameters( void);
-extern void BLS12_generate_X(void);
-extern int  BLS12_generate_prime(void);
-extern int  BLS12_generate_order(void);
-extern void BLS12_generate_trace(void);
-extern void BLS12_set_curve_parameter(void);
-extern void BLS12_weil(void);
-extern void BLS12_print_parameters(void);
+extern void bls12_generate_X(void);
+extern int  bls12_generate_prime(void);
+extern int  bls12_generate_order(void);
+extern void bls12_generate_trace(void);
+extern void bls12_set_curve_parameter(void);
+extern void bls12_weil(void);
+extern void bls12_print_parameters(void);
 
 
 //KSS-16

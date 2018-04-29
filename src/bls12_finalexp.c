@@ -27,9 +27,9 @@
 
 #include <ELiPS_bn_bls/bls12_finalexp.h>
 
-void BLS12_Fp12_pow_X(Fp12 *ANS,Fp12 *A);
+void bls12_Fp12_pow_motherparam(Fp12 *ANS,Fp12 *A);
 
-void BLS12_Final_exp_plain(Fp12 *ANS,Fp12 *A){
+void bls12_finalexp_plain(Fp12 *ANS,Fp12 *A){
     Fp12 Tmp,Buf1,Buf2;
     Fp12_init(&Tmp);
     Fp12_set(&Tmp,A);
@@ -39,11 +39,11 @@ void BLS12_Final_exp_plain(Fp12 *ANS,Fp12 *A){
     mpz_init(exp);
     mpz_init(buf);
     
-    BLS12_Fp12_frobenius_map_p6(&Buf1,&Tmp);
+    bls12_Fp12_frobenius_map_p6(&Buf1,&Tmp);
     Fp12_inv(&Buf2,&Tmp);
     Fp12_mul(&Tmp,&Buf1,&Buf2);
     
-    BLS12_Fp12_frobenius_map_p2(&Buf1,&Tmp);
+    bls12_Fp12_frobenius_map_p2(&Buf1,&Tmp);
     Fp12_mul(&Tmp,&Buf1,&Tmp);
     
     mpz_pow_ui(exp,curve_parameters.prime,4);
@@ -61,7 +61,7 @@ void BLS12_Final_exp_plain(Fp12 *ANS,Fp12 *A){
     Fp12_clear(&Buf2);
 }
 
-void BLS12_Final_exp_optimal(Fp12 *ANS,Fp12 *A){
+void bls12_finalexp_optimal(Fp12 *ANS,Fp12 *A){
     Fp12 t0,t1,t2,t3,t4,t5;
     Fp12_init(&t0);
     Fp12_init(&t1);
@@ -72,57 +72,57 @@ void BLS12_Final_exp_optimal(Fp12 *ANS,Fp12 *A){
     
     //-------------------------------------------------------//
     //f←f^(p^6)*f^-1
-    BLS12_Fp12_frobenius_map_p6(&t0,A);//f^(p^6)
+    bls12_Fp12_frobenius_map_p6(&t0,A);//f^(p^6)
     Fp12_inv(&t1,A);//f^-1
     Fp12_mul(A,&t0,&t1);//f^(p^6)*f^-1
     
     //f←f^(p^2)*f
-    BLS12_Fp12_frobenius_map_p2(&t0,A);//f^(p^2)
+    bls12_Fp12_frobenius_map_p2(&t0,A);//f^(p^2)
     Fp12_mul(A,&t0,A);//f^(p^2)*f
     
     //-------------------------------------------------------//
     //f←f^(p^4-p2+1/r)
     Fp12_sqr(&t0,A);
-    BLS12_Fp12_pow_X(&t1,&t0);
+    bls12_Fp12_pow_motherparam(&t1,&t0);
     
-    BLS12_X_length=BLS12_X_length-1;
-    BLS12_X_binary[77]=0;
-    BLS12_X_binary[50]=0;
-    BLS12_X_binary[33]=0;
-    BLS12_X_binary[76]=-1;
-    BLS12_X_binary[49]=1;
-    BLS12_X_binary[32]=1;
-    BLS12_Fp12_pow_X(&t2,&t1);      //t2:=t1^(u2);
-    BLS12_X_length=BLS12_X_length+1;
-    BLS12_X_binary[77]=-1;
-    BLS12_X_binary[50]=1;
-    BLS12_X_binary[33]=1;
-    BLS12_X_binary[76]=0;
-    BLS12_X_binary[49]=0;
-    BLS12_X_binary[32]=0;
+    bls12_X_length=bls12_X_length-1;
+    bls12_X_binary[77]=0;
+    bls12_X_binary[50]=0;
+    bls12_X_binary[33]=0;
+    bls12_X_binary[76]=-1;
+    bls12_X_binary[49]=1;
+    bls12_X_binary[32]=1;
+    bls12_Fp12_pow_motherparam(&t2,&t1);      //t2:=t1^(u2);
+    bls12_X_length=bls12_X_length+1;
+    bls12_X_binary[77]=-1;
+    bls12_X_binary[50]=1;
+    bls12_X_binary[33]=1;
+    bls12_X_binary[76]=0;
+    bls12_X_binary[49]=0;
+    bls12_X_binary[32]=0;
     
-    BLS12_Fp12_frobenius_map_p6(&t3,A);            //t3:=f^(-1);
+    bls12_Fp12_frobenius_map_p6(&t3,A);            //t3:=f^(-1);
     Fp12_mul(&t1,&t3,&t1);            //t1:=t3*t1;
-    BLS12_Fp12_frobenius_map_p6(&t1,&t1);        //t1:=t1^(-1);
+    bls12_Fp12_frobenius_map_p6(&t1,&t1);        //t1:=t1^(-1);
     Fp12_mul(&t1,&t1,&t2);            //t1:=t1*t2;
     
-    BLS12_Fp12_pow_X(&t2,&t1);          //t2:=t1^(u);
-    BLS12_Fp12_pow_X(&t3,&t2);          //t3:=t2^(u);
-    BLS12_Fp12_frobenius_map_p6(&t1,&t1);        //t1:=t1^(-1);
+    bls12_Fp12_pow_motherparam(&t2,&t1);          //t2:=t1^(u);
+    bls12_Fp12_pow_motherparam(&t3,&t2);          //t3:=t2^(u);
+    bls12_Fp12_frobenius_map_p6(&t1,&t1);        //t1:=t1^(-1);
     
     Fp12_mul(&t3,&t1,&t3);            //t3:=t1*t3;
-    BLS12_Fp12_frobenius_map_p6(&t1,&t1);        //t1:=t1^(-1);
-    BLS12_Fp12_frobenius_map_p3(&t1,&t1);        //t1:=t1^(p^3);
-    BLS12_Fp12_frobenius_map_p2(&t2,&t2);        //t2:=t2^(p^2);
+    bls12_Fp12_frobenius_map_p6(&t1,&t1);        //t1:=t1^(-1);
+    bls12_Fp12_frobenius_map_p3(&t1,&t1);        //t1:=t1^(p^3);
+    bls12_Fp12_frobenius_map_p2(&t2,&t2);        //t2:=t2^(p^2);
     
     
     Fp12_mul(&t1,&t1,&t2);            //t1:=t1*t2;
-    BLS12_Fp12_pow_X(&t2,&t3);      //t2:=t3^(u);
+    bls12_Fp12_pow_motherparam(&t2,&t3);      //t2:=t3^(u);
     Fp12_mul(&t2,&t2,&t0);            //t2:=t2*t0;
     Fp12_mul(&t2,&t2,A);            //t2:=t2*f;
     Fp12_mul(&t1,&t1,&t2);            //t1:=t1*t2;
     
-    BLS12_Fp12_frobenius_map_p1(&t2,&t3);        //t2:=t3^p;
+    bls12_Fp12_frobenius_map_p1(&t2,&t3);        //t2:=t3^p;
     Fp12_mul(ANS,&t1,&t2);            //t1:=t1*t2;
     
     
@@ -134,16 +134,16 @@ void BLS12_Final_exp_optimal(Fp12 *ANS,Fp12 *A){
     //mpz_clear(positive_X2);
 }
 
-void BLS12_Fp12_pow_X(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_pow_motherparam(Fp12 *ANS,Fp12 *A){
     int i;
     Fp12 tmp,A_inv;
     Fp12_init(&tmp);
     Fp12_init(&A_inv);
-    BLS12_Fp12_frobenius_map_p6(&A_inv,A);
+    bls12_Fp12_frobenius_map_p6(&A_inv,A);
     
     Fp12_set(&tmp,&A_inv);
-    for(i=BLS12_X_length-1; i>=0; i--){
-        switch(BLS12_X_binary[i]){
+    for(i=bls12_X_length-1; i>=0; i--){
+        switch(bls12_X_binary[i]){
             case 0:
                 Fp12_sqr(&tmp,&tmp);
                 break;

@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bls12_p8sparse.h>
 
-void BLS12_Pseudo_8_sparse_mapping(EFp *P,EFp2 *Q,Fp *L){
+void bls12_Pseudo_8_sparse_mapping(EFp *P,EFp2 *Q,Fp *L){
     EFp2 Tmp_Q;
     EFp2_init(&Tmp_Q);
     EFp Tmp_P;
@@ -71,7 +71,7 @@ void BLS12_Pseudo_8_sparse_mapping(EFp *P,EFp2 *Q,Fp *L){
     Fp_clear(&c);
 }
 
-void BLS12_Pseudo_8_sparse_mul(Fp12 *ANS,Fp12 *A,Fp12 *B){
+void bls12_Pseudo_8_sparse_mul(Fp12 *ANS,Fp12 *A,Fp12 *B){
     //A= f0 + f1γ^2 + f2γ^4 + f3γ　+ f4γ^3 + f5γ^5
     //B= 1  +                        aγ^3 +  bγ^5
     // x0.x0  x0.x1   x0.x2  x1.x0  x1.x1   x1.x2

@@ -34,11 +34,11 @@
 
 
 //skew frobenius
-extern void BLS12_EFp_skew_frobenius_map_p2(EFp *ANS,EFp *A);
-extern void BLS12_EFp2_skew_frobenius_map_p1(EFp2 *ANS,EFp2 *A);
-extern void BLS12_EFp2_skew_frobenius_map_p2(EFp2 *ANS,EFp2 *A);
-extern void BLS12_EFp2_skew_frobenius_map_p3(EFp2 *ANS,EFp2 *A);
-extern void BLS12_EFp2_skew_frobenius_map_p10(EFp2 *ANS,EFp2 *A);
+extern void bls12_EFp_skew_frobenius_map_p2(EFp *ANS,EFp *A);
+extern void bls12_EFp2_skew_frobenius_map_p1(EFp2 *ANS,EFp2 *A);
+extern void bls12_EFp2_skew_frobenius_map_p2(EFp2 *ANS,EFp2 *A);
+extern void bls12_EFp2_skew_frobenius_map_p3(EFp2 *ANS,EFp2 *A);
+extern void bls12_EFp2_skew_frobenius_map_p10(EFp2 *ANS,EFp2 *A);
 
 
 #endif /* bls12_skew_frobenius_h */

@@ -29,7 +29,7 @@
 #include <ELiPS_bn_bls/bls12_test_pairings.h>
 
 
-void BLS12_test_tate_pairing(){
+void bls12_test_tate_pairing(){
     printf("====================================================================================\n");
     printf("tate pairing\n\n");
     EFp12 P,Q,s1_P,s2_P,s1_Q,s2_Q;
@@ -58,10 +58,10 @@ void BLS12_test_tate_pairing(){
     mpz_mod(s12,s12,curve_parameters.order);
     
     printf("input\n");
-    BLS12_generate_G1_point(&P);
+    bls12_generate_G1_point(&P);
     EFp12_printf(&P,"P : G1 rational point\n");
     printf("\n\n");
-    EFp12_rational_point_BLS12(&Q);
+    EFp12_rational_point_bls12(&Q);
     EFp12_printf(&Q,"Q : random rational point\n");
     printf("\n\n");
     
@@ -73,24 +73,24 @@ void BLS12_test_tate_pairing(){
     printf("bilinearity test\n");
     //test1
     printf("tate(P,Q)^s12\n");
-    BLS12_tate(&Z,&P,&Q);
+    bls12_tate(&Z,&P,&Q);
     Fp12_pow(&Test1,&Z,s12);
-    BLS12_print_tate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_print_tate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test1,"");
     printf("\n\n");
     //test2
     printf("tate([s1]P,[s2]Q)\n");
-    BLS12_tate(&Test2,&s1_P,&s2_Q);
-    BLS12_print_tate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_tate(&Test2,&s1_P,&s2_Q);
+    bls12_print_tate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test2,"");
     printf("\n\n");
     //test3
     printf("tate([s2]P,[s1]Q)\n");
-    BLS12_tate(&Test3,&s2_P,&s1_Q);
-    BLS12_print_tate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_tate(&Test3,&s2_P,&s1_Q);
+    bls12_print_tate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test3,"");
     printf("\n\n");
     
@@ -115,7 +115,7 @@ void BLS12_test_tate_pairing(){
     Fp12_clear(&Test3);
 }
 
-void BLS12_test_plain_ate_pairing(){
+void bls12_test_plain_ate_pairing(){
     printf("====================================================================================\n");
     printf("plain-ate pairing\n\n");
     EFp12 P,Q,s1_P,s2_P,s1_Q,s2_Q;
@@ -144,10 +144,10 @@ void BLS12_test_plain_ate_pairing(){
     mpz_mod(s12,s12,curve_parameters.order);
     
     printf("input\n");
-    BLS12_generate_G1_point(&P);
+    bls12_generate_G1_point(&P);
     EFp12_printf(&P,"P : G1 rational point\n");
     printf("\n");
-    BLS12_generate_G2_point(&Q);
+    bls12_generate_G2_point(&Q);
     EFp12_printf(&Q,"Q : G2 rational point\n");
     printf("\n\n");
     
@@ -159,24 +159,24 @@ void BLS12_test_plain_ate_pairing(){
     printf("bilinearity test\n");
     //test1
     printf("plain-ate(Q,P)^s12\n");
-    BLS12_plain_ate(&Z,&P,&Q);
+    bls12_plain_ate(&Z,&P,&Q);
     Fp12_pow(&Test1,&Z,s12);
-    BLS12_print_plain_ate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_print_plain_ate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test1,"");
     printf("\n\n");
     //test2
     printf("plain-ate([s2]Q,[s1]P)\n");
-    BLS12_plain_ate(&Test2,&s2_P,&s1_Q);
-    BLS12_print_plain_ate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_plain_ate(&Test2,&s2_P,&s1_Q);
+    bls12_print_plain_ate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test2,"");
     printf("\n\n");
     //test3
     printf("plain-ate([s1]Q,[s2]P)\n");
-    BLS12_plain_ate(&Test3,&s1_P,&s2_Q);
-    BLS12_print_plain_ate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_plain_ate(&Test3,&s1_P,&s2_Q);
+    bls12_print_plain_ate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test3,"");
     printf("\n\n");
     
@@ -202,7 +202,7 @@ void BLS12_test_plain_ate_pairing(){
     Fp12_clear(&Test3);
 }
 
-void BLS12_test_opt_ate_pairing(){
+void bls12_test_opt_ate_pairing(){
     printf("====================================================================================\n");
     printf("opt-ate pairing\n\n");
     EFp12 P,Q,s1_P,s2_P,s1_Q,s2_Q;
@@ -231,10 +231,10 @@ void BLS12_test_opt_ate_pairing(){
     mpz_mod(s12,s12,curve_parameters.order);
     
     printf("input\n");
-    BLS12_generate_G1_point(&P);
+    bls12_generate_G1_point(&P);
     EFp12_printf(&P,"P : G1 rational point\n");
     printf("\n");
-    BLS12_generate_G2_point(&Q);
+    bls12_generate_G2_point(&Q);
     EFp12_printf(&Q,"Q : G2 rational point\n");
     printf("\n\n");
     
@@ -246,24 +246,24 @@ void BLS12_test_opt_ate_pairing(){
     printf("bilinearity test\n");
     //test1
     printf("opt-ate(Q,P)^s12\n");
-    BLS12_opt_ate(&Z,&P,&Q);
+    bls12_opt_ate(&Z,&P,&Q);
     Fp12_pow(&Test1,&Z,s12);
-    BLS12_print_opt_ate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_print_opt_ate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test1,"");
     printf("\n\n");
     //test2
     printf("opt-ate([s2]Q,[s1]P)\n");
-    BLS12_opt_ate(&Test2,&s2_P,&s1_Q);
-    BLS12_print_opt_ate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_opt_ate(&Test2,&s2_P,&s1_Q);
+    bls12_print_opt_ate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test2,"");
     printf("\n\n");
     //test3
     printf("opt-ate([s1]Q,[s2]P)\n");
-    BLS12_opt_ate(&Test3,&s1_P,&s2_Q);
-    BLS12_print_opt_ate_time();
-    BLS12_print_final_exp_optimal_time();
+    bls12_opt_ate(&Test3,&s1_P,&s2_Q);
+    bls12_print_opt_ate_time();
+    bls12_print_final_exp_optimal_time();
     Fp12_printf(&Test3,"");
     printf("\n\n");
     
@@ -290,7 +290,7 @@ void BLS12_test_opt_ate_pairing(){
 }
 
 
-void BLS12_test_G1_scm(){
+void bls12_test_G1_scm(){
     printf("====================================================================================\n");
     printf("G1 SCM\n\n");
     EFp12 P,Test1,Test2;
@@ -309,18 +309,18 @@ void BLS12_test_G1_scm(){
     //gmp_printf("%Zd",scalar);
     //printf("\n\n");
     //G1
-    BLS12_generate_G1_point(&P);
+    bls12_generate_G1_point(&P);
     
     printf("plain G1 scm\n");
-    BLS12_plain_G1_scm(&Test1,&P,scalar);
-    BLS12_print_plain_G1_scm_time();
+    bls12_plain_G1_scm(&Test1,&P,scalar);
+    bls12_print_plain_G1_scm_time();
     EFp12_printf(&Test1,"");
     printf("\n\n");
     
     //num=0;
     printf("2split G1 scm\n");
-    BLS12_2split_G1_scm(&Test2,&P,scalar);
-    BLS12_print_2split_G1_scm_time();
+    bls12_2split_G1_scm(&Test2,&P,scalar);
+    bls12_print_2split_G1_scm_time();
     EFp12_printf(&Test2,"");
     printf("\n");
     
@@ -336,7 +336,7 @@ void BLS12_test_G1_scm(){
     EFp12_clear(&Test2);
 }
 
-void BLS12_test_G2_scm(){
+void bls12_test_G2_scm(){
     printf("====================================================================================\n");
     printf("G2 SCM\n\n");
     EFp12 Q,Test1,Test2,Test3;
@@ -356,23 +356,23 @@ void BLS12_test_G2_scm(){
     //gmp_printf("%Zd",scalar);
     //printf("\n\n");
     //G2
-    BLS12_generate_G2_point(&Q);
+    bls12_generate_G2_point(&Q);
     
     printf("plain G2 scm\n");
-    BLS12_plain_G2_scm(&Test1,&Q,scalar);
-    BLS12_print_plain_G2_scm_time();
+    bls12_plain_G2_scm(&Test1,&Q,scalar);
+    bls12_print_plain_G2_scm_time();
     EFp12_printf(&Test1,"");
     printf("\n\n");
     
     printf("2split G2 scm\n");
-    BLS12_2split_G2_scm(&Test2,&Q,scalar);
-    BLS12_print_2split_G2_scm_time();
+    bls12_2split_G2_scm(&Test2,&Q,scalar);
+    bls12_print_2split_G2_scm_time();
     EFp12_printf(&Test2,"");
     printf("\n\n");
     
     printf("4split G2 scm\n");
-    BLS12_4split_G2_scm(&Test3,&Q,scalar);
-    BLS12_print_4split_G2_scm_time();
+    bls12_4split_G2_scm(&Test3,&Q,scalar);
+    bls12_print_4split_G2_scm_time();
     EFp12_printf(&Test3,"");
     printf("\n\n");
     
@@ -390,7 +390,7 @@ void BLS12_test_G2_scm(){
     EFp12_clear(&Test3);
 }
 
-void BLS12_test_G3_exp(){
+void bls12_test_G3_exp(){
     printf("====================================================================================\n");
     printf("G3 EXP\n\n");
     EFp12 P,Q,s1_P,s2_Q;
@@ -418,33 +418,33 @@ void BLS12_test_G3_exp(){
     mpz_mul(s12,s1,s2);            //s12
     mpz_mod(s12,s12,curve_parameters.order);
     
-    BLS12_generate_G1_point(&P);            //P
-    BLS12_generate_G2_point(&Q);            //Q
+    bls12_generate_G1_point(&P);            //P
+    bls12_generate_G2_point(&Q);            //Q
     
-    BLS12_2split_G1_scm(&s1_P,&P,s1);        //s1_P
-    BLS12_4split_G2_scm(&s2_Q,&Q,s2);    //s2_Q
+    bls12_2split_G1_scm(&s1_P,&P,s1);        //s1_P
+    bls12_4split_G2_scm(&s2_Q,&Q,s2);    //s2_Q
     
     printf("x-ate([s2]Q,[s1]P)\n");
-    BLS12_opt_ate(&Test0,&s1_P,&s2_Q);
+    bls12_opt_ate(&Test0,&s1_P,&s2_Q);
     
     printf("x-ate(Q,P)^s12\n");
-    BLS12_opt_ate(&Z,&P,&Q);
+    bls12_opt_ate(&Z,&P,&Q);
     
     printf("plain G3 exp\n");
-    BLS12_plain_G3_exp(&Test1,&Z,s12);
-    BLS12_print_plain_G3_exp_time();
+    bls12_plain_G3_exp(&Test1,&Z,s12);
+    bls12_print_plain_G3_exp_time();
     Fp12_printf(&Test1,"");
     printf("\n\n");
     
     printf("2split G3 exp\n");
-    BLS12_2split_G3_exp(&Test2,&Z,s12);
-    BLS12_print_2split_G3_exp_time();
+    bls12_2split_G3_exp(&Test2,&Z,s12);
+    bls12_print_2split_G3_exp_time();
     Fp12_printf(&Test2,"");
     printf("\n\n");
     
     printf("4split G3 exp\n");
-    BLS12_4split_G3_exp(&Test3,&Z,s12);
-    BLS12_print_4split_G3_exp_time();
+    bls12_4split_G3_exp(&Test3,&Z,s12);
+    bls12_print_4split_G3_exp_time();
     Fp12_printf(&Test3,"");
     printf("\n\n");
     

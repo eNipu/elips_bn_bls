@@ -29,7 +29,7 @@
 #include <ELiPS_bn_bls/bls12_miller_tate.h>
 
 
-void BLS12_Miller_algo_for_tate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
+void bls12_Miller_algo_for_tate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     EFp Tmp_P,T;
     EFp_init(&Tmp_P);
     EFp_init(&T);
@@ -41,16 +41,16 @@ void BLS12_Miller_algo_for_tate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     mpz_get_str(binary,2,curve_parameters.order);
     
     //set
-    BLS12_EFp12_to_EFp(&Tmp_P,P);
+    bls12_EFp12_to_EFp(&Tmp_P,P);
     EFp_set(&T,&Tmp_P);
     Fp12_set_ui(&f,0);
     Fp_set_ui(&f.x0.x0.x0,1);
     
     //miller
     for(i=1; i<length; i++){
-        BLS12_ff_ltt_vtt_for_tate(&f,&T,Q);
+        bls12_ff_ltt_vtt_for_tate(&f,&T,Q);
         if(binary[i]=='1'){
-            BLS12_f_ltp_vtp_for_tate(&f,&T,&Tmp_P,Q);
+            bls12_f_ltp_vtp_for_tate(&f,&T,&Tmp_P,Q);
         }
     }
     Fp12_set(ANS,&f);

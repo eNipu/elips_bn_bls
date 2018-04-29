@@ -35,11 +35,11 @@
 #include <ELiPS_bn_bls/bls12_scm.h>
 #include <ELiPS_bn_bls/bls12_G3_exp.h>
 
-extern void BLS12_test_tate_pairing(void);
-extern void BLS12_test_plain_ate_pairing(void);
-extern void BLS12_test_opt_ate_pairing(void);
-extern void BLS12_test_G1_scm(void);
-extern void BLS12_test_G2_scm(void);
-extern void BLS12_test_G3_exp(void);
+extern void bls12_test_tate_pairing(void);
+extern void bls12_test_plain_ate_pairing(void);
+extern void bls12_test_opt_ate_pairing(void);
+extern void bls12_test_G1_scm(void);
+extern void bls12_test_G2_scm(void);
+extern void bls12_test_G3_exp(void);
 
 #endif /* bls12_test_pairings_h */

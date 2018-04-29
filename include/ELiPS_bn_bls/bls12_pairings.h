@@ -36,8 +36,8 @@
 #include <ELiPS_bn_bls/bls12_timeprint.h>
 #include <ELiPS_bn_bls/bn_utils.h>
 
-extern void BLS12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
-extern void BLS12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q);
-extern void BLS12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
+extern void bls12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
+extern void bls12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q);
+extern void bls12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q);
 
 #endif /* bls12_pairings_h */

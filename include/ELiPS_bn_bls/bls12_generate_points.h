@@ -33,8 +33,8 @@
 #include <ELiPS_bn_bls/bls12_twist.h>
 #include <ELiPS_bn_bls/bls12_frobenius.h>
 
-extern void BLS12_generate_G1_point(EFp12 *P);
-extern void BLS12_generate_G2_point(EFp12 *Q);
-extern void BLS12_generate_random_point(EFp12 *R);
+extern void bls12_generate_G1_point(EFp12 *P);
+extern void bls12_generate_G2_point(EFp12 *Q);
+extern void bls12_generate_random_point(EFp12 *R);
 
 #endif /* bls12_generate_points_h */

@@ -33,5 +33,5 @@
 #include <ELiPS_bn_bls/bls12_twist.h>
 
 //miller algo for tate
-extern void BLS12_Miller_algo_for_tate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
+extern void bls12_Miller_algo_for_tate(Fp12 *ANS,EFp12 *Q,EFp12 *P);
 #endif /* bls12_miller_tate_h */

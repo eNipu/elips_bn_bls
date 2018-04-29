@@ -98,7 +98,7 @@ void EFp12_rational_point_BN(EFp12 *P){
     Fp12_clear(&tmp2);
 }
 
-void EFp12_rational_point_BLS12(EFp12 *P){
+void EFp12_rational_point_bls12(EFp12 *P){
     Fp12 tmp1,tmp2;
     Fp12_init(&tmp1);
     Fp12_init(&tmp2);

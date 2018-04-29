@@ -34,8 +34,8 @@
 #include <ELiPS_bn_bls/bls12_frobenius.h>
 
 //G3
-extern void BLS12_plain_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar);
-extern void BLS12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar);
-extern void BLS12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar);
+extern void bls12_plain_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar);
+extern void bls12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar);
+extern void bls12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar);
 
 #endif /* bls12_G3_exp_h */

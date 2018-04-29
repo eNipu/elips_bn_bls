@@ -28,16 +28,16 @@
 
 #include <ELiPS_bn_bls/bls12_G3_exp.h>
 
-void BLS12_plain_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
+void bls12_plain_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     Fp12_pow(ANS,A,scalar);
     
     gettimeofday(&t1,NULL);
-    BLS12_G3EXP_PLAIN=timedifference_msec(t0,t1);
+    bls12_G3EXP_PLAIN=timedifference_msec(t0,t1);
 }
 
-void BLS12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
+void bls12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     int i,length_s[2],loop_length;
@@ -60,7 +60,7 @@ void BLS12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
     
     //set
     Fp12_set(&f, A);
-    BLS12_Fp12_frobenius_map_p2(&frobenius_f_2x, A);
+    bls12_Fp12_frobenius_map_p2(&frobenius_f_2x, A);
     
     //set table
     Fp_set_ui(&table[0].x0.x0.x0,1);    //00
@@ -69,7 +69,7 @@ void BLS12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
     Fp12_mul(&table[3],&table[1],&table[2]);    //11
     
     //s0,s1
-    mpz_neg(buf,BLS12_X);
+    mpz_neg(buf,bls12_X);
     mpz_pow_ui(buf,buf,2);
     mpz_tdiv_qr(s[1],s[0],scalar,buf);
     //binary
@@ -121,10 +121,10 @@ void BLS12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
     }
     
     gettimeofday(&t1,NULL);
-    BLS12_G3EXP_2SPLIT=timedifference_msec(t0,t1);
+    bls12_G3EXP_2SPLIT=timedifference_msec(t0,t1);
 }
 
-void BLS12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar){
+void bls12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar){
     gettimeofday(&t0,NULL);
     
     int i,length_s[4],loop_length;
@@ -152,10 +152,10 @@ void BLS12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar){
     
     //set
     Fp12_set(&f, A);
-    BLS12_Fp12_frobenius_map_p1(&frobenius_f_x, A);
+    bls12_Fp12_frobenius_map_p1(&frobenius_f_x, A);
     Fp12_inv(&frobenius_f_x,&frobenius_f_x);
-    BLS12_Fp12_frobenius_map_p2(&frobenius_f_2x, A);
-    BLS12_Fp12_frobenius_map_p3(&frobenius_f_3x, A);
+    bls12_Fp12_frobenius_map_p2(&frobenius_f_2x, A);
+    bls12_Fp12_frobenius_map_p3(&frobenius_f_3x, A);
     Fp12_inv(&frobenius_f_3x,&frobenius_f_3x);
     //set table
     Fp_set_ui(&table[0].x0.x0.x0,1);            //0000
@@ -176,7 +176,7 @@ void BLS12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar){
     Fp12_mul(&table[15],&table[14],&table[1]);    //1111
     //set
     //s0,s1,s2,s3
-    mpz_neg(x_1,BLS12_X);
+    mpz_neg(x_1,bls12_X);
     mpz_mul(x_2,x_1,x_1);
     mpz_tdiv_qr(D,C,scalar,x_2);
     mpz_tdiv_qr(s[1],s[0],C,x_1);
@@ -235,5 +235,5 @@ void BLS12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar){
     }
     
     gettimeofday(&t1,NULL);
-    BLS12_G3EXP_4SPLIT=timedifference_msec(t0,t1);
+    bls12_G3EXP_4SPLIT=timedifference_msec(t0,t1);
 }

@@ -39,7 +39,7 @@ extern void EFp12_set_ui(EFp12 *ANS,unsigned long int UI);
 extern void EFp12_set_mpz(EFp12 *ANS,mpz_t A);
 extern void EFp12_set_neg(EFp12 *ANS,EFp12 *P);
 extern void EFp12_rational_point_BN(EFp12 *P);
-extern void EFp12_rational_point_BLS12(EFp12 *P);
+extern void EFp12_rational_point_bls12(EFp12 *P);
 extern void EFp12_ECD(EFp12 *ANS,EFp12 *P);
 extern void EFp12_ECA(EFp12 *ANS,EFp12 *P1,EFp12 *P2);
 extern void EFp12_SCM(EFp12 *ANS,EFp12 *P,mpz_t scalar);

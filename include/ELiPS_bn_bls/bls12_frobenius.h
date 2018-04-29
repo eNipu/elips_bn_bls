@@ -34,12 +34,12 @@
 
 
 //frobenius
-extern void BLS12_Fp12_frobenius_map_p1(Fp12 *ANS,Fp12 *A);
-extern void BLS12_Fp12_frobenius_map_p2(Fp12 *ANS,Fp12 *A);
-extern void BLS12_Fp12_frobenius_map_p3(Fp12 *ANS,Fp12 *A);
-extern void BLS12_Fp12_frobenius_map_p4(Fp12 *ANS,Fp12 *A);
-extern void BLS12_Fp12_frobenius_map_p6(Fp12 *ANS,Fp12 *A);
-extern void BLS12_Fp12_frobenius_map_p8(Fp12 *ANS,Fp12 *A);
-extern void BLS12_Fp12_frobenius_map_p10(Fp12 *ANS,Fp12 *A);
+extern void bls12_Fp12_frobenius_map_p1(Fp12 *ANS,Fp12 *A);
+extern void bls12_Fp12_frobenius_map_p2(Fp12 *ANS,Fp12 *A);
+extern void bls12_Fp12_frobenius_map_p3(Fp12 *ANS,Fp12 *A);
+extern void bls12_Fp12_frobenius_map_p4(Fp12 *ANS,Fp12 *A);
+extern void bls12_Fp12_frobenius_map_p6(Fp12 *ANS,Fp12 *A);
+extern void bls12_Fp12_frobenius_map_p8(Fp12 *ANS,Fp12 *A);
+extern void bls12_Fp12_frobenius_map_p10(Fp12 *ANS,Fp12 *A);
 
 #endif /* bls12_frobenius_h */

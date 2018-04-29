@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bls12_frobenius.h>
 
-void BLS12_Fp12_frobenius_map_p1(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_frobenius_map_p1(Fp12 *ANS,Fp12 *A){
     Fp tmp;
     Fp_init(&tmp);
     
@@ -56,7 +56,7 @@ void BLS12_Fp12_frobenius_map_p1(Fp12 *ANS,Fp12 *A){
     Fp_clear(&tmp);
 }
 
-void BLS12_Fp12_frobenius_map_p2(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_frobenius_map_p2(Fp12 *ANS,Fp12 *A){
     //x0
     Fp2_set(&ANS->x0.x0,&A->x0.x0);
     Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,d12_frobenius_constant[f_p2][1].x0.x0);
@@ -67,7 +67,7 @@ void BLS12_Fp12_frobenius_map_p2(Fp12 *ANS,Fp12 *A){
     Fp2_mul_mpz(&ANS->x1.x2,&A->x1.x2,d12_frobenius_constant[f_p2][5].x0.x0);
 }
 
-void BLS12_Fp12_frobenius_map_p3(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_frobenius_map_p3(Fp12 *ANS,Fp12 *A){
     Fp tmp;
     Fp_init(&tmp);
     
@@ -93,7 +93,7 @@ void BLS12_Fp12_frobenius_map_p3(Fp12 *ANS,Fp12 *A){
     Fp_clear(&tmp);
 }
 
-void BLS12_Fp12_frobenius_map_p4(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_frobenius_map_p4(Fp12 *ANS,Fp12 *A){
     //x0
     Fp2_set(&ANS->x0.x0,&A->x0.x0);
     Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,d12_frobenius_constant[f_p4][1].x0.x0);
@@ -104,14 +104,14 @@ void BLS12_Fp12_frobenius_map_p4(Fp12 *ANS,Fp12 *A){
     Fp2_mul_mpz(&ANS->x1.x2,&A->x1.x2,d12_frobenius_constant[f_p4][5].x0.x0);
 }
 
-void BLS12_Fp12_frobenius_map_p6(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_frobenius_map_p6(Fp12 *ANS,Fp12 *A){
     //x0
     Fp6_set(&ANS->x0,&A->x0);
     //x1
     Fp6_set_neg(&ANS->x1,&A->x1);
 }
 
-void BLS12_Fp12_frobenius_map_p8(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_frobenius_map_p8(Fp12 *ANS,Fp12 *A){
     //x0
     Fp2_set(&ANS->x0.x0,&A->x0.x0);
     Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,d12_frobenius_constant[f_p8][1].x0.x0);
@@ -122,7 +122,7 @@ void BLS12_Fp12_frobenius_map_p8(Fp12 *ANS,Fp12 *A){
     Fp2_mul_mpz(&ANS->x1.x2,&A->x1.x2,d12_frobenius_constant[f_p8][5].x0.x0);
 }
 
-void BLS12_Fp12_frobenius_map_p10(Fp12 *ANS,Fp12 *A){
+void bls12_Fp12_frobenius_map_p10(Fp12 *ANS,Fp12 *A){
     //x0
     Fp2_set(&ANS->x0.x0,&A->x0.x0);
     Fp2_mul_mpz(&ANS->x0.x1,&A->x0.x1,d12_frobenius_constant[f_p10][1].x0.x0);

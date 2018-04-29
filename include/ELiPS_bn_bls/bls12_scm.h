@@ -38,11 +38,11 @@
 
 
 //G1
-extern void BLS12_plain_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar);
-extern void BLS12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar);
+extern void bls12_plain_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar);
+extern void bls12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar);
 //G2
-extern void BLS12_plain_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar);
-extern void BLS12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar);
-extern void BLS12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar);
+extern void bls12_plain_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar);
+extern void bls12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar);
+extern void bls12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar);
 
 #endif /* bls12_scm_h */

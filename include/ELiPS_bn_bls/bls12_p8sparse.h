@@ -31,7 +31,7 @@
 
 #include <ELiPS_bn_bls/bn_efp2.h>
 
-extern void BLS12_Pseudo_8_sparse_mapping(EFp *P,EFp2 *Q,Fp *L);
-extern void BLS12_Pseudo_8_sparse_mul(Fp12 *ANS,Fp12 *A,Fp12 *B);
+extern void bls12_Pseudo_8_sparse_mapping(EFp *P,EFp2 *Q,Fp *L);
+extern void bls12_Pseudo_8_sparse_mul(Fp12 *ANS,Fp12 *A,Fp12 *B);
 
 #endif /* bls12_p8sparse_h */

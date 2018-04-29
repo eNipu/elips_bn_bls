@@ -31,7 +31,7 @@
 #include <ELiPS_bn_bls/bls12_frobenius.h>
 
 //final exp
-extern void BLS12_Final_exp_plain(Fp12 *ANS,Fp12 *A);
-extern void BLS12_Final_exp_optimal(Fp12 *ANS,Fp12 *A);
+extern void bls12_finalexp_plain(Fp12 *ANS,Fp12 *A);
+extern void bls12_finalexp_optimal(Fp12 *ANS,Fp12 *A);
 
 #endif /* bls12_finalexp_h */

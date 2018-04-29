@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bls12_miller_ate.h>
 
-void BLS12_Miller_algo_for_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
+void bls12_Miller_algo_for_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     EFp12 Buf;
     EFp12_init(&Buf);
     EFp2 T;
@@ -49,9 +49,9 @@ void BLS12_Miller_algo_for_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     mpz_init(loop);
     
     //set
-    BLS12_EFp12_to_EFp(&mapped_P,P);  //set P
-    BLS12_EFp12_to_EFp2(&mapped_Q,Q);//set mapped_Q
-    BLS12_Pseudo_8_sparse_mapping(&mapped_P,&mapped_Q,&L);
+    bls12_EFp12_to_EFp(&mapped_P,P);  //set P
+    bls12_EFp12_to_EFp2(&mapped_Q,Q);//set mapped_Q
+    bls12_Pseudo_8_sparse_mapping(&mapped_P,&mapped_Q,&L);
     EFp2_set_neg(&mapped_Q_neg,&mapped_Q);//set mapped_Q_neg
     
     EFp2_set(&T,&mapped_Q_neg);    //set T
@@ -67,9 +67,9 @@ void BLS12_Miller_algo_for_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     
     //miller
     for(i=1; i<length; i++){
-        BLS12_ff_ltt(&f,&T,&mapped_P,&L);
+        bls12_ff_ltt(&f,&T,&mapped_P,&L);
         if(binary[i]=='1'){
-            BLS12_f_ltq(&f,&T,&mapped_Q_neg,&mapped_P,&L);
+            bls12_f_ltq(&f,&T,&mapped_Q_neg,&mapped_P,&L);
         }
     }
     

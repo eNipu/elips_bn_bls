@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bls12_line_ate.h>
 
-void BLS12_ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L){
+void bls12_ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L){
     EFp2 Tmp_T;
     EFp2_init(&Tmp_T);
     Fp12 ff,ltt;
@@ -65,7 +65,7 @@ void BLS12_ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L){
     Fp2_mul_mpz(&ltt.x1.x1,&E,L->x0);
     Fp2_inv_basis(&ltt.x1.x1,&ltt.x1.x1);
     
-    BLS12_Pseudo_8_sparse_mul(f,&ff,&ltt);
+    bls12_Pseudo_8_sparse_mul(f,&ff,&ltt);
     
     EFp2_clear(&Tmp_T);
     Fp2_clear(&A);
@@ -77,7 +77,7 @@ void BLS12_ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L){
     Fp12_clear(&ltt);
 }
 
-void BLS12_f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L){
+void bls12_f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L){
     EFp2 Tmp_T;
     EFp2_init(&Tmp_T);
     Fp12 ltq;
@@ -110,7 +110,7 @@ void BLS12_f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L){
     Fp2_mul_mpz(&ltq.x1.x1,&E,L->x0);
     Fp2_inv_basis(&ltq.x1.x1,&ltq.x1.x1);
     
-    BLS12_Pseudo_8_sparse_mul(f,f,&ltq);
+    bls12_Pseudo_8_sparse_mul(f,f,&ltq);
     
     EFp2_clear(&Tmp_T);
     Fp12_clear(&ltq);

@@ -31,7 +31,7 @@
 
 #include <ELiPS_bn_bls/bls12_p8sparse.h>
 
-extern void BLS12_ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L);
-extern void BLS12_f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L);
+extern void bls12_ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L);
+extern void bls12_f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L);
 
 #endif /* bls12_line_ate_h */

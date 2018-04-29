@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bls12_miller_optate.h>
 
-void BLS12_Miller_algo_for_opt_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
+void bls12_Miller_algo_for_opt_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     EFp2 T;
     EFp2_init(&T);
     EFp2 mapped_Q,mapped_Q_neg,mapped_Q1,mapped_Q2_neg;
@@ -45,9 +45,9 @@ void BLS12_Miller_algo_for_opt_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     int i;
     
     //set
-    BLS12_EFp12_to_EFp(&mapped_P,P);  //set P
-    BLS12_EFp12_to_EFp2(&mapped_Q,Q);//set mapped_Q
-    BLS12_Pseudo_8_sparse_mapping(&mapped_P,&mapped_Q,&L);
+    bls12_EFp12_to_EFp(&mapped_P,P);  //set P
+    bls12_EFp12_to_EFp2(&mapped_Q,Q);//set mapped_Q
+    bls12_Pseudo_8_sparse_mapping(&mapped_P,&mapped_Q,&L);
     
     EFp2_set_neg(&mapped_Q_neg,&mapped_Q);//set mapped_Q_neg
     
@@ -55,18 +55,18 @@ void BLS12_Miller_algo_for_opt_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     Fp12_set_ui(&f,0);            //set f
     Fp_set_ui(&f.x0.x0.x0,1);
     //miller
-    for(i=BLS12_X_length-1; i>=0; i--){
-        switch(BLS12_X_binary[i]){
+    for(i=bls12_X_length-1; i>=0; i--){
+        switch(bls12_X_binary[i]){
             case 0:
-                BLS12_ff_ltt(&f,&T,&mapped_P,&L);
+                bls12_ff_ltt(&f,&T,&mapped_P,&L);
                 break;
             case 1:
-                BLS12_ff_ltt(&f,&T,&mapped_P,&L);
-                BLS12_f_ltq(&f,&T,&mapped_Q,&mapped_P,&L);
+                bls12_ff_ltt(&f,&T,&mapped_P,&L);
+                bls12_f_ltq(&f,&T,&mapped_Q,&mapped_P,&L);
                 break;
             case -1:
-                BLS12_ff_ltt(&f,&T,&mapped_P,&L);
-                BLS12_f_ltq(&f,&T,&mapped_Q_neg,&mapped_P,&L);
+                bls12_ff_ltt(&f,&T,&mapped_P,&L);
+                bls12_f_ltq(&f,&T,&mapped_Q_neg,&mapped_P,&L);
                 break;
             default:
                 break;
