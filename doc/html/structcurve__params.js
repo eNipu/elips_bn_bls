@@ -1,15 +1,14 @@
 var structcurve__params =
 [
-    [ "curve_a", "structcurve__params.html#a791978f9ed4ab23b64896993f2462dfa", null ],
-    [ "curve_b", "structcurve__params.html#a60d46b23af98d15ddec3bb2e5150f686", null ],
-    [ "EFp12_total", "structcurve__params.html#aa88c0baaecf7b4af0fd1dc9b6848da11", null ],
-    [ "EFp2_total", "structcurve__params.html#aa9220be60032fc3508c4c8b248a90a31", null ],
-    [ "EFp6_total", "structcurve__params.html#a091758be7123e690d403f91296ee6bac", null ],
-    [ "EFp_total", "structcurve__params.html#a841d416a661316f25c6a88099460eaa6", null ],
-    [ "EFpd_total", "structcurve__params.html#a1e0068ef1cc8d754e32867b6f3b8978b", null ],
-    [ "order", "structcurve__params.html#ac2b1dde162309c5b128df475f3251683", null ],
-    [ "prime", "structcurve__params.html#a4b5acca8bd5ca1620a07c273ae027745", null ],
-    [ "sign", "structcurve__params.html#a9694d13bf3e0ffa956c00a7cc525ed42", null ],
-    [ "trace_t", "structcurve__params.html#a937a9a11e30316112a0ab65b2454ffb9", null ],
-    [ "X", "structcurve__params.html#a5220bd7c8a64956ce42fbca896023570", null ]
+    [ "curve_a", "structcurve__params.html#a76692630dc7e9637262e95fe0189cd9d", null ],
+    [ "curve_b", "structcurve__params.html#a69f572611e84fdb672a5042ddc78bb84", null ],
+    [ "EFp12_total", "structcurve__params.html#a0bd24fe1a201e15d394f94b54fffed73", null ],
+    [ "EFp2_total", "structcurve__params.html#a41f2c250bbb645f79e140a0cc74841ce", null ],
+    [ "EFp6_total", "structcurve__params.html#a648289a78c013a2fa6cb7411f4feadce", null ],
+    [ "EFp_total", "structcurve__params.html#a6bf91dafda4f4779069da69efe4a7550", null ],
+    [ "EFpd_total", "structcurve__params.html#a5a7b670d8ea5bf30cda27dc5b14096ab", null ],
+    [ "order", "structcurve__params.html#aead4939b8a895eace7b64a9567e02627", null ],
+    [ "prime", "structcurve__params.html#aba84e227126f9481f3f1a07737f563c2", null ],
+    [ "trace_t", "structcurve__params.html#a92e90157be25b87a0cd9d55883664fdf", null ],
+    [ "X", "structcurve__params.html#aafd3c8facd30604e0786d7d2885f373d", null ]
 ];

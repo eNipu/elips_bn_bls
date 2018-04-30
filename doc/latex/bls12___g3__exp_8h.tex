@@ -41,7 +41,7 @@ Calculate exponentiation of element in G3 group in \hyperlink{struct_fp12}{Fp12}
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2().
+References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), and Fp\+\_\+set\+\_\+ui().
 
 
 
@@ -75,7 +75,7 @@ Referenced by bls12\+\_\+test\+\_\+\+G3\+\_\+exp().
 63     \hyperlink{bls12__frobenius_8h_af6a38141d5aa4f0fc4361d12d8c05671}{bls12\_Fp12\_frobenius\_map\_p2}(&frobenius\_f\_2x, A);
 64     
 65     \textcolor{comment}{//set table}
-66     Fp\_set\_ui(&table[0].x0.x0.x0,1);    \textcolor{comment}{//00}
+66     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&table[0].x0.x0.x0,1);    \textcolor{comment}{//00}
 67     Fp12\_set(&table[1],&f);                \textcolor{comment}{//01}
 68     Fp12\_set(&table[2],&frobenius\_f\_2x);    \textcolor{comment}{//10}
 69     Fp12\_mul(&table[3],&table[1],&table[2]);    \textcolor{comment}{//11}
@@ -159,7 +159,7 @@ Calculate exponentiation of element in G3 group in \hyperlink{struct_fp12}{Fp12}
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), and bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3().
+References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), and Fp\+\_\+set\+\_\+ui().
 
 
 
@@ -201,7 +201,7 @@ Referenced by bls12\+\_\+test\+\_\+\+G3\+\_\+exp().
 158     \hyperlink{bls12__frobenius_8h_a8b383bddc2f7f902a85b73bea5d9d44d}{bls12\_Fp12\_frobenius\_map\_p3}(&frobenius\_f\_3x, A);
 159     Fp12\_inv(&frobenius\_f\_3x,&frobenius\_f\_3x);
 160     \textcolor{comment}{//set table}
-161     Fp\_set\_ui(&table[0].x0.x0.x0,1);            \textcolor{comment}{//0000}
+161     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&table[0].x0.x0.x0,1);            \textcolor{comment}{//0000}
 162     Fp12\_set(&table[1],&f);                    \textcolor{comment}{//0001}
 163     Fp12\_set(&table[2],&frobenius\_f\_x);        \textcolor{comment}{//0010}
 164     Fp12\_mul(&table[3],&table[1],&table[2]);    \textcolor{comment}{//0011}

@@ -41,7 +41,7 @@ Calculate line equation ltq that goes through T,Q and P in Miller\textquotesingl
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mul().
+References bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mul(), E\+Fp2\+\_\+clear(), E\+Fp2\+\_\+init(), E\+Fp2\+\_\+set(), and Fp\+\_\+set\+\_\+ui().
 
 
 
@@ -51,7 +51,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 \begin{DoxyCode}
 80                                                       \{
 81     \hyperlink{struct_e_fp2}{EFp2} Tmp\_T;
-82     EFp2\_init(&Tmp\_T);
+82     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&Tmp\_T);
 83     \hyperlink{struct_fp12}{Fp12} ltq;
 84     Fp12\_init(&ltq);
 85     \hyperlink{struct_fp2}{Fp2} A,B,C,D,E;
@@ -60,7 +60,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 88     Fp2\_init(&C);
 89     Fp2\_init(&D);
 90     Fp2\_init(&E);
-91     EFp2\_set(&Tmp\_T,T);
+91     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&Tmp\_T,T);
 92     
 93     \textcolor{comment}{//ltq}
 94     Fp2\_sub(&A,&Q->x,&Tmp\_T.x);        \textcolor{comment}{//A=(Q->x-T.x)^-1}
@@ -76,7 +76,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 104     Fp2\_sub(&T->y,&E,&T->y);
 105     
 106     \textcolor{comment}{//set ltq}
-107     Fp\_set\_ui(&ltq.x0.x0.x0,1);
+107     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&ltq.x0.x0.x0,1);
 108     Fp2\_set\_neg(&ltq.x1.x2,&C);
 109     Fp2\_inv\_basis(&ltq.x1.x2,&ltq.x1.x2);
 110     Fp2\_mul\_mpz(&ltq.x1.x1,&E,L->x0);
@@ -84,7 +84,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 112     
 113     \hyperlink{bls12__p8sparse_8h_a12e66a107c192d4b73a29140c2a6d97d}{bls12\_Pseudo\_8\_sparse\_mul}(f,f,&ltq);
 114     
-115     EFp2\_clear(&Tmp\_T);
+115     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&Tmp\_T);
 116     Fp12\_clear(&ltq);
 117     Fp2\_clear(&A);
 118     Fp2\_clear(&B);
@@ -117,7 +117,7 @@ Calculate line equation ltt that goes through T and P in Miller\textquotesingle{
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mul().
+References bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mul(), E\+Fp2\+\_\+clear(), E\+Fp2\+\_\+init(), E\+Fp2\+\_\+set(), and Fp\+\_\+set\+\_\+ui().
 
 
 
@@ -127,7 +127,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 \begin{DoxyCode}
 31                                                \{
 32     \hyperlink{struct_e_fp2}{EFp2} Tmp\_T;
-33     EFp2\_init(&Tmp\_T);
+33     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&Tmp\_T);
 34     \hyperlink{struct_fp12}{Fp12} ff,ltt;
 35     Fp12\_init(&ff);
 36     Fp12\_init(&ltt);
@@ -137,7 +137,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 40     Fp2\_init(&C);
 41     Fp2\_init(&D);
 42     Fp2\_init(&E);
-43     EFp2\_set(&Tmp\_T,T);
+43     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&Tmp\_T,T);
 44     
 45     Fp12\_sqr(&ff,f);
 46     
@@ -156,7 +156,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 59     Fp2\_sub(&T->y,&E,&T->y);
 60     
 61     \textcolor{comment}{//set ltt}
-62     Fp\_set\_ui(&ltt.x0.x0.x0,1);
+62     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&ltt.x0.x0.x0,1);
 63     Fp2\_set\_neg(&ltt.x1.x2,&C);
 64     Fp2\_inv\_basis(&ltt.x1.x2,&ltt.x1.x2);
 65     Fp2\_mul\_mpz(&ltt.x1.x1,&E,L->x0);
@@ -164,7 +164,7 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 67     
 68     \hyperlink{bls12__p8sparse_8h_a12e66a107c192d4b73a29140c2a6d97d}{bls12\_Pseudo\_8\_sparse\_mul}(f,&ff,&ltt);
 69     
-70     EFp2\_clear(&Tmp\_T);
+70     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&Tmp\_T);
 71     Fp2\_clear(&A);
 72     Fp2\_clear(&B);
 73     Fp2\_clear(&C);

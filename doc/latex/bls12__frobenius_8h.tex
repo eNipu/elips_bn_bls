@@ -46,7 +46,7 @@ Calculate Frobenius map of A in \hyperlink{struct_fp12}{Fp12} extension field as
 \end{DoxyParams}
 
 
-References d12\+\_\+frobenius\+\_\+constant.
+References d12\+\_\+frobenius\+\_\+constant, Fp\+\_\+init(), Fp\+\_\+set(), and Fp\+\_\+set\+\_\+neg().
 
 
 
@@ -56,34 +56,36 @@ Referenced by bls12\+\_\+4split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+finalexp\+\_\+o
 \begin{DoxyCode}
 31                                                    \{
 32     \hyperlink{struct_fp}{Fp} tmp;
-33     Fp\_init(&tmp);
+33     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
 34     
 35     \textcolor{comment}{//x0}
-36     Fp\_set(&ANS->x0.x0.x0,&A->x0.x0.x0);
-37     Fp\_set\_neg(&ANS->x0.x0.x1,&A->x0.x0.x1);
-38     Fp\_set(&tmp,&A->x0.x1.x0);
-39     Fp\_set(&ANS->x0.x1.x0,&A->x0.x1.x1);
-40     Fp\_set(&ANS->x0.x1.x1,&tmp);
+36     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x0.x0,&A->x0.x0.x0);
+37     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x0.x0.x1,&A->x0.x0.x1);
+38     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&tmp,&A->x0.x1.x0);
+39     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x1.x0,&A->x0.x1.x1);
+40     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x1.x1,&tmp);
 41     Fp2\_mul\_mpz(&ANS->x0.x1,&ANS->x0.x1,\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][1].x1.x0);
-42     Fp\_set(&ANS->x0.x2.x0,&A->x0.x2.x0);
-43     Fp\_set\_neg(&ANS->x0.x2.x1,&A->x0.x2.x1);
+42     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x2.x0,&A->x0.x2.x0);
+43     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x0.x2.x1,&A->x0.x2.x1);
 44     Fp2\_mul\_mpz(&ANS->x0.x2,&ANS->x0.x2,\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][2].x0.x0);
 45     \textcolor{comment}{//x1}
-46     Fp\_set(&ANS->x1.x0.x0,&A->x1.x0.x0);
-47     Fp\_set\_neg(&ANS->x1.x0.x1,&A->x1.x0.x1);
+46     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x1.x0.x0,&A->x1.x0.x0);
+47     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x1.x0.x1,&A->x1.x0.x1);
 48     Fp2\_mul(&ANS->x1.x0,&ANS->x1.x0,&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][3]);
-49     Fp\_set(&ANS->x1.x1.x0,&A->x1.x1.x0);
-50     Fp\_set\_neg(&ANS->x1.x1.x1,&A->x1.x1.x1);
+49     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x1.x1.x0,&A->x1.x1.x0);
+50     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x1.x1.x1,&A->x1.x1.x1);
 51     Fp2\_mul(&ANS->x1.x1,&ANS->x1.x1,&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][4]);
-52     Fp\_set(&ANS->x1.x2.x0,&A->x1.x2.x0);
-53     Fp\_set\_neg(&ANS->x1.x2.x1,&A->x1.x2.x1);
+52     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x1.x2.x0,&A->x1.x2.x0);
+53     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x1.x2.x1,&A->x1.x2.x1);
 54     Fp2\_mul(&ANS->x1.x2,&ANS->x1.x2,&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][5]);
 55     
-56     Fp\_clear(&tmp);
+56     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
 57 \}
 \end{DoxyCode}
-Here is the caller graph for this function\+:
+Here is the call graph for this function\+:
 % FIG 2
+Here is the caller graph for this function\+:
+% FIG 3
 \mbox{\Hypertarget{bls12__frobenius_8h_ab1689402c2756a18db3ffad166547396}\label{bls12__frobenius_8h_ab1689402c2756a18db3ffad166547396}} 
 \index{bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}!bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p10@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p10}}
 \index{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p10@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p10}!bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}}
@@ -153,7 +155,7 @@ Referenced by bls12\+\_\+2split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+4split\+\_\+\+G
 68 \}
 \end{DoxyCode}
 Here is the caller graph for this function\+:
-% FIG 3
+% FIG 4
 \mbox{\Hypertarget{bls12__frobenius_8h_a8b383bddc2f7f902a85b73bea5d9d44d}\label{bls12__frobenius_8h_a8b383bddc2f7f902a85b73bea5d9d44d}} 
 \index{bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}!bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3}}
 \index{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3}!bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}}
@@ -171,7 +173,7 @@ Calculate Frobenius map of A in \hyperlink{struct_fp12}{Fp12} extension field as
 \end{DoxyParams}
 
 
-References d12\+\_\+frobenius\+\_\+constant.
+References d12\+\_\+frobenius\+\_\+constant, Fp\+\_\+init(), Fp\+\_\+set(), and Fp\+\_\+set\+\_\+neg().
 
 
 
@@ -181,32 +183,34 @@ Referenced by bls12\+\_\+4split\+\_\+\+G3\+\_\+exp(), and bls12\+\_\+finalexp\+\
 \begin{DoxyCode}
 70                                                    \{
 71     \hyperlink{struct_fp}{Fp} tmp;
-72     Fp\_init(&tmp);
+72     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
 73     
 74     \textcolor{comment}{//x0}
-75     Fp\_set(&ANS->x0.x0.x0,&A->x0.x0.x0);
-76     Fp\_set\_neg(&ANS->x0.x0.x1,&A->x0.x0.x1);
-77     Fp\_set(&tmp,&A->x0.x1.x0);
-78     Fp\_set(&ANS->x0.x1.x0,&A->x0.x1.x1);
-79     Fp\_set(&ANS->x0.x1.x1,&tmp);
-80     Fp\_set\_neg(&ANS->x0.x2.x0,&A->x0.x2.x0);
-81     Fp\_set(&ANS->x0.x2.x1,&A->x0.x2.x1);
+75     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x0.x0,&A->x0.x0.x0);
+76     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x0.x0.x1,&A->x0.x0.x1);
+77     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&tmp,&A->x0.x1.x0);
+78     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x1.x0,&A->x0.x1.x1);
+79     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x1.x1,&tmp);
+80     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x0.x2.x0,&A->x0.x2.x0);
+81     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x0.x2.x1,&A->x0.x2.x1);
 82     \textcolor{comment}{//x1}
-83     Fp\_set(&ANS->x1.x0.x0,&A->x1.x0.x0);
-84     Fp\_set\_neg(&ANS->x1.x0.x1,&A->x1.x0.x1);
+83     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x1.x0.x0,&A->x1.x0.x0);
+84     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x1.x0.x1,&A->x1.x0.x1);
 85     Fp2\_mul(&ANS->x1.x0,&ANS->x1.x0,&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][3]);
-86     Fp\_set(&ANS->x1.x1.x0,&A->x1.x1.x0);
-87     Fp\_set\_neg(&ANS->x1.x1.x1,&A->x1.x1.x1);
+86     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x1.x1.x0,&A->x1.x1.x0);
+87     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x1.x1.x1,&A->x1.x1.x1);
 88     Fp2\_mul(&ANS->x1.x1,&ANS->x1.x1,&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][4]);
-89     Fp\_set(&ANS->x1.x2.x0,&A->x1.x2.x0);
-90     Fp\_set\_neg(&ANS->x1.x2.x1,&A->x1.x2.x1);
+89     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x1.x2.x0,&A->x1.x2.x0);
+90     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x1.x2.x1,&A->x1.x2.x1);
 91     Fp2\_mul(&ANS->x1.x2,&ANS->x1.x2,&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][5]);
 92     
-93     Fp\_clear(&tmp);
+93     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
 94 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 5
 Here is the caller graph for this function\+:
-% FIG 4
+% FIG 6
 \mbox{\Hypertarget{bls12__frobenius_8h_a150c516aec9f34011b809fc2b0b8aff4}\label{bls12__frobenius_8h_a150c516aec9f34011b809fc2b0b8aff4}} 
 \index{bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}!bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p4@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p4}}
 \index{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p4@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p4}!bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}}
@@ -268,7 +272,7 @@ Referenced by bls12\+\_\+finalexp\+\_\+optimal(), and bls12\+\_\+finalexp\+\_\+p
 112 \}
 \end{DoxyCode}
 Here is the caller graph for this function\+:
-% FIG 5
+% FIG 7
 \mbox{\Hypertarget{bls12__frobenius_8h_a453eaaf5a6aadfb5330839ea7e34fc7c}\label{bls12__frobenius_8h_a453eaaf5a6aadfb5330839ea7e34fc7c}} 
 \index{bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}!bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p8@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p8}}
 \index{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p8@{bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p8}!bls12\+\_\+frobenius.\+h@{bls12\+\_\+frobenius.\+h}}

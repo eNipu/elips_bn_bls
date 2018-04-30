@@ -10,5 +10,5 @@ var bn__efp2_8h =
     [ "EFp2_set", "bn__efp2_8h.html#ab9ebc9caf2c47493f224e70b99d26cba", null ],
     [ "EFp2_set_mpz", "bn__efp2_8h.html#ab5775448fd19c40fa6ff9032eaa075d2", null ],
     [ "EFp2_set_neg", "bn__efp2_8h.html#a9dec6dd06434dcf90206232bd085146d", null ],
-    [ "EFp2_set_ui", "bn__efp2_8h.html#a9830f761746686eb3c5c789543c43e4a", null ]
+    [ "EFp2_set_ui", "bn__efp2_8h.html#a0c502350e2307087fc655b908e573db6", null ]
 ];

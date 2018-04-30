@@ -37,7 +37,7 @@ void bn12_tate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     
     //final exp
     gettimeofday(&t0,NULL);
-    Final_exp_optimal(ANS,ANS);
+    bn_final_exp_optimal(ANS,ANS);
     gettimeofday(&t1,NULL);
     FINALEXP_OPT=timedifference_msec(t0,t1);
 }
@@ -51,7 +51,7 @@ void bn12_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     
     //final exp
     gettimeofday(&t0,NULL);
-    Final_exp_optimal(ANS,ANS);
+    bn_final_exp_optimal(ANS,ANS);
     gettimeofday(&t1,NULL);
     FINALEXP_OPT=timedifference_msec(t0,t1);
 }
@@ -65,7 +65,7 @@ void bn12_opt_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     
     //final exp
     gettimeofday(&t0,NULL);
-    Final_exp_optimal(ANS,ANS);
+    bn_final_exp_optimal(ANS,ANS);
     gettimeofday(&t1,NULL);
     FINALEXP_OPT=timedifference_msec(t0,t1);
 }
@@ -79,7 +79,7 @@ void bn12_x_ate(Fp12 *ANS,EFp12 *P, EFp12 *Q){
     
     //final exp
     gettimeofday(&t0,NULL);
-    Final_exp_optimal(ANS,ANS);
+    bn_final_exp_optimal(ANS,ANS);
     gettimeofday(&t1,NULL);
     FINALEXP_OPT=timedifference_msec(t0,t1);
 }

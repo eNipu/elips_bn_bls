@@ -68,35 +68,37 @@ Enumate the p-\/th power
 
 Calculate primitive cubic root of 1 in \hyperlink{struct_fp}{Fp}. 
 
-References epsilon1.
+References epsilon1, Fp\+\_\+init(), Fp\+\_\+inv(), Fp\+\_\+mul(), Fp\+\_\+set\+\_\+ui(), Fp\+\_\+sqrt(), and Fp\+\_\+sub\+\_\+ui().
 
 
 \begin{DoxyCode}
 78                   \{
 79     \hyperlink{struct_fp}{Fp} inv,buf,result1,result2;
-80     Fp\_init(&inv);
-81     Fp\_init(&buf);
-82     Fp\_init(&result1);
-83     Fp\_init(&result2);
+80     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&inv);
+81     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&buf);
+82     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&result1);
+83     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&result2);
 84     
-85     Fp\_set\_ui(&buf,2);
-86     Fp\_inv(&inv,&buf);
+85     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&buf,2);
+86     \hyperlink{bn__fp_8h_aed138c92bbb10803bffd0f8eb0c090ce}{Fp\_inv}(&inv,&buf);
 87     mpz\_sub\_ui(buf.x0,prime\_p,3);
 88     
-89     Fp\_sqrt(&buf,&buf);
-90     Fp\_sub\_ui(&buf,&buf,1);
-91     Fp\_mul(&result1,&buf,&inv);
-92     Fp\_mul(&result2,&result1,&result1);
+89     \hyperlink{bn__fp_8h_acfc7bfa81b3f370904680568d52a54cd}{Fp\_sqrt}(&buf,&buf);
+90     \hyperlink{bn__fp_8h_a89b6cb2f82f8281015b92a71e11e27f7}{Fp\_sub\_ui}(&buf,&buf,1);
+91     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&result1,&buf,&inv);
+92     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&result2,&result1,&result1);
 93     
 94     mpz\_set(\hyperlink{bn__bls12__precoms_8h_a0e028790b8ecdcbc4208efb5da6bf7f1}{epsilon1},result1.x0);
 95     mpz\_set(epsilon2,result2.x0);
 96     
-97     Fp\_clear(&inv);
-98     Fp\_clear(&buf);
-99     Fp\_clear(&result1);
-100     Fp\_clear(&result2);
+97     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&inv);
+98     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&buf);
+99     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&result1);
+100     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&result2);
 101 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 2
 \mbox{\Hypertarget{bn__bls12__precoms_8h_a6d8315d6721fda3d585086b15cf55cd8}\label{bn__bls12__precoms_8h_a6d8315d6721fda3d585086b15cf55cd8}} 
 \index{bn\+\_\+bls12\+\_\+precoms.\+h@{bn\+\_\+bls12\+\_\+precoms.\+h}!init\+\_\+precoms@{init\+\_\+precoms}}
 \index{init\+\_\+precoms@{init\+\_\+precoms}!bn\+\_\+bls12\+\_\+precoms.\+h@{bn\+\_\+bls12\+\_\+precoms.\+h}}
@@ -112,7 +114,7 @@ Initialize B\+L\+S12 curve pre-\/computations
 \end{DoxyParams}
 
 
-References epsilon1, Fp2\+\_\+basis, Fp2\+\_\+basis\+\_\+inv, Fp6\+\_\+basis, and Fp\+\_\+basis.
+References curve\+\_\+parameters, epsilon1, Fp2\+\_\+basis, Fp2\+\_\+basis\+\_\+inv, Fp6\+\_\+basis, Fp\+\_\+basis, Fp\+\_\+init(), and curve\+\_\+params\+::prime.
 
 
 
@@ -124,13 +126,13 @@ Referenced by bls12\+\_\+inits(), and init\+\_\+bn().
 46     
 47     mpz\_init(prime\_p);
 48     \textcolor{keywordflow}{if} (curvetype == 1) \{
-49         mpz\_set(prime\_p,curve\_parameters.prime);
+49         mpz\_set(prime\_p,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 50     \}
 51     \textcolor{keywordflow}{else} \textcolor{keywordflow}{if} (curvetype == 2)\{
-52         mpz\_set(prime\_p,curve\_parameters.prime);
+52         mpz\_set(prime\_p,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 53     \}
 54     
-55     Fp\_init(&\hyperlink{bn__bls12__precoms_8h_aa749221c0b50bbde9cb15836c8d91a93}{Fp\_basis});
+55     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&\hyperlink{bn__bls12__precoms_8h_aa749221c0b50bbde9cb15836c8d91a93}{Fp\_basis});
 56     Fp2\_init(&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis});
 57     Fp2\_init(&\hyperlink{bn__bls12__precoms_8h_a2d027e63b15655f4127ad0fb09c10466}{Fp2\_basis\_inv});
 58     Fp6\_init(&\hyperlink{bn__bls12__precoms_8h_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\_basis});
@@ -153,8 +155,10 @@ Referenced by bls12\+\_\+inits(), and init\+\_\+bn().
 75     \hyperlink{bn__bls12__precoms_8h_ac493d3334dc9a69b22270ecfd04393ac}{set\_frobenius\_constant}();
 76 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 3
 Here is the caller graph for this function\+:
-% FIG 2
+% FIG 4
 \mbox{\Hypertarget{bn__bls12__precoms_8h_ac971525f97c575965d5f273cf956c229}\label{bn__bls12__precoms_8h_ac971525f97c575965d5f273cf956c229}} 
 \index{bn\+\_\+bls12\+\_\+precoms.\+h@{bn\+\_\+bls12\+\_\+precoms.\+h}!set\+\_\+basis@{set\+\_\+basis}}
 \index{set\+\_\+basis@{set\+\_\+basis}!bn\+\_\+bls12\+\_\+precoms.\+h@{bn\+\_\+bls12\+\_\+precoms.\+h}}
@@ -163,18 +167,20 @@ Here is the caller graph for this function\+:
 
 Set basis elements 
 
-References Fp2\+\_\+basis, Fp2\+\_\+basis\+\_\+inv, Fp6\+\_\+basis, and Fp\+\_\+basis.
+References Fp2\+\_\+basis, Fp2\+\_\+basis\+\_\+inv, Fp6\+\_\+basis, Fp\+\_\+basis, and Fp\+\_\+set\+\_\+ui().
 
 
 \begin{DoxyCode}
 103                 \{
-104     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_aa749221c0b50bbde9cb15836c8d91a93}{Fp\_basis},1);
+104     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_aa749221c0b50bbde9cb15836c8d91a93}{Fp\_basis},1);
 105     Fp2\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},1);
 106     Fp6\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\_basis},0);
-107     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\_basis}.x1.x0,1);
+107     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_abeaba57e2fac3468cc4e0af12a9930b5}{Fp6\_basis}.x1.x0,1);
 108     Fp2\_inv(&\hyperlink{bn__bls12__precoms_8h_a2d027e63b15655f4127ad0fb09c10466}{Fp2\_basis\_inv},&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis});
 109 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 5
 \mbox{\Hypertarget{bn__bls12__precoms_8h_ac493d3334dc9a69b22270ecfd04393ac}\label{bn__bls12__precoms_8h_ac493d3334dc9a69b22270ecfd04393ac}} 
 \index{bn\+\_\+bls12\+\_\+precoms.\+h@{bn\+\_\+bls12\+\_\+precoms.\+h}!set\+\_\+frobenius\+\_\+constant@{set\+\_\+frobenius\+\_\+constant}}
 \index{set\+\_\+frobenius\+\_\+constant@{set\+\_\+frobenius\+\_\+constant}!bn\+\_\+bls12\+\_\+precoms.\+h@{bn\+\_\+bls12\+\_\+precoms.\+h}}
@@ -183,7 +189,7 @@ References Fp2\+\_\+basis, Fp2\+\_\+basis\+\_\+inv, Fp6\+\_\+basis, and Fp\+\_\+
 
 Set Frobenius map constants 
 
-References Fp2\+\_\+basis.
+References Fp2\+\_\+basis, and Fp\+\_\+set\+\_\+ui().
 
 
 \begin{DoxyCode}
@@ -218,7 +224,7 @@ References Fp2\+\_\+basis.
 139     mpz\_tdiv\_q\_ui(exp,exp,2);
 140     Fp2\_pow(&tmp3,&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
 141     \textcolor{comment}{//set f\_p1}
-142     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][0].x0,1);
+142     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][0].x0,1);
 143     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][1],&tmp1);
 144     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][2],&tmp2);
 145     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p1][3],&tmp3);
@@ -241,7 +247,7 @@ References Fp2\+\_\+basis.
 162     mpz\_tdiv\_q\_ui(exp,exp,2);
 163     Fp2\_pow(&tmp3,&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
 164     \textcolor{comment}{//set f\_p2}
-165     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p2][0].x0,1);
+165     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p2][0].x0,1);
 166     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p2][1],&tmp1);
 167     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p2][2],&tmp2);
 168     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p2][3],&tmp3);
@@ -264,7 +270,7 @@ References Fp2\+\_\+basis.
 185     mpz\_tdiv\_q\_ui(exp,exp,2);
 186     Fp2\_pow(&tmp3,&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
 187     \textcolor{comment}{//set f\_p3}
-188     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][0].x0,1);
+188     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][0].x0,1);
 189     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][1],&tmp1);
 190     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][2],&tmp2);
 191     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p3][3],&tmp3);
@@ -287,7 +293,7 @@ References Fp2\+\_\+basis.
 208     mpz\_tdiv\_q\_ui(exp,exp,2);
 209     Fp2\_pow(&tmp3,&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
 210     \textcolor{comment}{//set d12\_frobenius\_constant[f\_p4]}
-211     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p4][0].x0,1);
+211     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p4][0].x0,1);
 212     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p4][1],&tmp1);
 213     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p4][2],&tmp2);
 214     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p4][3],&tmp3);
@@ -302,7 +308,7 @@ References Fp2\+\_\+basis.
 223     mpz\_tdiv\_q\_ui(exp,exp,2);
 224     Fp2\_pow(&tmp3,&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
 225     \textcolor{comment}{//set d12\_frobenius\_constant[f\_p8]}
-226     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p8][0].x0,1);
+226     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p8][0].x0,1);
 227     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p8][1],&tmp1);
 228     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p8][2],&tmp2);
 229     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p8][3],&tmp3);
@@ -317,7 +323,7 @@ References Fp2\+\_\+basis.
 238     mpz\_tdiv\_q\_ui(exp,exp,2);
 239     Fp2\_pow(&tmp3,&\hyperlink{bn__bls12__precoms_8h_ac7674cdb599a70b07ea48cf3964d98db}{Fp2\_basis},exp);
 240     \textcolor{comment}{//set frobenius\_10}
-241     Fp\_set\_ui(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p10][0].x0,1);
+241     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p10][0].x0,1);
 242     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p10][1],&tmp1);
 243     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p10][2],&tmp2);
 244     Fp2\_set(&\hyperlink{bn__bls12__precoms_8h_a668f0650e0bebe3e289fb6b842eb0f8b}{d12\_frobenius\_constant}[f\_p10][3],&tmp3);
@@ -345,6 +351,8 @@ References Fp2\+\_\+basis.
 266     mpz\_clear(p10);
 267 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 6
 
 
 \subsection{Variable Documentation}

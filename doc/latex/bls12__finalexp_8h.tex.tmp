@@ -35,7 +35,7 @@ Calculate final exponentiation of A in \hyperlink{struct_fp12}{Fp12} extension f
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), and bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p6().
+References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p6(), bls12\+\_\+\+X\+\_\+binary, and bls12\+\_\+\+X\+\_\+length.
 
 
 
@@ -67,21 +67,21 @@ Referenced by bls12\+\_\+tate().
 85     Fp12\_sqr(&t0,A);
 86     bls12\_Fp12\_pow\_motherparam(&t1,&t0);
 87     
-88     bls12\_X\_length=bls12\_X\_length-1;
-89     bls12\_X\_binary[77]=0;
-90     bls12\_X\_binary[50]=0;
-91     bls12\_X\_binary[33]=0;
-92     bls12\_X\_binary[76]=-1;
-93     bls12\_X\_binary[49]=1;
-94     bls12\_X\_binary[32]=1;
+88     \hyperlink{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}=\hyperlink{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}-1;
+89     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[77]=0;
+90     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[50]=0;
+91     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[33]=0;
+92     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[76]=-1;
+93     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[49]=1;
+94     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[32]=1;
 95     bls12\_Fp12\_pow\_motherparam(&t2,&t1);      \textcolor{comment}{//t2:=t1^(u2);}
-96     bls12\_X\_length=bls12\_X\_length+1;
-97     bls12\_X\_binary[77]=-1;
-98     bls12\_X\_binary[50]=1;
-99     bls12\_X\_binary[33]=1;
-100     bls12\_X\_binary[76]=0;
-101     bls12\_X\_binary[49]=0;
-102     bls12\_X\_binary[32]=0;
+96     \hyperlink{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}=\hyperlink{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}+1;
+97     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[77]=-1;
+98     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[50]=1;
+99     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[33]=1;
+100     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[76]=0;
+101     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[49]=0;
+102     \hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[32]=0;
 103     
 104     \hyperlink{bls12__frobenius_8h_ac7974480ad75b1a3ccb4ead7247abf15}{bls12\_Fp12\_frobenius\_map\_p6}(&t3,A);            \textcolor{comment}{//t3:=f^(-1);}
 105     Fp12\_mul(&t1,&t3,&t1);            \textcolor{comment}{//t1:=t3*t1;}
@@ -137,7 +137,7 @@ Calculate final exponentiation of A in \hyperlink{struct_fp12}{Fp12} extension f
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), and bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p6().
+References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p6(), curve\+\_\+parameters, curve\+\_\+params\+::order, and curve\+\_\+params\+::prime.
 
 
 \begin{DoxyCode}
@@ -158,11 +158,11 @@ References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), and bls12\+\_\+\
 46     \hyperlink{bls12__frobenius_8h_af6a38141d5aa4f0fc4361d12d8c05671}{bls12\_Fp12\_frobenius\_map\_p2}(&Buf1,&Tmp);
 47     Fp12\_mul(&Tmp,&Buf1,&Tmp);
 48     
-49     mpz\_pow\_ui(exp,curve\_parameters.prime,4);
-50     mpz\_pow\_ui(buf,curve\_parameters.prime,2);
+49     mpz\_pow\_ui(exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},4);
+50     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},2);
 51     mpz\_sub(exp,exp,buf);
 52     mpz\_add\_ui(exp,exp,1);
-53     mpz\_tdiv\_q(exp,exp,curve\_parameters.order);
+53     mpz\_tdiv\_q(exp,exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order});
 54     Fp12\_pow(ANS,&Tmp,exp);
 55     
 56     

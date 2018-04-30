@@ -214,15 +214,18 @@ Prints curve parameter\+: B\+L\+S12 curve
 480     printf(\textcolor{stringliteral}{"bls12\(\backslash\)n\(\backslash\)n"});
 481     gmp\_printf(\textcolor{stringliteral}{"parameters\(\backslash\)n"});
 482     gmp\_printf(\textcolor{stringliteral}{"X     (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(bls12\_X,2),bls12\_X);
-483     gmp\_printf(\textcolor{stringliteral}{"prime (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(curve\_parameters.prime,2),
-      curve\_parameters.prime);
-484     gmp\_printf(\textcolor{stringliteral}{"order (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(curve\_parameters.order,2),
-      curve\_parameters.order);
-485     gmp\_printf(\textcolor{stringliteral}{"trace (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(curve\_parameters.trace\_t,2),
-      curve\_parameters.trace\_t);
+483     gmp\_printf(\textcolor{stringliteral}{"prime (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},2),\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
+484     gmp\_printf(\textcolor{stringliteral}{"order (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order},2),\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order});
+485     gmp\_printf(\textcolor{stringliteral}{"trace (%dbit length) : %Zd \(\backslash\)n"},(\textcolor{keywordtype}{int})mpz\_sizeinbase(
+      \hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a92e90157be25b87a0cd9d55883664fdf}{trace\_t},2),\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a92e90157be25b87a0cd9d55883664fdf}{trace\_t});
 486     
 487     gmp\_printf(\textcolor{stringliteral}{"\(\backslash\)nelliptic curve\(\backslash\)n"});
-488     gmp\_printf(\textcolor{stringliteral}{"E:y^2=x^3+4\(\backslash\)n"},curve\_parameters.curve\_b);
+488     gmp\_printf(\textcolor{stringliteral}{"E:y^2=x^3+4\(\backslash\)n"},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a69f572611e84fdb672a5042ddc78bb84}{curve\_b});
 489     
 490     gmp\_printf(\textcolor{stringliteral}{"\(\backslash\)nmodulo polynomial\(\backslash\)n"});
 491     gmp\_printf(\textcolor{stringliteral}{"Fp2  : f(x) = x^2+1\(\backslash\)n"});

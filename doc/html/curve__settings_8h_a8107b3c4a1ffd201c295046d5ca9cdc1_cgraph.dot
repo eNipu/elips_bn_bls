@@ -1,0 +1,21 @@
+digraph "init_bn_settings"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node60 [label="init_bn_settings",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node60 -> Node61 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node61 [label="generate_bn_mother\l_parameter",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a3d631b68c5a9a78e5e0af33be4881816"];
+  Node60 -> Node62 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node62 [label="generate_bn_order",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#ad68e57a7d472d717193d4ca4331f23cf"];
+  Node60 -> Node63 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node63 [label="generate_bn_prime",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#aa75121e0ce77955b8e552edc9dd4feb6"];
+  Node60 -> Node64 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node64 [label="generate_bn_trace",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#aaad4de0748d6117b7f665e08dc7a4d24"];
+  Node60 -> Node65 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node65 [label="init_bn_parameters",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#ade0e2bdf8e679d274e8382034652e9bf"];
+  Node60 -> Node66 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node66 [label="set_bn_curve_parameter",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a951b8514e53db0684c1e61fb3a1e10c4"];
+  Node60 -> Node67 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node67 [label="weil",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a7442b7929865235118e3abeb198fddcb"];
+}

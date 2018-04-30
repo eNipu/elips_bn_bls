@@ -1,0 +1,11 @@
+digraph "generate_bn_trace"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node39 [label="generate_bn_trace",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node39 -> Node40 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node40 [label="init_bn_settings",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a8107b3c4a1ffd201c295046d5ca9cdc1"];
+  Node40 -> Node41 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node41 [label="init_bn",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__inits_8h.html#acc68302a1ac11a5cd72808edd14682ba"];
+}

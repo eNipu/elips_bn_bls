@@ -37,7 +37,7 @@ Calculate Miller\textquotesingle{}s loop for optimal ate pairing in B\+L\+S12 cu
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+f\+\_\+ltq(), bls12\+\_\+ff\+\_\+ltt(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+clear(), and E\+Fp\+\_\+init().
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+f\+\_\+ltq(), bls12\+\_\+ff\+\_\+ltt(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), bls12\+\_\+\+X\+\_\+binary, bls12\+\_\+\+X\+\_\+length, E\+Fp2\+\_\+clear(), E\+Fp2\+\_\+init(), E\+Fp2\+\_\+set(), E\+Fp2\+\_\+set\+\_\+neg(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), Fp\+\_\+clear(), Fp\+\_\+init(), and Fp\+\_\+set\+\_\+ui().
 
 
 
@@ -47,18 +47,18 @@ Referenced by bls12\+\_\+opt\+\_\+ate().
 \begin{DoxyCode}
 31                                                                \{
 32     \hyperlink{struct_e_fp2}{EFp2} T;
-33     EFp2\_init(&T);
+33     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&T);
 34     \hyperlink{struct_e_fp2}{EFp2} mapped\_Q,mapped\_Q\_neg,mapped\_Q1,mapped\_Q2\_neg;
-35     EFp2\_init(&mapped\_Q);
-36     EFp2\_init(&mapped\_Q\_neg);
-37     EFp2\_init(&mapped\_Q1);
-38     EFp2\_init(&mapped\_Q2\_neg);
+35     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q);
+36     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q\_neg);
+37     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q1);
+38     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&mapped\_Q2\_neg);
 39     \hyperlink{struct_e_fp}{EFp} mapped\_P;
 40     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&mapped\_P);
 41     \hyperlink{struct_fp12}{Fp12} f;
 42     Fp12\_init(&f);
 43     \hyperlink{struct_fp}{Fp} L;
-44     Fp\_init(&L);
+44     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&L);
 45     \textcolor{keywordtype}{int} i;
 46     
 47     \textcolor{comment}{//set}
@@ -66,14 +66,14 @@ Referenced by bls12\+\_\+opt\+\_\+ate().
 49     \hyperlink{bls12__twist_8h_a069ee5f353c96be9b1821af349731fe3}{bls12\_EFp12\_to\_EFp2}(&mapped\_Q,Q);\textcolor{comment}{//set mapped\_Q}
 50     \hyperlink{bls12__p8sparse_8h_a8d0191550910276d37cdc20f1f11d3d7}{bls12\_Pseudo\_8\_sparse\_mapping}(&mapped\_P,&mapped\_Q,&L);
 51     
-52     EFp2\_set\_neg(&mapped\_Q\_neg,&mapped\_Q);\textcolor{comment}{//set mapped\_Q\_neg}
+52     \hyperlink{bn__efp2_8h_a9dec6dd06434dcf90206232bd085146d}{EFp2\_set\_neg}(&mapped\_Q\_neg,&mapped\_Q);\textcolor{comment}{//set mapped\_Q\_neg}
 53     
-54     EFp2\_set(&T,&mapped\_Q\_neg);        \textcolor{comment}{//set T}
+54     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&T,&mapped\_Q\_neg);        \textcolor{comment}{//set T}
 55     Fp12\_set\_ui(&f,0);            \textcolor{comment}{//set f}
-56     Fp\_set\_ui(&f.x0.x0.x0,1);
+56     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&f.x0.x0.x0,1);
 57     \textcolor{comment}{//miller}
-58     \textcolor{keywordflow}{for}(i=bls12\_X\_length-1; i>=0; i--)\{
-59         \textcolor{keywordflow}{switch}(bls12\_X\_binary[i])\{
+58     \textcolor{keywordflow}{for}(i=\hyperlink{curve__settings_8h_a4317afa23e140f910d2e6aba76bdd65f}{bls12\_X\_length}-1; i>=0; i--)\{
+59         \textcolor{keywordflow}{switch}(\hyperlink{curve__settings_8h_a47f9e732d242f43448a366be57286643}{bls12\_X\_binary}[i])\{
 60             \textcolor{keywordflow}{case} 0:
 61                 \hyperlink{bls12__line__ate_8h_aef224b31d737d02e09b87597a9aa8664}{bls12\_ff\_ltt}(&f,&T,&mapped\_P,&L);
 62                 \textcolor{keywordflow}{break};
@@ -94,13 +94,13 @@ Referenced by bls12\+\_\+opt\+\_\+ate().
 77     Fp12\_set(ANS,&f);
 78     
 79     Fp12\_clear(&f);
-80     EFp2\_clear(&T);
-81     EFp2\_clear(&mapped\_Q);
-82     EFp2\_clear(&mapped\_Q\_neg);
-83     EFp2\_clear(&mapped\_Q1);
-84     EFp2\_clear(&mapped\_Q2\_neg);
+80     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&T);
+81     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q);
+82     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q\_neg);
+83     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q1);
+84     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&mapped\_Q2\_neg);
 85     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&mapped\_P);
-86     Fp\_clear(&L);
+86     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&L);
 87 \}
 \end{DoxyCode}
 Here is the call graph for this function\+:

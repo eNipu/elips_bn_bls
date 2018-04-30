@@ -42,7 +42,7 @@ Calculate Skew Frobenius map for pwer of p in G2 of B\+L\+S12 curve
 \end{DoxyParams}
 
 
-References d12\+\_\+skew\+\_\+frobenius\+\_\+constant.
+References d12\+\_\+skew\+\_\+frobenius\+\_\+constant, Fp\+\_\+set(), and Fp\+\_\+set\+\_\+neg().
 
 
 
@@ -52,17 +52,19 @@ Referenced by bls12\+\_\+4split\+\_\+\+G2\+\_\+scm().
 \begin{DoxyCode}
 36                                                         \{
 37     \textcolor{comment}{//x}
-38     Fp\_set(&ANS->x.x0,&A->x.x0);
-39     Fp\_set\_neg(&ANS->x.x1,&A->x.x1);
+38     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x.x0,&A->x.x0);
+39     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x.x1,&A->x.x1);
 40     Fp2\_mul(&ANS->x,&ANS->x,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p1][0]);
 41     \textcolor{comment}{//y}
-42     Fp\_set(&ANS->y.x0,&A->y.x0);
-43     Fp\_set\_neg(&ANS->y.x1,&A->y.x1);
+42     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->y.x0,&A->y.x0);
+43     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->y.x1,&A->y.x1);
 44     Fp2\_mul(&ANS->y,&ANS->y,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p1][1]);
 45 \}
 \end{DoxyCode}
-Here is the caller graph for this function\+:
+Here is the call graph for this function\+:
 % FIG 2
+Here is the caller graph for this function\+:
+% FIG 3
 \mbox{\Hypertarget{bls12__skew__frobenius_8h_a534f12cce374454dcfcd7455c92fa244}\label{bls12__skew__frobenius_8h_a534f12cce374454dcfcd7455c92fa244}} 
 \index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10}}
 \index{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p10}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
@@ -124,7 +126,7 @@ Referenced by bls12\+\_\+2split\+\_\+\+G2\+\_\+scm(), and bls12\+\_\+4split\+\_\
 52 \}
 \end{DoxyCode}
 Here is the caller graph for this function\+:
-% FIG 3
+% FIG 4
 \mbox{\Hypertarget{bls12__skew__frobenius_8h_a87f87eeb97f9ba92718de8561d8a486d}\label{bls12__skew__frobenius_8h_a87f87eeb97f9ba92718de8561d8a486d}} 
 \index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3}}
 \index{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3@{bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
@@ -142,7 +144,7 @@ Calculate Skew Frobenius map for pwer of p$^\wedge$3 in G2 of B\+L\+S12 curve
 \end{DoxyParams}
 
 
-References d12\+\_\+skew\+\_\+frobenius\+\_\+constant.
+References d12\+\_\+skew\+\_\+frobenius\+\_\+constant, Fp\+\_\+set(), and Fp\+\_\+set\+\_\+neg().
 
 
 
@@ -152,17 +154,19 @@ Referenced by bls12\+\_\+4split\+\_\+\+G2\+\_\+scm().
 \begin{DoxyCode}
 54                                                         \{
 55     \textcolor{comment}{//x}
-56     Fp\_set(&ANS->x.x0,&A->x.x0);
-57     Fp\_set\_neg(&ANS->x.x1,&A->x.x1);
+56     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->x.x0,&A->x.x0);
+57     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->x.x1,&A->x.x1);
 58     Fp2\_mul(&ANS->x,&ANS->x,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p3][0]);
 59     \textcolor{comment}{//y}
-60     Fp\_set(&ANS->y.x0,&A->y.x0);
-61     Fp\_set\_neg(&ANS->y.x1,&A->y.x1);
+60     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&ANS->y.x0,&A->y.x0);
+61     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->y.x1,&A->y.x1);
 62     Fp2\_mul(&ANS->y,&ANS->y,&\hyperlink{bn__bls12__precoms_8h_a2edd47729be9eb7efbc03dc7e8770513}{d12\_skew\_frobenius\_constant}[f\_p3][1]);
 63 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 5
 Here is the caller graph for this function\+:
-% FIG 4
+% FIG 6
 \mbox{\Hypertarget{bls12__skew__frobenius_8h_a27f5995aeb743e8ca184d8fdfe4dd819}\label{bls12__skew__frobenius_8h_a27f5995aeb743e8ca184d8fdfe4dd819}} 
 \index{bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}!bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2@{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2}}
 \index{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2@{bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2}!bls12\+\_\+skew\+\_\+frobenius.\+h@{bls12\+\_\+skew\+\_\+frobenius.\+h}}
@@ -180,7 +184,7 @@ Calculate Skew Frobenius map for p$^\wedge$2 in G1 of B\+L\+S12 curve
 \end{DoxyParams}
 
 
-References epsilon1.
+References epsilon1, Fp\+\_\+mul\+\_\+mpz(), Fp\+\_\+set\+\_\+neg(), and E\+Fp\+::y.
 
 
 
@@ -189,9 +193,11 @@ Referenced by bls12\+\_\+2split\+\_\+\+G1\+\_\+scm().
 
 \begin{DoxyCode}
 31                                                      \{
-32     Fp\_mul\_mpz(&ANS->x,&A->x,\hyperlink{bn__bls12__precoms_8h_a0e028790b8ecdcbc4208efb5da6bf7f1}{epsilon1});
-33     Fp\_set\_neg(&ANS->y,&A->y);
+32     \hyperlink{bn__fp_8h_a8fccc49cb2bfe0065b0b8374f49b2a2e}{Fp\_mul\_mpz}(&ANS->x,&A->x,\hyperlink{bn__bls12__precoms_8h_a0e028790b8ecdcbc4208efb5da6bf7f1}{epsilon1});
+33     \hyperlink{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}{Fp\_set\_neg}(&ANS->\hyperlink{struct_e_fp_a862c179e77e180b917ad2c4130efc6cf}{y},&A->\hyperlink{struct_e_fp_a862c179e77e180b917ad2c4130efc6cf}{y});
 34 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 7
 Here is the caller graph for this function\+:
-% FIG 5
+% FIG 8

@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['d12_5ffrobenius_5fconstant',['d12_frobenius_constant',['../bn__bls12__precoms_8h.html#a668f0650e0bebe3e289fb6b842eb0f8b',1,'bn_bls12_precoms.c']]],
-  ['d12_5fskew_5ffrobenius_5fconstant',['d12_skew_frobenius_constant',['../bn__bls12__precoms_8h.html#a2edd47729be9eb7efbc03dc7e8770513',1,'bn_bls12_precoms.c']]]
+  ['curve_5fa',['curve_a',['../structcurve__params.html#a76692630dc7e9637262e95fe0189cd9d',1,'curve_params']]],
+  ['curve_5fb',['curve_b',['../structcurve__params.html#a69f572611e84fdb672a5042ddc78bb84',1,'curve_params']]],
+  ['curve_5fparameters',['curve_parameters',['../curve__settings_8h.html#a8fe8b8f22840ac29ddd581c9a4c8225c',1,'curve_settings.c']]]
 ];

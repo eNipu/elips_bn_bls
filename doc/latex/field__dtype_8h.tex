@@ -5,7 +5,7 @@ Include dependency graph for field\+\_\+dtype.\+h\+:
 % FIG 0
 This graph shows which files directly or indirectly include this file\+:
 % FIG 1
-\subsection*{Classes}
+\subsection*{Data Structures}
 \begin{DoxyCompactItemize}
 \item 
 struct \hyperlink{struct_fp}{Fp}
@@ -41,6 +41,9 @@ typedef struct \hyperlink{struct_fp16}{Fp16} \hyperlink{field__dtype_8h_a26f9d2b
 \end{DoxyCompactItemize}
 
 
+\subsection{Detailed Description}
+Interaface of finite field data types. 
+
 \subsection{Typedef Documentation}
 \mbox{\Hypertarget{field__dtype_8h_ae8621d8779e7eff8357a3e8bc3d7bb16}\label{field__dtype_8h_ae8621d8779e7eff8357a3e8bc3d7bb16}} 
 \index{field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}!Fp@{Fp}}
@@ -48,39 +51,40 @@ typedef struct \hyperlink{struct_fp16}{Fp16} \hyperlink{field__dtype_8h_a26f9d2b
 \subsubsection{\texorpdfstring{Fp}{Fp}}
 {\footnotesize\ttfamily typedef struct \hyperlink{struct_fp}{Fp} \hyperlink{struct_fp}{Fp}}
 
-\mbox{\Hypertarget{field__dtype_8h_a72ea2b21147016e615d74d33fbd404d0}\label{field__dtype_8h_a72ea2b21147016e615d74d33fbd404d0}} 
+\hyperlink{struct_fp}{Fp} is the basic type that represent prime field element. Consist of one member element of type mpz\+\_\+t \mbox{\Hypertarget{field__dtype_8h_a72ea2b21147016e615d74d33fbd404d0}\label{field__dtype_8h_a72ea2b21147016e615d74d33fbd404d0}} 
 \index{field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}!Fp12@{Fp12}}
 \index{Fp12@{Fp12}!field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}}
 \subsubsection{\texorpdfstring{Fp12}{Fp12}}
 {\footnotesize\ttfamily typedef struct \hyperlink{struct_fp12}{Fp12} \hyperlink{struct_fp12}{Fp12}}
 
-\mbox{\Hypertarget{field__dtype_8h_a26f9d2be6245be0a4632c5db5d64d947}\label{field__dtype_8h_a26f9d2be6245be0a4632c5db5d64d947}} 
+\hyperlink{struct_fp12}{Fp12} is degree 2 extension over \hyperlink{struct_fp6}{Fp6}. Consist of three \hyperlink{struct_fp2}{Fp2} element. \mbox{\Hypertarget{field__dtype_8h_a26f9d2be6245be0a4632c5db5d64d947}\label{field__dtype_8h_a26f9d2be6245be0a4632c5db5d64d947}} 
 \index{field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}!Fp16@{Fp16}}
 \index{Fp16@{Fp16}!field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}}
 \subsubsection{\texorpdfstring{Fp16}{Fp16}}
 {\footnotesize\ttfamily typedef struct \hyperlink{struct_fp16}{Fp16} \hyperlink{struct_fp16}{Fp16}}
 
-\mbox{\Hypertarget{field__dtype_8h_a5875e7d86b0a9b1421f7761902273370}\label{field__dtype_8h_a5875e7d86b0a9b1421f7761902273370}} 
+\hyperlink{struct_fp16}{Fp16} is degree 2 extension over \hyperlink{struct_fp8}{Fp8}. Consist of three \hyperlink{struct_fp8}{Fp8} element. \mbox{\Hypertarget{field__dtype_8h_a5875e7d86b0a9b1421f7761902273370}\label{field__dtype_8h_a5875e7d86b0a9b1421f7761902273370}} 
 \index{field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}!Fp2@{Fp2}}
 \index{Fp2@{Fp2}!field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}}
 \subsubsection{\texorpdfstring{Fp2}{Fp2}}
 {\footnotesize\ttfamily typedef struct \hyperlink{struct_fp2}{Fp2} \hyperlink{struct_fp2}{Fp2}}
 
-\mbox{\Hypertarget{field__dtype_8h_a4cabfc220c277a4c7bf13fc1c254d91c}\label{field__dtype_8h_a4cabfc220c277a4c7bf13fc1c254d91c}} 
+\hyperlink{struct_fp2}{Fp2} is degree 2 extension over \hyperlink{struct_fp}{Fp}. Consist of two \hyperlink{struct_fp}{Fp} element. \mbox{\Hypertarget{field__dtype_8h_a4cabfc220c277a4c7bf13fc1c254d91c}\label{field__dtype_8h_a4cabfc220c277a4c7bf13fc1c254d91c}} 
 \index{field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}!Fp4@{Fp4}}
 \index{Fp4@{Fp4}!field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}}
 \subsubsection{\texorpdfstring{Fp4}{Fp4}}
 {\footnotesize\ttfamily typedef struct \hyperlink{struct_fp4}{Fp4} \hyperlink{struct_fp4}{Fp4}}
 
-\mbox{\Hypertarget{field__dtype_8h_aeee8840ea12433760b9880738f7208b0}\label{field__dtype_8h_aeee8840ea12433760b9880738f7208b0}} 
+\hyperlink{struct_fp4}{Fp4} is degree 2 extension over \hyperlink{struct_fp2}{Fp2}. Consist of two \hyperlink{struct_fp2}{Fp2} element. \mbox{\Hypertarget{field__dtype_8h_aeee8840ea12433760b9880738f7208b0}\label{field__dtype_8h_aeee8840ea12433760b9880738f7208b0}} 
 \index{field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}!Fp6@{Fp6}}
 \index{Fp6@{Fp6}!field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}}
 \subsubsection{\texorpdfstring{Fp6}{Fp6}}
 {\footnotesize\ttfamily typedef struct \hyperlink{struct_fp6}{Fp6} \hyperlink{struct_fp6}{Fp6}}
 
-\mbox{\Hypertarget{field__dtype_8h_aa720d5e115b4cad50d1a84b1fdace68d}\label{field__dtype_8h_aa720d5e115b4cad50d1a84b1fdace68d}} 
+\hyperlink{struct_fp6}{Fp6} is degree 3 extension over \hyperlink{struct_fp2}{Fp2}. Consist of three \hyperlink{struct_fp2}{Fp2} element. \mbox{\Hypertarget{field__dtype_8h_aa720d5e115b4cad50d1a84b1fdace68d}\label{field__dtype_8h_aa720d5e115b4cad50d1a84b1fdace68d}} 
 \index{field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}!Fp8@{Fp8}}
 \index{Fp8@{Fp8}!field\+\_\+dtype.\+h@{field\+\_\+dtype.\+h}}
 \subsubsection{\texorpdfstring{Fp8}{Fp8}}
 {\footnotesize\ttfamily typedef struct \hyperlink{struct_fp8}{Fp8} \hyperlink{struct_fp8}{Fp8}}
 
+\hyperlink{struct_fp8}{Fp8} is degree 2 extension over \hyperlink{struct_fp4}{Fp4}. Consist of three \hyperlink{struct_fp4}{Fp4} element. 

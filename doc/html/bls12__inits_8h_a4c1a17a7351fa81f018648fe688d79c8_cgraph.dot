@@ -5,5 +5,23 @@ digraph "bls12_inits"
   rankdir="LR";
   Node0 [label="bls12_inits",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
   Node0 -> Node1 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node1 [label="init_precoms",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__bls12__precoms_8h.html#a6d8315d6721fda3d585086b15cf55cd8"];
+  Node1 [label="init_bls12_settings",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#adfb3a63a523ad6bb209fad3db7f20047"];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="init_bls12_parameters",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a17764e96f5eacb09c2edc2bf2eeaddeb"];
+  Node1 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="bls12_generate_X",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a3f6cf44a99eee03ecb0e8a4bb162c622"];
+  Node1 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="bls12_generate_prime",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a1b107bc5b647bc5d3861286fa2d3cc11"];
+  Node1 -> Node5 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="bls12_generate_order",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#ad19981ec357b6c465cbd768f89b6d42e"];
+  Node1 -> Node6 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="bls12_generate_trace",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a91443c5d6e5c08599d2c9c0cae6b55c6"];
+  Node1 -> Node7 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="bls12_weil",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#af8fa5f50ee9d77c834f78ec4e1b45c93"];
+  Node1 -> Node8 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="bls12_set_curve_parameter",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__settings_8h.html#a2f976eaec9841301857ffc58c5ffd2d9"];
+  Node0 -> Node9 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="init_precoms",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__bls12__precoms_8h.html#a6d8315d6721fda3d585086b15cf55cd8"];
+  Node9 -> Node10 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="Fp_init",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp_8h.html#af102c589736284034064b7c2283000cb"];
 }

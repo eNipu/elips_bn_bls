@@ -71,6 +71,8 @@ extern void Fp2_neg(Fp2 *ans,Fp2 *a);
 extern void Fp2_mul_KSS16(Fp2 *ANS,Fp2 *A,Fp2 *B);
 extern void Fp2_mul_basis_KSS16(Fp2 *ANS, Fp2 *A);
 extern void Fp2_invert_kss16(Fp2 *ANS,Fp2 *A);
+
+
 // #pragma mark Fp2 methods
 //void Fp2_sqr(struct Fp2 *ANS,struct Fp2 *A);
 //void Fp2_sqr_kss16(struct Fp2 *ANS,struct Fp2 *A);

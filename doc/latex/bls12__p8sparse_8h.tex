@@ -37,7 +37,7 @@ Calculate Precomputations for Pseudo 8-\/sparse multplication and Millers algo.
 \end{DoxyParams}
 
 
-References E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+set().
+References E\+Fp2\+\_\+clear(), E\+Fp2\+\_\+init(), E\+Fp2\+\_\+set(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), E\+Fp\+\_\+set(), Fp\+\_\+clear(), Fp\+\_\+init(), Fp\+\_\+inv(), Fp\+\_\+mul(), Fp\+\_\+set(), and E\+Fp\+::y.
 
 
 
@@ -47,45 +47,45 @@ Referenced by bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), and bl
 \begin{DoxyCode}
 31                                                         \{
 32     \hyperlink{struct_e_fp2}{EFp2} Tmp\_Q;
-33     EFp2\_init(&Tmp\_Q);
+33     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&Tmp\_Q);
 34     \hyperlink{struct_e_fp}{EFp} Tmp\_P;
 35     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&Tmp\_P);
 36     \hyperlink{struct_fp}{Fp} A,B,C,D,c;
-37     Fp\_init(&A);
-38     Fp\_init(&B);
-39     Fp\_init(&C);
-40     Fp\_init(&D);
-41     Fp\_init(&c);
+37     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&A);
+38     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&B);
+39     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&C);
+40     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&D);
+41     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&c);
 42     
 43     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&Tmp\_P,P);
-44     EFp2\_set(&Tmp\_Q,Q);
+44     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&Tmp\_Q,Q);
 45     
-46     Fp\_mul(&A,&Tmp\_P.x,&Tmp\_P.y);
-47     Fp\_inv(&A,&A);
-48     Fp\_mul(&B,&Tmp\_P.x,&Tmp\_P.x);
-49     Fp\_mul(&B,&B,&A);
-50     Fp\_mul(&C,&Tmp\_P.y,&A);
-51     Fp\_mul(&D,&B,&B);
+46     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&A,&Tmp\_P.x,&Tmp\_P.\hyperlink{struct_e_fp_a862c179e77e180b917ad2c4130efc6cf}{y});
+47     \hyperlink{bn__fp_8h_aed138c92bbb10803bffd0f8eb0c090ce}{Fp\_inv}(&A,&A);
+48     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&B,&Tmp\_P.x,&Tmp\_P.x);
+49     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&B,&B,&A);
+50     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&C,&Tmp\_P.\hyperlink{struct_e_fp_a862c179e77e180b917ad2c4130efc6cf}{y},&A);
+51     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&D,&B,&B);
 52     
 53     Fp2\_mul\_mpz(&Q->x,&Tmp\_Q.x,D.x0);
-54     Fp\_mul(&c,&B,&D);
+54     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&c,&B,&D);
 55     Fp2\_mul\_mpz(&Q->y,&Tmp\_Q.y,c.x0);
 56     
-57     Fp\_mul(&P->x,&D,&Tmp\_P.x);
-58     Fp\_set(&P->y,&P->x);
+57     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&P->x,&D,&Tmp\_P.x);
+58     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&P->\hyperlink{struct_e_fp_a862c179e77e180b917ad2c4130efc6cf}{y},&P->x);
 59     
-60     Fp\_mul(L,&C,&Tmp\_P.y);
-61     Fp\_mul(L,L,L);
-62     Fp\_mul(L,L,&C);
+60     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(L,&C,&Tmp\_P.\hyperlink{struct_e_fp_a862c179e77e180b917ad2c4130efc6cf}{y});
+61     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(L,L,L);
+62     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(L,L,&C);
 63     
 64     
-65     EFp2\_clear(&Tmp\_Q);
+65     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&Tmp\_Q);
 66     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Tmp\_P);
-67     Fp\_clear(&A);
-68     Fp\_clear(&B);
-69     Fp\_clear(&C);
-70     Fp\_clear(&D);
-71     Fp\_clear(&c);
+67     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&A);
+68     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&B);
+69     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&C);
+70     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&D);
+71     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&c);
 72 \}
 \end{DoxyCode}
 Here is the call graph for this function\+:

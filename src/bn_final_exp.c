@@ -28,7 +28,7 @@
 
 #include <ELiPS_bn_bls/bn_final_exp.h>
 
-void Final_exp_plain(Fp12 *ANS,Fp12 *A){
+void bn_final_exp_plain(Fp12 *ANS,Fp12 *A){
     Fp12 t0,t1;
     Fp12_init(&t0);
     Fp12_init(&t1);
@@ -56,7 +56,7 @@ void Final_exp_plain(Fp12 *ANS,Fp12 *A){
     Fp12_clear(&t1);
 }
 
-void Final_exp_optimal(Fp12 *ANS,Fp12 *A){
+void bn_final_exp_optimal(Fp12 *ANS,Fp12 *A){
     Fp12 t0,t1,t2,t3;
     Fp12_init(&t0);
     Fp12_init(&t1);
@@ -75,17 +75,17 @@ void Final_exp_optimal(Fp12 *ANS,Fp12 *A){
     
     //f←f^((p^4-p^2+1)/r)
     
-    Fp12_pow_X(&t0,A);        //t0←f^(u)
+    bn_fp12_power_motherparam(&t0,A);        //t0←f^(u)
     Fp12_frobenius_map_p6(&t0,&t0);            //t0←f^(-u)
     
     Fp12_sqr(&t1,&t0);                //t1←t0^2
     Fp12_sqr(&t0,&t1);                //t0←t1^2
     Fp12_mul(&t0,&t1,&t0);                //t0←t1*t0
-    Fp12_pow_X(&t2,&t0);    //t2←t0^(u)
+    bn_fp12_power_motherparam(&t2,&t0);    //t2←t0^(u)
     Fp12_frobenius_map_p6(&t2,&t2);            //t2←t0^(-u)
     
     X_binary[0]=0;
-    Fp12_pow_X(&t3,&t2);    //t3←t2^(u+1)
+    bn_fp12_power_motherparam(&t3,&t2);    //t3←t2^(u+1)
     X_binary[0]=-1;
     Fp12_sqr(&t3,&t3);                //t3←t3^2
     Fp12_frobenius_map_p6(&t0,&t0);            //t0←t0^(-1)
@@ -113,7 +113,7 @@ void Final_exp_optimal(Fp12 *ANS,Fp12 *A){
     Fp12_clear(&t3);
 }
 
-void Fp12_pow_X(Fp12 *ANS,Fp12 *A){
+void bn_fp12_power_motherparam(Fp12 *ANS,Fp12 *A){
     int i;
     Fp12 tmp,A_inv;
     Fp12_init(&tmp);

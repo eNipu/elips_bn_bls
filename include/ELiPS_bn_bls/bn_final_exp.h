@@ -26,13 +26,42 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interaface for final exponentiation in BN curve 
+ *
+ * @ingroup bn12
+ */
 #ifndef bn_final_exp_h
 #define bn_final_exp_h
 
 #include <ELiPS_bn_bls/bn_frobenius.h>
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
 
-extern void Final_exp_plain(Fp12 *ANS,Fp12 *A);
-extern void Final_exp_optimal(Fp12 *ANS,Fp12 *A);
-extern void Fp12_pow_X(Fp12 *ANS,Fp12 *A);
+/**
+ * Un-optimized final exp for BN curve
+ *
+ * @param[in] P			        -  input P in EFp12.
+ */
+extern void bn_final_exp_plain(Fp12 *ANS,Fp12 *A);
+
+/**
+ *   Optimized final exp for BN curve
+ *
+ * @param[out] ANS			    -  output in Fp12.
+ * @param[in] A			        -  input P in Fp12 as obtained from Miller's algo output.
+ */
+extern void bn_final_exp_optimal(Fp12 *ANS,Fp12 *A);
+
+/**
+ * Efficient exponentiation by mother parameter 
+ *
+ * @param[out] ANS			    -  output in Fp12.
+ * @param[in] A			        -  input P in EFp12.
+ */
+extern void bn_fp12_power_motherparam(Fp12 *ANS,Fp12 *A);
 
 #endif /* bn_final_exp_h */

@@ -25,12 +25,12 @@ Interaface for pairing using B\+L\+S12 curve. It needs to included for initializ
 
 This methods needs to be called before using the BN curve for pairing. It initialized the curve as y$^\wedge$2=x$^\wedge$3-\/4 with parameters suggested in \href{https://eprint.iacr.org/2017/334}{\tt https\+://eprint.\+iacr.\+org/2017/334}. 
 
-References init\+\_\+precoms().
+References init\+\_\+bn\+\_\+settings(), and init\+\_\+precoms().
 
 
 \begin{DoxyCode}
 31                   \{
-32     init\_bn\_settings();
+32     \hyperlink{curve__settings_8h_a8107b3c4a1ffd201c295046d5ca9cdc1}{init\_bn\_settings}();
 33     \hyperlink{bn__bls12__precoms_8h_a6d8315d6721fda3d585086b15cf55cd8}{init\_precoms}(1);
 34 \}
 \end{DoxyCode}

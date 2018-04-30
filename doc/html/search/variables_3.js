@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['fp2_5fbasis',['Fp2_basis',['../bn__bls12__precoms_8h.html#ac7674cdb599a70b07ea48cf3964d98db',1,'bn_bls12_precoms.c']]],
-  ['fp2_5fbasis_5finv',['Fp2_basis_inv',['../bn__bls12__precoms_8h.html#a2d027e63b15655f4127ad0fb09c10466',1,'bn_bls12_precoms.c']]],
-  ['fp6_5fbasis',['Fp6_basis',['../bn__bls12__precoms_8h.html#abeaba57e2fac3468cc4e0af12a9930b5',1,'bn_bls12_precoms.c']]],
-  ['fp_5fbasis',['Fp_basis',['../bn__bls12__precoms_8h.html#aa749221c0b50bbde9cb15836c8d91a93',1,'bn_bls12_precoms.c']]]
+  ['efp12_5ftotal',['EFp12_total',['../structcurve__params.html#a0bd24fe1a201e15d394f94b54fffed73',1,'curve_params']]],
+  ['efp2_5ftotal',['EFp2_total',['../structcurve__params.html#a41f2c250bbb645f79e140a0cc74841ce',1,'curve_params']]],
+  ['efp6_5ftotal',['EFp6_total',['../structcurve__params.html#a648289a78c013a2fa6cb7411f4feadce',1,'curve_params']]],
+  ['efp_5ftotal',['EFp_total',['../structcurve__params.html#a6bf91dafda4f4779069da69efe4a7550',1,'curve_params']]],
+  ['efpd_5ftotal',['EFpd_total',['../structcurve__params.html#a5a7b670d8ea5bf30cda27dc5b14096ab',1,'curve_params']]],
+  ['epsilon1',['epsilon1',['../bn__bls12__precoms_8h.html#a0e028790b8ecdcbc4208efb5da6bf7f1',1,'bn_bls12_precoms.c']]]
 ];

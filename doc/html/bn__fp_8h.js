@@ -2,7 +2,7 @@ var bn__fp_8h =
 [
     [ "Fp_add", "bn__fp_8h.html#a9caa801425735a7cc268db56717334c4", null ],
     [ "Fp_add_mpz", "bn__fp_8h.html#a5e260a66d393501471c5fd9c8639a610", null ],
-    [ "Fp_add_ui", "bn__fp_8h.html#acf5539588200bc276583069f82de449b", null ],
+    [ "Fp_add_ui", "bn__fp_8h.html#a3651164c1f5130c2d442089526f3dc24", null ],
     [ "Fp_clear", "bn__fp_8h.html#a8020d216e590f1a4e3ed197dac0920fc", null ],
     [ "Fp_cmp", "bn__fp_8h.html#a62942c9110cdc838f5658552ced10c44", null ],
     [ "Fp_cmp_mpz", "bn__fp_8h.html#a64036a600cd84d63c47f3a27538fe5e5", null ],
@@ -17,7 +17,7 @@ var bn__fp_8h =
     [ "Fp_mul_basis", "bn__fp_8h.html#a2280c4f9e94184435f0dcc30bd85df9b", null ],
     [ "Fp_mul_basis_KSS16", "bn__fp_8h.html#af42f998fc348f0383da37a66d9ad0afc", null ],
     [ "Fp_mul_mpz", "bn__fp_8h.html#a8fccc49cb2bfe0065b0b8374f49b2a2e", null ],
-    [ "Fp_mul_ui", "bn__fp_8h.html#a6ba3c85f98a5d2408c08483ec7965f92", null ],
+    [ "Fp_mul_ui", "bn__fp_8h.html#ae5f57c940ac4e120f380e4bc2e9ff13d", null ],
     [ "Fp_neg", "bn__fp_8h.html#a4d04f4451c3331a33282b9452d66cf9a", null ],
     [ "Fp_pow", "bn__fp_8h.html#a0a229db7cfb57e337de586eb3695fa28", null ],
     [ "Fp_printf", "bn__fp_8h.html#a1512d0a8dafbc0776e84231b75ecd646", null ],
@@ -25,9 +25,9 @@ var bn__fp_8h =
     [ "Fp_set_mpz", "bn__fp_8h.html#a790ca8e073ff84d9d3972c2cab616fbc", null ],
     [ "Fp_set_neg", "bn__fp_8h.html#ab8ccba7d599eda4d0cd9e34b09fe38e6", null ],
     [ "Fp_set_random", "bn__fp_8h.html#afd32945f05593f2832d301c043b2b437", null ],
-    [ "Fp_set_ui", "bn__fp_8h.html#a69cab366a0cd0390259469329eef7222", null ],
+    [ "Fp_set_ui", "bn__fp_8h.html#ae0585a806e578512a600d6f65043bd1f", null ],
     [ "Fp_sqrt", "bn__fp_8h.html#acfc7bfa81b3f370904680568d52a54cd", null ],
     [ "Fp_sub", "bn__fp_8h.html#ac462212d662d8bd7041f5fa8df436c2d", null ],
     [ "Fp_sub_mpz", "bn__fp_8h.html#a74d22d6603d509d2426313f28bf752a7", null ],
-    [ "Fp_sub_ui", "bn__fp_8h.html#a3d6d4295ee158750aac0d3fd7d3a90d7", null ]
+    [ "Fp_sub_ui", "bn__fp_8h.html#a89b6cb2f82f8281015b92a71e11e27f7", null ]
 ];

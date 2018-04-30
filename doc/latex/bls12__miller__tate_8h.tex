@@ -36,7 +36,7 @@ Calculate Miller\textquotesingle{}s loop for tate pairing in B\+L\+S12 curve.
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+set().
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), curve\+\_\+parameters, E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), E\+Fp\+\_\+set(), Fp\+\_\+set\+\_\+ui(), and curve\+\_\+params\+::order.
 
 
 
@@ -51,15 +51,15 @@ Referenced by bls12\+\_\+tate().
 36     \hyperlink{struct_fp12}{Fp12} f;
 37     Fp12\_init(&f);
 38     \textcolor{keywordtype}{int} i,length;
-39     length=(int)mpz\_sizeinbase(curve\_parameters.order,2);
+39     length=(int)mpz\_sizeinbase(\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order},2);
 40     \textcolor{keywordtype}{char} binary[length];
-41     mpz\_get\_str(binary,2,curve\_parameters.order);
+41     mpz\_get\_str(binary,2,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order});
 42     
 43     \textcolor{comment}{//set}
 44     \hyperlink{bls12__twist_8h_ab400c20c7379b8092500f351fda16323}{bls12\_EFp12\_to\_EFp}(&Tmp\_P,P);
 45     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&T,&Tmp\_P);
 46     Fp12\_set\_ui(&f,0);
-47     Fp\_set\_ui(&f.x0.x0.x0,1);
+47     \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\_set\_ui}(&f.x0.x0.x0,1);
 48     
 49     \textcolor{comment}{//miller}
 50     \textcolor{keywordflow}{for}(i=1; i<length; i++)\{

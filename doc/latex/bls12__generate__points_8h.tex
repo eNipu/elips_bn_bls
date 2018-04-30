@@ -39,7 +39,7 @@ Generates rational point P in G1 group. Usally generated in prime field but maps
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12().
+References bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), curve\+\_\+parameters, E\+Fp12\+\_\+\+S\+C\+M(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+init(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), curve\+\_\+params\+::\+E\+Fp\+\_\+total, E\+Fp\+::infinity, and curve\+\_\+params\+::order.
 
 
 
@@ -55,9 +55,10 @@ Referenced by bls12\+\_\+test\+\_\+\+G1\+\_\+scm(), bls12\+\_\+test\+\_\+\+G3\+\
 38     
 39     \hyperlink{bn__efp_8h_a131fa3538790c33f2006d84b4a60f4e5}{EFp\_rational\_point\_bls12}(&Tmp\_P);
 40     \hyperlink{bls12__twist_8h_a1fff3d9b5a4da8df91e68493d344cb6b}{bls12\_EFp\_to\_EFp12}(P,&Tmp\_P);
-41     mpz\_tdiv\_q(scalar,curve\_parameters.EFp\_total,curve\_parameters.order);
-42     EFp12\_SCM(P,P,scalar);
-43     P->infinity=Tmp\_P.infinity;
+41     mpz\_tdiv\_q(scalar,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a6bf91dafda4f4779069da69efe4a7550}{EFp\_total},
+      \hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order});
+42     \hyperlink{bn__efp12_8h_a525c20258f15285298ddf9ef3d334a67}{EFp12\_SCM}(P,P,scalar);
+43     P->infinity=Tmp\_P.\hyperlink{struct_e_fp_a652f88fb6bac77f1882023c1410e84d3}{infinity};
 44     
 45     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&Tmp\_P);
 46     mpz\_clear(scalar);
@@ -84,7 +85,7 @@ Generates special rational point Q in G2 group. where G1$\ast$\+G2-\/$>$G3 is th
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1().
+References bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), curve\+\_\+parameters, E\+Fp12\+\_\+clear(), E\+Fp12\+\_\+\+E\+C\+A(), E\+Fp12\+\_\+init(), E\+Fp12\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp12\+\_\+\+S\+C\+M(), E\+Fp12\+\_\+set\+\_\+neg(), curve\+\_\+params\+::\+E\+Fpd\+\_\+total, and curve\+\_\+params\+::order.
 
 
 
@@ -94,26 +95,26 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm(), bls12\+\_\+test\+\_\+\+G3\+\
 \begin{DoxyCode}
 49                                       \{
 50     \hyperlink{struct_e_fp12}{EFp12} random\_P,P,frobenius\_P;
-51     EFp12\_init(&random\_P);
-52     EFp12\_init(&P);
-53     EFp12\_init(&frobenius\_P);
+51     \hyperlink{bn__efp12_8h_a1cef63517b0aaf7a3c4c3f0b030d00aa}{EFp12\_init}(&random\_P);
+52     \hyperlink{bn__efp12_8h_a1cef63517b0aaf7a3c4c3f0b030d00aa}{EFp12\_init}(&P);
+53     \hyperlink{bn__efp12_8h_a1cef63517b0aaf7a3c4c3f0b030d00aa}{EFp12\_init}(&frobenius\_P);
 54     mpz\_t exp;
 55     mpz\_init(exp);
 56     
-57     EFp12\_rational\_point\_bls12(&random\_P);
-58     mpz\_pow\_ui(exp,curve\_parameters.order,2);
-59     mpz\_tdiv\_q(exp,curve\_parameters.EFpd\_total,exp);
-60     EFp12\_SCM(&P,&random\_P,exp);
+57     \hyperlink{bn__efp12_8h_abcb5db21f94f92eb107a8f3a44219798}{EFp12\_rational\_point\_bls12}(&random\_P);
+58     mpz\_pow\_ui(exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order},2);
+59     mpz\_tdiv\_q(exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a5a7b670d8ea5bf30cda27dc5b14096ab}{EFpd\_total},exp);
+60     \hyperlink{bn__efp12_8h_a525c20258f15285298ddf9ef3d334a67}{EFp12\_SCM}(&P,&random\_P,exp);
 61     \hyperlink{bls12__frobenius_8h_a22e66a8db607710f331457d0a42b52a6}{bls12\_Fp12\_frobenius\_map\_p1}(&frobenius\_P.x,&P.x);
 62     \hyperlink{bls12__frobenius_8h_a22e66a8db607710f331457d0a42b52a6}{bls12\_Fp12\_frobenius\_map\_p1}(&frobenius\_P.y,&P.y);
 63     frobenius\_P.infinity=P.infinity;
-64     EFp12\_set\_neg(&P,&P);
-65     EFp12\_ECA(Q,&P,&frobenius\_P);
+64     \hyperlink{bn__efp12_8h_a54993609dbef771a15951f007d77f4ac}{EFp12\_set\_neg}(&P,&P);
+65     \hyperlink{bn__efp12_8h_aa9cc7485b8fda733e5d194e0b658afe4}{EFp12\_ECA}(Q,&P,&frobenius\_P);
 66     
 67     mpz\_clear(exp);
-68     EFp12\_clear(&random\_P);
-69     EFp12\_clear(&P);
-70     EFp12\_clear(&frobenius\_P);
+68     \hyperlink{bn__efp12_8h_af82bf012407b635d6e636d5323cd5da8}{EFp12\_clear}(&random\_P);
+69     \hyperlink{bn__efp12_8h_af82bf012407b635d6e636d5323cd5da8}{EFp12\_clear}(&P);
+70     \hyperlink{bn__efp12_8h_af82bf012407b635d6e636d5323cd5da8}{EFp12\_clear}(&frobenius\_P);
 71 \}
 \end{DoxyCode}
 Here is the call graph for this function\+:
@@ -136,9 +137,15 @@ Generates random rational point R in the B\+L\+S12 curve over \hyperlink{struct_
 \hline
 \end{DoxyParams}
 
+
+References E\+Fp12\+\_\+init(), and E\+Fp12\+\_\+rational\+\_\+point\+\_\+bls12().
+
+
 \begin{DoxyCode}
 73                                           \{
-74     EFp12\_init(R);
-75     EFp12\_rational\_point\_bls12(R);
+74     \hyperlink{bn__efp12_8h_a1cef63517b0aaf7a3c4c3f0b030d00aa}{EFp12\_init}(R);
+75     \hyperlink{bn__efp12_8h_abcb5db21f94f92eb107a8f3a44219798}{EFp12\_rational\_point\_bls12}(R);
 76 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 6

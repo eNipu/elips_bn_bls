@@ -17,7 +17,7 @@ void \hyperlink{bn__fp_8h_a1512d0a8dafbc0776e84231b75ecd646}{Fp\+\_\+printf} (\h
 \item 
 void \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\+\_\+set} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A)
 \item 
-void \hyperlink{bn__fp_8h_a69cab366a0cd0390259469329eef7222}{Fp\+\_\+set\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, unsigned long int UI)
+void \hyperlink{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}{Fp\+\_\+set\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, unsigned long int A)
 \item 
 void \hyperlink{bn__fp_8h_a790ca8e073ff84d9d3972c2cab616fbc}{Fp\+\_\+set\+\_\+mpz} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, mpz\+\_\+t B)
 \item 
@@ -27,7 +27,7 @@ void \hyperlink{bn__fp_8h_afd32945f05593f2832d301c043b2b437}{Fp\+\_\+set\+\_\+ra
 \item 
 void \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\+\_\+mul} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, \hyperlink{struct_fp}{Fp} $\ast$B)
 \item 
-void \hyperlink{bn__fp_8h_a6ba3c85f98a5d2408c08483ec7965f92}{Fp\+\_\+mul\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, unsigned long int UI)
+void \hyperlink{bn__fp_8h_ae5f57c940ac4e120f380e4bc2e9ff13d}{Fp\+\_\+mul\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, unsigned long int B)
 \item 
 void \hyperlink{bn__fp_8h_a8fccc49cb2bfe0065b0b8374f49b2a2e}{Fp\+\_\+mul\+\_\+mpz} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, mpz\+\_\+t B)
 \item 
@@ -37,13 +37,13 @@ void \hyperlink{bn__fp_8h_af42f998fc348f0383da37a66d9ad0afc}{Fp\+\_\+mul\+\_\+ba
 \item 
 void \hyperlink{bn__fp_8h_a9caa801425735a7cc268db56717334c4}{Fp\+\_\+add} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, \hyperlink{struct_fp}{Fp} $\ast$B)
 \item 
-void \hyperlink{bn__fp_8h_acf5539588200bc276583069f82de449b}{Fp\+\_\+add\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, unsigned long int UI)
+void \hyperlink{bn__fp_8h_a3651164c1f5130c2d442089526f3dc24}{Fp\+\_\+add\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, unsigned long int B)
 \item 
 void \hyperlink{bn__fp_8h_a5e260a66d393501471c5fd9c8639a610}{Fp\+\_\+add\+\_\+mpz} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, mpz\+\_\+t B)
 \item 
 void \hyperlink{bn__fp_8h_ac462212d662d8bd7041f5fa8df436c2d}{Fp\+\_\+sub} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, \hyperlink{struct_fp}{Fp} $\ast$B)
 \item 
-void \hyperlink{bn__fp_8h_a3d6d4295ee158750aac0d3fd7d3a90d7}{Fp\+\_\+sub\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, unsigned long int UI)
+void \hyperlink{bn__fp_8h_a89b6cb2f82f8281015b92a71e11e27f7}{Fp\+\_\+sub\+\_\+ui} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, unsigned long int B)
 \item 
 void \hyperlink{bn__fp_8h_a74d22d6603d509d2426313f28bf752a7}{Fp\+\_\+sub\+\_\+mpz} (\hyperlink{struct_fp}{Fp} $\ast$A\+NS, \hyperlink{struct_fp}{Fp} $\ast$A, mpz\+\_\+t B)
 \item 
@@ -71,6 +71,9 @@ void \hyperlink{bn__fp_8h_a4d04f4451c3331a33282b9452d66cf9a}{Fp\+\_\+neg} (struc
 \end{DoxyCompactItemize}
 
 
+\subsection{Detailed Description}
+Interaface of prime field operations. Primarily targeted for BN and B\+L\+S12 curve 
+
 \subsection{Function Documentation}
 \mbox{\Hypertarget{bn__fp_8h_a9caa801425735a7cc268db56717334c4}\label{bn__fp_8h_a9caa801425735a7cc268db56717334c4}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+add@{Fp\+\_\+add}}
@@ -78,19 +81,26 @@ void \hyperlink{bn__fp_8h_a4d04f4451c3331a33282b9452d66cf9a}{Fp\+\_\+neg} (struc
 \subsubsection{\texorpdfstring{Fp\+\_\+add()}{Fp\_add()}}
 {\footnotesize\ttfamily void Fp\+\_\+add (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{B }\end{DoxyParamCaption})}
 
+Prime field addition with reduction as A\+NS= A+B mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send pointer B in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by Fp2\+\_\+add(), Fp2\+\_\+inv\+\_\+basis(), Fp2\+\_\+mul(), Fp2\+\_\+mul\+\_\+basis(), Fp2\+\_\+mul\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr(), Fp2\+\_\+sqr\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr\+\_\+kss16(), and Fp6\+\_\+mul\+\_\+basis().
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 \begin{DoxyCode}
 69                                 \{
-70     mpz\_add(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
-71     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+70     mpz\_add(ANS->x0,A->x0,B->x0);
+71     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 72 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__fp_8h_a5e260a66d393501471c5fd9c8639a610}\label{bn__fp_8h_a5e260a66d393501471c5fd9c8639a610}} 
@@ -99,40 +109,60 @@ Referenced by Fp2\+\_\+add(), Fp2\+\_\+inv\+\_\+basis(), Fp2\+\_\+mul(), Fp2\+\_
 \subsubsection{\texorpdfstring{Fp\+\_\+add\+\_\+mpz()}{Fp\_add\_mpz()}}
 {\footnotesize\ttfamily void Fp\+\_\+add\+\_\+mpz (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
 
+Prime field addition with reduction as A\+NS= A+B mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send mpz\+\_\+t int B. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), and Fp2\+\_\+add\+\_\+mpz().
+Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12().
 
 
 \begin{DoxyCode}
 79                                       \{
-80     mpz\_add(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B);
-81     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+80     mpz\_add(ANS->x0,A->x0,B);
+81     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 82 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{bn__fp_8h_acf5539588200bc276583069f82de449b}\label{bn__fp_8h_acf5539588200bc276583069f82de449b}} 
+Here is the caller graph for this function\+:
+% FIG 2
+\mbox{\Hypertarget{bn__fp_8h_a3651164c1f5130c2d442089526f3dc24}\label{bn__fp_8h_a3651164c1f5130c2d442089526f3dc24}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+add\+\_\+ui@{Fp\+\_\+add\+\_\+ui}}
 \index{Fp\+\_\+add\+\_\+ui@{Fp\+\_\+add\+\_\+ui}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+add\+\_\+ui()}{Fp\_add\_ui()}}
-{\footnotesize\ttfamily void Fp\+\_\+add\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{unsigned long int}]{UI }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void Fp\+\_\+add\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{unsigned long int}]{B }\end{DoxyParamCaption})}
+
+Prime field addition with reduction as A\+NS= A+B mod prime
 
 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send unsigned int B. \\
+\hline
+\end{DoxyParams}
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
 
-
-
-Referenced by Fp2\+\_\+add\+\_\+ui().
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 \begin{DoxyCode}
 74                                                   \{
-75     mpz\_add\_ui(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},UI);
-76     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+75     mpz\_add\_ui(ANS->x0,A->x0,UI);
+76     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 77 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}\label{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}} 
@@ -141,61 +171,78 @@ Referenced by Fp2\+\_\+add\+\_\+ui().
 \subsubsection{\texorpdfstring{Fp\+\_\+clear()}{Fp\_clear()}}
 {\footnotesize\ttfamily void Fp\+\_\+clear (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Clears memory an \hyperlink{struct_fp}{Fp} type struct
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A} & -\/ input A is a pointer of \hyperlink{struct_fp}{Fp} type struct. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), clear\+\_\+parameters(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), Fp2\+\_\+clear(), Fp2\+\_\+mul(), Fp2\+\_\+mul\+\_\+basis(), Fp2\+\_\+mul\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr(), Fp2\+\_\+sqr\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr\+\_\+kss16(), Fp\+\_\+is\+C\+N\+R(), Fp\+\_\+pow(), Fp\+\_\+sqrt(), get\+\_\+epsilon(), Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate(), and Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping().
+Referenced by bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), clear\+\_\+parameters(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), Fp\+\_\+is\+C\+N\+R(), Fp\+\_\+pow(), and Fp\+\_\+sqrt().
 
 
 \begin{DoxyCode}
 17                     \{
-18     mpz\_clear(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+18     mpz\_clear(A->x0);
 19 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 3
 \mbox{\Hypertarget{bn__fp_8h_a62942c9110cdc838f5658552ced10c44}\label{bn__fp_8h_a62942c9110cdc838f5658552ced10c44}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+cmp@{Fp\+\_\+cmp}}
 \index{Fp\+\_\+cmp@{Fp\+\_\+cmp}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+cmp()}{Fp\_cmp()}}
 {\footnotesize\ttfamily int Fp\+\_\+cmp (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{B }\end{DoxyParamCaption})}
 
+Compares A and B in \hyperlink{struct_fp}{Fp}
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em int} & -\/ return 0 if A==B and 1 otherwise. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send pointer B in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), and Fp2\+\_\+cmp().
+Referenced by E\+Fp\+\_\+\+E\+C\+A().
 
 
 \begin{DoxyCode}
 224                         \{
-225     \textcolor{keywordflow}{if}(mpz\_cmp(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0})==0)\{
+225     \textcolor{keywordflow}{if}(mpz\_cmp(A->x0,B->x0)==0)\{
 226         \textcolor{keywordflow}{return} 0;
 227     \}
 228     \textcolor{keywordflow}{return} 1;
 229 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 4
 \mbox{\Hypertarget{bn__fp_8h_a64036a600cd84d63c47f3a27538fe5e5}\label{bn__fp_8h_a64036a600cd84d63c47f3a27538fe5e5}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+cmp\+\_\+mpz@{Fp\+\_\+cmp\+\_\+mpz}}
 \index{Fp\+\_\+cmp\+\_\+mpz@{Fp\+\_\+cmp\+\_\+mpz}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+cmp\+\_\+mpz()}{Fp\_cmp\_mpz()}}
 {\footnotesize\ttfamily int Fp\+\_\+cmp\+\_\+mpz (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
 
+Compares A and B in \hyperlink{struct_fp}{Fp}
 
 
-References Fp\+::x0.
-
-
-
-Referenced by Fp2\+\_\+cmp\+\_\+mpz().
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em int} & -\/ return 0 if A==B and 1 otherwise. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send pointer B in mpz\+\_\+t. \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyCode}
 238                               \{
-239     \textcolor{keywordflow}{if}(mpz\_cmp(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B)==0)\{
+239     \textcolor{keywordflow}{if}(mpz\_cmp(A->x0,B)==0)\{
 240         \textcolor{keywordflow}{return} 0;
 241     \}
 242     \textcolor{keywordflow}{return} 1;
@@ -207,41 +254,51 @@ Referenced by Fp2\+\_\+cmp\+\_\+mpz().
 \subsubsection{\texorpdfstring{Fp\+\_\+cmp\+\_\+one()}{Fp\_cmp\_one()}}
 {\footnotesize\ttfamily int Fp\+\_\+cmp\+\_\+one (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Compares A == 1 in \hyperlink{struct_fp}{Fp}
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em int} & -\/ return 0 if A==1 and 1 otherwise. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by Fp2\+\_\+cmp\+\_\+one(), and Fp\+\_\+is\+C\+N\+R().
+Referenced by Fp\+\_\+is\+C\+N\+R().
 
 
 \begin{DoxyCode}
 252                       \{
-253     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},1)==0)\{
+253     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(A->x0,1)==0)\{
 254         \textcolor{keywordflow}{return} 0;
 255     \}
 256     \textcolor{keywordflow}{return} 1;
 257 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 5
 \mbox{\Hypertarget{bn__fp_8h_a5b7d7273cddd415531b8a26e51d23771}\label{bn__fp_8h_a5b7d7273cddd415531b8a26e51d23771}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+cmp\+\_\+ui@{Fp\+\_\+cmp\+\_\+ui}}
 \index{Fp\+\_\+cmp\+\_\+ui@{Fp\+\_\+cmp\+\_\+ui}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+cmp\+\_\+ui()}{Fp\_cmp\_ui()}}
 {\footnotesize\ttfamily int Fp\+\_\+cmp\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{unsigned long int}]{UI }\end{DoxyParamCaption})}
 
+Compares A and B in \hyperlink{struct_fp}{Fp}
 
 
-References Fp\+::x0.
-
-
-
-Referenced by Fp2\+\_\+cmp\+\_\+ui().
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em int} & -\/ return 0 if A==B and 1 otherwise. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send pointer B in int. \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyCode}
 231                                           \{
-232     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},UI)==0)\{
+232     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(A->x0,UI)==0)\{
 233         \textcolor{keywordflow}{return} 0;
 234     \}
 235     \textcolor{keywordflow}{return} 1;
@@ -253,69 +310,103 @@ Referenced by Fp2\+\_\+cmp\+\_\+ui().
 \subsubsection{\texorpdfstring{Fp\+\_\+cmp\+\_\+zero()}{Fp\_cmp\_zero()}}
 {\footnotesize\ttfamily int Fp\+\_\+cmp\+\_\+zero (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Compares A == 0 in \hyperlink{struct_fp}{Fp}
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em int} & -\/ return 0 if A==0 and 1 otherwise. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send pointer B in int. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), Fp2\+\_\+cmp\+\_\+one(), and Fp2\+\_\+cmp\+\_\+zero().
+Referenced by E\+Fp\+\_\+\+E\+C\+D().
 
 
 \begin{DoxyCode}
 245                        \{
-246     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},0)==0)\{
+246     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(A->x0,0)==0)\{
 247         \textcolor{keywordflow}{return} 0;
 248     \}
 249     \textcolor{keywordflow}{return} 1;
 250 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 6
 \mbox{\Hypertarget{bn__fp_8h_af102c589736284034064b7c2283000cb}\label{bn__fp_8h_af102c589736284034064b7c2283000cb}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+init@{Fp\+\_\+init}}
 \index{Fp\+\_\+init@{Fp\+\_\+init}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+init()}{Fp\_init()}}
 {\footnotesize\ttfamily void Fp\+\_\+init (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Initializes an \hyperlink{struct_fp}{Fp} type struct
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A} & -\/ input A is a pointer of \hyperlink{struct_fp}{Fp} type struct. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+init(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), Fp2\+\_\+init(), Fp2\+\_\+mul(), Fp2\+\_\+mul\+\_\+basis(), Fp2\+\_\+mul\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr(), Fp2\+\_\+sqr\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr\+\_\+kss16(), Fp\+\_\+is\+C\+N\+R(), Fp\+\_\+pow(), Fp\+\_\+sqrt(), get\+\_\+epsilon(), init\+\_\+precoms(), Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate(), and Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping().
+Referenced by bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+init(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), Fp\+\_\+is\+C\+N\+R(), Fp\+\_\+pow(), Fp\+\_\+sqrt(), get\+\_\+epsilon(), and init\+\_\+precoms().
 
 
 \begin{DoxyCode}
 13                    \{
-14     mpz\_init(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+14     mpz\_init(A->x0);
 15 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 7
 \mbox{\Hypertarget{bn__fp_8h_aed138c92bbb10803bffd0f8eb0c090ce}\label{bn__fp_8h_aed138c92bbb10803bffd0f8eb0c090ce}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+inv@{Fp\+\_\+inv}}
 \index{Fp\+\_\+inv@{Fp\+\_\+inv}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+inv()}{Fp\_inv()}}
 {\footnotesize\ttfamily void Fp\+\_\+inv (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Prime field inversion A$^\wedge$-\/1 mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A$^\wedge$-\/1 mod prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), Fp2\+\_\+inv(), get\+\_\+epsilon(), and Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping().
+Referenced by bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+D(), and get\+\_\+epsilon().
 
 
 \begin{DoxyCode}
 99                           \{
-100     mpz\_invert(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+100     mpz\_invert(ANS->x0,A->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 101 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 8
 \mbox{\Hypertarget{bn__fp_8h_a5e73be560cd37d57a79692c7025eefca}\label{bn__fp_8h_a5e73be560cd37d57a79692c7025eefca}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+is\+C\+NR@{Fp\+\_\+is\+C\+NR}}
 \index{Fp\+\_\+is\+C\+NR@{Fp\+\_\+is\+C\+NR}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+is\+C\+N\+R()}{Fp\_isCNR()}}
 {\footnotesize\ttfamily int Fp\+\_\+is\+C\+NR (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Check if A has qubic root or not in prime field.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em int} & -\/ return 1 if A has CR and -\/1 C\+NR. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
 
 
 References curve\+\_\+parameters, Fp\+\_\+clear(), Fp\+\_\+cmp\+\_\+one(), Fp\+\_\+init(), Fp\+\_\+pow(), and curve\+\_\+params\+::prime.
@@ -324,34 +415,45 @@ References curve\+\_\+parameters, Fp\+\_\+clear(), Fp\+\_\+cmp\+\_\+one(), Fp\+\
 \begin{DoxyCode}
 112                     \{
 113     \hyperlink{struct_fp}{Fp} tmp;
-114     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
+114     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
 115     mpz\_t exp;
 116     mpz\_init(exp);
 117     
-118     mpz\_sub\_ui(exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},1);
+118     mpz\_sub\_ui(exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},1);
 119     mpz\_tdiv\_q\_ui(exp,exp,3);
-120     \hyperlink{bn__fp_8c_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&tmp,A,exp);
+120     \hyperlink{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&tmp,A,exp);
 121     
-122     \textcolor{keywordflow}{if}(\hyperlink{bn__fp_8c_a1eb70276b18217c1938ede14b57b60e6}{Fp\_cmp\_one}(&tmp)==0)\{
+122     \textcolor{keywordflow}{if}(\hyperlink{bn__fp_8h_a1eb70276b18217c1938ede14b57b60e6}{Fp\_cmp\_one}(&tmp)==0)\{
 123         mpz\_clear(exp);
-124         \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
+124         \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
 125         \textcolor{keywordflow}{return} 1;
 126     \}\textcolor{keywordflow}{else}\{
 127         mpz\_clear(exp);
-128         \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
+128         \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
 129         \textcolor{keywordflow}{return} -1;
 130     \}
 131 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 9
 \mbox{\Hypertarget{bn__fp_8h_af7eedeaca3d3493d084125e1555ac71e}\label{bn__fp_8h_af7eedeaca3d3493d084125e1555ac71e}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+legendre@{Fp\+\_\+legendre}}
 \index{Fp\+\_\+legendre@{Fp\+\_\+legendre}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+legendre()}{Fp\_legendre()}}
 {\footnotesize\ttfamily int Fp\+\_\+legendre (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Calculate legendre symbol (A/prime) to determine A has any sqare root in prime field.
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em int} & -\/ return 1 if A has QR and -\/1 for Q\+NR. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
@@ -360,48 +462,70 @@ Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+
 
 \begin{DoxyCode}
 108                        \{
-109     \textcolor{keywordflow}{return} mpz\_legendre(A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+109     \textcolor{keywordflow}{return} mpz\_legendre(A->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 110 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 10
 \mbox{\Hypertarget{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}\label{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+mul@{Fp\+\_\+mul}}
 \index{Fp\+\_\+mul@{Fp\+\_\+mul}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+mul()}{Fp\_mul()}}
 {\footnotesize\ttfamily void Fp\+\_\+mul (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{B }\end{DoxyParamCaption})}
 
+Prime field multiplication with reduction as A\+NS= A$\ast$B mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send pointer B in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), Fp2\+\_\+mul(), Fp2\+\_\+mul\+\_\+\+Fp(), Fp2\+\_\+mul\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr(), Fp2\+\_\+sqr\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr\+\_\+kss16(), Fp\+\_\+pow(), Fp\+\_\+sqrt(), get\+\_\+epsilon(), and Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping().
+Referenced by bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), Fp\+\_\+pow(), Fp\+\_\+sqrt(), and get\+\_\+epsilon().
 
 
 \begin{DoxyCode}
 45                                 \{
-46     mpz\_mul(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
-47     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+46     mpz\_mul(ANS->x0,A->x0,B->x0);
+47     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 48 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 11
 \mbox{\Hypertarget{bn__fp_8h_a2280c4f9e94184435f0dcc30bd85df9b}\label{bn__fp_8h_a2280c4f9e94184435f0dcc30bd85df9b}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+mul\+\_\+basis@{Fp\+\_\+mul\+\_\+basis}}
 \index{Fp\+\_\+mul\+\_\+basis@{Fp\+\_\+mul\+\_\+basis}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+mul\+\_\+basis()}{Fp\_mul\_basis()}}
 {\footnotesize\ttfamily void Fp\+\_\+mul\+\_\+basis (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Prime field multiplication with reduction as A\+NS= A$\ast$B mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send basis element $^\wedge$2 = some int \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by Fp2\+\_\+mul(), Fp2\+\_\+sqr\+\_\+\+K\+S\+S16(), and Fp8\+\_\+mul\+\_\+v().
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 \begin{DoxyCode}
 60                                 \{
-61     mpz\_sub(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+61     mpz\_sub(ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},A->x0);
 62 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__fp_8h_af42f998fc348f0383da37a66d9ad0afc}\label{bn__fp_8h_af42f998fc348f0383da37a66d9ad0afc}} 
@@ -410,19 +534,26 @@ Referenced by Fp2\+\_\+mul(), Fp2\+\_\+sqr\+\_\+\+K\+S\+S16(), and Fp8\+\_\+mul\
 \subsubsection{\texorpdfstring{Fp\+\_\+mul\+\_\+basis\+\_\+\+K\+S\+S16()}{Fp\_mul\_basis\_KSS16()}}
 {\footnotesize\ttfamily void Fp\+\_\+mul\+\_\+basis\+\_\+\+K\+S\+S16 (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Prime field multiplication with reduction as A\+NS= A$\ast$B mod prime
 
 
-References c1, curve\+\_\+params\+::curve\+\_\+a, curve\+\_\+parameters, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send basis element $^\wedge$2 = c is a int \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by Fp2\+\_\+mul\+\_\+basis\+\_\+\+K\+S\+S16(), Fp2\+\_\+mul\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr\+\_\+kss16(), and Fp4\+\_\+mul\+\_\+basis().
+References curve\+\_\+params\+::curve\+\_\+a, and curve\+\_\+parameters.
 
 
 \begin{DoxyCode}
 64                                       \{
-65     mpz\_mul\_ui(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{bn__fp_8c_a8f9aca421a560153a31ebb326da34216}{c1});
-66     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a791978f9ed4ab23b64896993f2462dfa}{curve\_a});
+65     mpz\_mul\_ui(ANS->x0,A->x0,c1);
+66     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a76692630dc7e9637262e95fe0189cd9d}{curve\_a});
 67 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__fp_8h_a8fccc49cb2bfe0065b0b8374f49b2a2e}\label{bn__fp_8h_a8fccc49cb2bfe0065b0b8374f49b2a2e}} 
@@ -431,60 +562,91 @@ Referenced by Fp2\+\_\+mul\+\_\+basis\+\_\+\+K\+S\+S16(), Fp2\+\_\+mul\+\_\+\+K\
 \subsubsection{\texorpdfstring{Fp\+\_\+mul\+\_\+mpz()}{Fp\_mul\_mpz()}}
 {\footnotesize\ttfamily void Fp\+\_\+mul\+\_\+mpz (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
 
+Prime field multiplication with reduction as A\+NS= A$\ast$B mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send mpz\+\_\+t . \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), Fp2\+\_\+inv\+\_\+basis(), and Fp2\+\_\+mul\+\_\+mpz().
+Referenced by bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2().
 
 
 \begin{DoxyCode}
 55                                       \{
-56     mpz\_mul(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B);
-57     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+56     mpz\_mul(ANS->x0,A->x0,B);
+57     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 58 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{bn__fp_8h_a6ba3c85f98a5d2408c08483ec7965f92}\label{bn__fp_8h_a6ba3c85f98a5d2408c08483ec7965f92}} 
+Here is the caller graph for this function\+:
+% FIG 12
+\mbox{\Hypertarget{bn__fp_8h_ae5f57c940ac4e120f380e4bc2e9ff13d}\label{bn__fp_8h_ae5f57c940ac4e120f380e4bc2e9ff13d}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+mul\+\_\+ui@{Fp\+\_\+mul\+\_\+ui}}
 \index{Fp\+\_\+mul\+\_\+ui@{Fp\+\_\+mul\+\_\+ui}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+mul\+\_\+ui()}{Fp\_mul\_ui()}}
-{\footnotesize\ttfamily void Fp\+\_\+mul\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{unsigned long int}]{UI }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void Fp\+\_\+mul\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{unsigned long int}]{B }\end{DoxyParamCaption})}
+
+Prime field multiplication with reduction as A\+NS= A$\ast$B mod prime
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send unsigned int. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
-
-
-
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), and Fp2\+\_\+mul\+\_\+ui().
+Referenced by E\+Fp\+\_\+\+E\+C\+D().
 
 
 \begin{DoxyCode}
 50                                                   \{
-51     mpz\_mul\_ui(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},UI);
-52     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+51     mpz\_mul\_ui(ANS->x0,A->x0,UI);
+52     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 53 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 13
 \mbox{\Hypertarget{bn__fp_8h_a4d04f4451c3331a33282b9452d66cf9a}\label{bn__fp_8h_a4d04f4451c3331a33282b9452d66cf9a}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+neg@{Fp\+\_\+neg}}
 \index{Fp\+\_\+neg@{Fp\+\_\+neg}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+neg()}{Fp\_neg()}}
 {\footnotesize\ttfamily void Fp\+\_\+neg (\begin{DoxyParamCaption}\item[{struct \hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{struct \hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Calculate -\/A in \hyperlink{struct_fp}{Fp}
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ return -\/A. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by Fp2\+\_\+invert\+\_\+kss16(), and Fp2\+\_\+neg().
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 \begin{DoxyCode}
 259                                         \{
-260     mpz\_sub(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+260     mpz\_sub(ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},A->x0);
 261 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}\label{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}} 
@@ -493,6 +655,15 @@ Referenced by Fp2\+\_\+invert\+\_\+kss16(), and Fp2\+\_\+neg().
 \subsubsection{\texorpdfstring{Fp\+\_\+pow()}{Fp\_pow()}}
 {\footnotesize\ttfamily void Fp\+\_\+pow (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{scalar }\end{DoxyParamCaption})}
 
+Calculate A$^\wedge$mpz\+\_\+t mod prime in prime field.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ return 1 if A has CR and -\/1 C\+NR. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
 
 
 References Fp\+\_\+clear(), Fp\+\_\+init(), Fp\+\_\+mul(), and Fp\+\_\+set().
@@ -509,150 +680,209 @@ Referenced by Fp\+\_\+is\+C\+N\+R(), and Fp\+\_\+sqrt().
 206     \textcolor{keywordtype}{char} binary[length];
 207     mpz\_get\_str(binary,2,scalar);
 208     \hyperlink{struct_fp}{Fp} tmp;
-209     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
+209     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
 210     
-211     \hyperlink{bn__fp_8c_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&tmp,A);
+211     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(&tmp,A);
 212     
 213     \textcolor{keywordflow}{for}(i=1; i<length; i++)\{
-214         \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&tmp,&tmp,&tmp);
+214         \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&tmp,&tmp,&tmp);
 215         \textcolor{keywordflow}{if}(binary[i]==\textcolor{charliteral}{'1'})\{
-216             \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&tmp,A,&tmp);
+216             \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&tmp,A,&tmp);
 217         \}
 218     \}
-219     \hyperlink{bn__fp_8c_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(ANS,&tmp);
+219     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(ANS,&tmp);
 220     
-221     \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
+221     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
 222 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 14
+Here is the caller graph for this function\+:
+% FIG 15
 \mbox{\Hypertarget{bn__fp_8h_a1512d0a8dafbc0776e84231b75ecd646}\label{bn__fp_8h_a1512d0a8dafbc0776e84231b75ecd646}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+printf@{Fp\+\_\+printf}}
 \index{Fp\+\_\+printf@{Fp\+\_\+printf}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+printf()}{Fp\_printf()}}
 {\footnotesize\ttfamily void Fp\+\_\+printf (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{char $\ast$}]{str }\end{DoxyParamCaption})}
 
+Prints an \hyperlink{struct_fp}{Fp} type struct
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A} & -\/ input A is a pointer of \hyperlink{struct_fp}{Fp} type struct. \\
+\hline
+\mbox{\tt in}  & {\em str} & -\/ any string pointer. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by E\+Fp\+\_\+printf(), and Fp2\+\_\+printf().
+Referenced by E\+Fp\+\_\+printf().
 
 
 \begin{DoxyCode}
 21                                \{
-22     gmp\_printf(\textcolor{stringliteral}{"%s%Zd"},str,A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+22     gmp\_printf(\textcolor{stringliteral}{"%s%Zd"},str,A->x0);
 23 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 16
 \mbox{\Hypertarget{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}\label{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+set@{Fp\+\_\+set}}
 \index{Fp\+\_\+set@{Fp\+\_\+set}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+set()}{Fp\_set()}}
 {\footnotesize\ttfamily void Fp\+\_\+set (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Set an \hyperlink{struct_fp}{Fp} type struct to A\+NS
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ set A in A\+NS. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send A as pointer. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), bn12\+\_\+generate\+\_\+\+G1\+\_\+point(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), E\+Fp\+\_\+set(), E\+Fp\+\_\+set\+\_\+neg(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), Fp2\+\_\+inv(), Fp2\+\_\+invert\+\_\+kss16(), Fp2\+\_\+mul\+\_\+basis(), Fp2\+\_\+mul\+\_\+basis\+\_\+\+K\+S\+S16(), Fp2\+\_\+set(), Fp4\+\_\+mul\+\_\+basis(), Fp6\+\_\+mul\+\_\+basis(), Fp8\+\_\+mul\+\_\+v(), Fp\+\_\+pow(), Fp\+\_\+sqrt(), Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+tate(), Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate(), and Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping().
+Referenced by bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+Pseudo\+\_\+8\+\_\+sparse\+\_\+mapping(), E\+Fp\+\_\+set(), E\+Fp\+\_\+set\+\_\+neg(), Fp\+\_\+pow(), and Fp\+\_\+sqrt().
 
 
 \begin{DoxyCode}
 25                           \{
-26     mpz\_set(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+26     mpz\_set(ANS->x0,A->x0);
 27 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 17
 \mbox{\Hypertarget{bn__fp_8h_a790ca8e073ff84d9d3972c2cab616fbc}\label{bn__fp_8h_a790ca8e073ff84d9d3972c2cab616fbc}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+set\+\_\+mpz@{Fp\+\_\+set\+\_\+mpz}}
 \index{Fp\+\_\+set\+\_\+mpz@{Fp\+\_\+set\+\_\+mpz}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+set\+\_\+mpz()}{Fp\_set\_mpz()}}
 {\footnotesize\ttfamily void Fp\+\_\+set\+\_\+mpz (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
 
+Set an gmp int mpz in A\+NS \hyperlink{struct_fp}{Fp} type struct.
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ set A in A\+NS. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send A as mpz\+\_\+t. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by E\+Fp\+\_\+set\+\_\+mpz(), and Fp2\+\_\+set\+\_\+mpz().
+Referenced by E\+Fp\+\_\+set\+\_\+mpz().
 
 
 \begin{DoxyCode}
 33                                 \{
-34     mpz\_set(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A);
+34     mpz\_set(ANS->x0,A);
 35 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 18
 \mbox{\Hypertarget{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}\label{bn__fp_8h_ab8ccba7d599eda4d0cd9e34b09fe38e6}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+set\+\_\+neg@{Fp\+\_\+set\+\_\+neg}}
 \index{Fp\+\_\+set\+\_\+neg@{Fp\+\_\+set\+\_\+neg}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+set\+\_\+neg()}{Fp\_set\_neg()}}
 {\footnotesize\ttfamily void Fp\+\_\+set\+\_\+neg (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Negate A and set it in A\+NS
 
 
-References Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ set prime-\/A in A\+NS. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send A as \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
 
 
-
-Referenced by bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), E\+Fp\+\_\+set\+\_\+neg(), E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), Fp2\+\_\+inv(), and Fp2\+\_\+set\+\_\+neg().
+Referenced by bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), and E\+Fp\+\_\+set\+\_\+neg().
 
 
 \begin{DoxyCode}
 37                               \{
-38     mpz\_neg(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
+38     mpz\_neg(ANS->x0,A->x0);
 39 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 19
 \mbox{\Hypertarget{bn__fp_8h_afd32945f05593f2832d301c043b2b437}\label{bn__fp_8h_afd32945f05593f2832d301c043b2b437}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+set\+\_\+random@{Fp\+\_\+set\+\_\+random}}
 \index{Fp\+\_\+set\+\_\+random@{Fp\+\_\+set\+\_\+random}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+set\+\_\+random()}{Fp\_set\_random()}}
 {\footnotesize\ttfamily void Fp\+\_\+set\+\_\+random (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{gmp\+\_\+randstate\+\_\+t}]{state }\end{DoxyParamCaption})}
 
+Set random \hyperlink{struct_fp}{Fp} of size $<$prime in A\+NS
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output an \hyperlink{struct_fp}{Fp} $<$ prime. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send a gmp\+\_\+randstate\+\_\+t. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), Fp2\+\_\+set\+\_\+random(), and Fp\+\_\+sqrt().
+Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), and Fp\+\_\+sqrt().
 
 
 \begin{DoxyCode}
 41                                                  \{
-42     mpz\_urandomm(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+42     mpz\_urandomm(ANS->x0,\hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 43 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{bn__fp_8h_a69cab366a0cd0390259469329eef7222}\label{bn__fp_8h_a69cab366a0cd0390259469329eef7222}} 
+Here is the caller graph for this function\+:
+% FIG 20
+\mbox{\Hypertarget{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}\label{bn__fp_8h_ae0585a806e578512a600d6f65043bd1f}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+set\+\_\+ui@{Fp\+\_\+set\+\_\+ui}}
 \index{Fp\+\_\+set\+\_\+ui@{Fp\+\_\+set\+\_\+ui}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+set\+\_\+ui()}{Fp\_set\_ui()}}
-{\footnotesize\ttfamily void Fp\+\_\+set\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{unsigned long int}]{UI }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void Fp\+\_\+set\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{unsigned long int}]{A }\end{DoxyParamCaption})}
+
+Set an unsigned int in A\+NS \hyperlink{struct_fp}{Fp} type struct.
 
 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ set A in A\+NS. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send A as UI. \\
+\hline
+\end{DoxyParams}
 
-References Fp\+::x0.
 
-
-
-Referenced by bls12\+\_\+2split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+4split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+f\+\_\+ltq(), bls12\+\_\+ff\+\_\+ltt(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate(), E\+Fp\+\_\+set\+\_\+ui(), f\+\_\+ltq(), ff\+\_\+ltt(), Fp2\+\_\+set\+\_\+ui(), get\+\_\+epsilon(), Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), Miller\+\_\+algo\+\_\+for\+\_\+tate(), Miller\+\_\+algo\+\_\+for\+\_\+x\+\_\+ate(), set\+\_\+basis(), and set\+\_\+frobenius\+\_\+constant().
+Referenced by bls12\+\_\+2split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+4split\+\_\+\+G3\+\_\+exp(), bls12\+\_\+f\+\_\+ltq(), bls12\+\_\+ff\+\_\+ltt(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+opt\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+plain\+\_\+ate(), bls12\+\_\+\+Miller\+\_\+algo\+\_\+for\+\_\+tate(), E\+Fp\+\_\+set\+\_\+ui(), get\+\_\+epsilon(), set\+\_\+basis(), and set\+\_\+frobenius\+\_\+constant().
 
 
 \begin{DoxyCode}
 29                                             \{
-30     mpz\_set\_ui(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},UI);
+30     mpz\_set\_ui(ANS->x0,UI);
 31 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 21
 \mbox{\Hypertarget{bn__fp_8h_acfc7bfa81b3f370904680568d52a54cd}\label{bn__fp_8h_acfc7bfa81b3f370904680568d52a54cd}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+sqrt@{Fp\+\_\+sqrt}}
 \index{Fp\+\_\+sqrt@{Fp\+\_\+sqrt}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+sqrt()}{Fp\_sqrt()}}
 {\footnotesize\ttfamily void Fp\+\_\+sqrt (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A }\end{DoxyParamCaption})}
 
+Calculate sqrt(\+A) mod prime using Toneli-\/\+Shanks alogrithm in prime field.
 
 
-References curve\+\_\+parameters, Fp\+\_\+clear(), Fp\+\_\+init(), Fp\+\_\+legendre(), Fp\+\_\+mul(), Fp\+\_\+pow(), Fp\+\_\+set(), Fp\+\_\+set\+\_\+random(), curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ return 1 if A has CR and -\/1 C\+NR. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, Fp\+\_\+clear(), Fp\+\_\+init(), Fp\+\_\+legendre(), Fp\+\_\+mul(), Fp\+\_\+pow(), Fp\+\_\+set(), Fp\+\_\+set\+\_\+random(), and curve\+\_\+params\+::prime.
 
 
 
@@ -662,12 +892,12 @@ Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+
 \begin{DoxyCode}
 133                            \{
 134     \hyperlink{struct_fp}{Fp} x,y,t,k,n,tmp;
-135     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&x);
-136     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&y);
-137     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&t);
-138     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&k);
-139     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&n);
-140     \hyperlink{bn__fp_8c_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
+135     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&x);
+136     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&y);
+137     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&t);
+138     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&k);
+139     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&n);
+140     \hyperlink{bn__fp_8h_af102c589736284034064b7c2283000cb}{Fp\_init}(&tmp);
 141     \textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long} \textcolor{keywordtype}{int} e,m;
 142     mpz\_t exp,q,z,result;
 143     mpz\_init(exp);
@@ -677,12 +907,12 @@ Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+
 147     gmp\_randstate\_t \hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state};
 148     gmp\_randinit\_default (state);
 149     gmp\_randseed\_ui(state,(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long})time(NULL));
-150     \hyperlink{bn__fp_8c_afd32945f05593f2832d301c043b2b437}{Fp\_set\_random}(&n,state);
+150     \hyperlink{bn__fp_8h_afd32945f05593f2832d301c043b2b437}{Fp\_set\_random}(&n,state);
 151     
-152     \textcolor{keywordflow}{while}(\hyperlink{bn__fp_8c_af7eedeaca3d3493d084125e1555ac71e}{Fp\_legendre}(&n)!=-1)\{
-153         \hyperlink{bn__fp_8c_afd32945f05593f2832d301c043b2b437}{Fp\_set\_random}(&n,state);
+152     \textcolor{keywordflow}{while}(\hyperlink{bn__fp_8h_af7eedeaca3d3493d084125e1555ac71e}{Fp\_legendre}(&n)!=-1)\{
+153         \hyperlink{bn__fp_8h_afd32945f05593f2832d301c043b2b437}{Fp\_set\_random}(&n,state);
 154     \}
-155     mpz\_sub\_ui(q,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},1);
+155     mpz\_sub\_ui(q,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},1);
 156     mpz\_mod\_ui(result,q,2);
 157     e=0;
 158     \textcolor{keywordflow}{while}(mpz\_cmp\_ui(result,0)==0)\{
@@ -690,106 +920,149 @@ Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bls12(), E\+Fp\+\_\+rational\+
 160         mpz\_mod\_ui(result,q,2);
 161         e++;
 162     \}
-163     \hyperlink{bn__fp_8c_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&y,&n,q);
+163     \hyperlink{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&y,&n,q);
 164     mpz\_set\_ui(z,e);
 165     mpz\_sub\_ui(exp,q,1);
 166     mpz\_tdiv\_q\_ui(exp,exp,2);
-167     \hyperlink{bn__fp_8c_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&x,A,exp);
-168     \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&tmp,&x,&x);
-169     \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&k,&tmp,A);
-170     \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&x,&x,A);
-171     \textcolor{keywordflow}{while}(mpz\_cmp\_ui(k.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},1)!=0)\{
+167     \hyperlink{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&x,A,exp);
+168     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&tmp,&x,&x);
+169     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&k,&tmp,A);
+170     \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&x,&x,A);
+171     \textcolor{keywordflow}{while}(mpz\_cmp\_ui(k.x0,1)!=0)\{
 172         m=1;
 173         mpz\_ui\_pow\_ui(exp,2,m);
-174         \hyperlink{bn__fp_8c_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&tmp,&k,exp);
-175         \textcolor{keywordflow}{while}(mpz\_cmp\_ui(tmp.\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},1)!=0)\{
+174         \hyperlink{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&tmp,&k,exp);
+175         \textcolor{keywordflow}{while}(mpz\_cmp\_ui(tmp.x0,1)!=0)\{
 176             m++;
 177             mpz\_ui\_pow\_ui(exp,2,m);
-178             \hyperlink{bn__fp_8c_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&tmp,&k,exp);
+178             \hyperlink{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&tmp,&k,exp);
 179         \}
 180         mpz\_sub\_ui(exp,z,m);
 181         mpz\_sub\_ui(exp,exp,1);
 182         mpz\_ui\_pow\_ui(result,2,mpz\_get\_ui(exp));
-183         \hyperlink{bn__fp_8c_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&t,&y,result);
-184         \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&y,&t,&t);
+183         \hyperlink{bn__fp_8h_a0a229db7cfb57e337de586eb3695fa28}{Fp\_pow}(&t,&y,result);
+184         \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&y,&t,&t);
 185         mpz\_set\_ui(z,m);
-186         \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&x,&x,&t);
-187         \hyperlink{bn__fp_8c_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&k,&k,&y);
+186         \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&x,&x,&t);
+187         \hyperlink{bn__fp_8h_a880fb156a0cc84e3483d481f9f22784e}{Fp\_mul}(&k,&k,&y);
 188     \}
-189     \hyperlink{bn__fp_8c_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(ANS,&x);
+189     \hyperlink{bn__fp_8h_ab986f83b75086cf6c3f40105c5ae23b8}{Fp\_set}(ANS,&x);
 190     
 191     mpz\_clear(exp);
 192     mpz\_clear(q);
 193     mpz\_clear(z);
 194     mpz\_clear(result);
-195     \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&x);
-196     \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&y);
-197     \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&t);
-198     \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&k);
-199     \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&n);
-200     \hyperlink{bn__fp_8c_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
+195     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&x);
+196     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&y);
+197     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&t);
+198     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&k);
+199     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&n);
+200     \hyperlink{bn__fp_8h_a8020d216e590f1a4e3ed197dac0920fc}{Fp\_clear}(&tmp);
 201 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 22
+Here is the caller graph for this function\+:
+% FIG 23
 \mbox{\Hypertarget{bn__fp_8h_ac462212d662d8bd7041f5fa8df436c2d}\label{bn__fp_8h_ac462212d662d8bd7041f5fa8df436c2d}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+sub@{Fp\+\_\+sub}}
 \index{Fp\+\_\+sub@{Fp\+\_\+sub}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+sub()}{Fp\_sub()}}
 {\footnotesize\ttfamily void Fp\+\_\+sub (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{B }\end{DoxyParamCaption})}
 
+Prime field subtraction with reduction as A\+NS= A-\/B mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send pointer B. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-Referenced by bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), bls12\+\_\+\+E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+A\+\_\+return\+\_\+lambda(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+\+E\+C\+D\+\_\+return\+\_\+lambda(), f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), Fp2\+\_\+inv\+\_\+basis(), Fp2\+\_\+mul(), Fp2\+\_\+mul\+\_\+basis(), Fp2\+\_\+mul\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr(), Fp2\+\_\+sqr\+\_\+\+K\+S\+S16(), Fp2\+\_\+sqr\+\_\+kss16(), Fp2\+\_\+sub(), and Fp6\+\_\+mul\+\_\+basis().
+Referenced by bls12\+\_\+f\+\_\+ltp\+\_\+vtp\+\_\+for\+\_\+tate(), bls12\+\_\+ff\+\_\+ltt\+\_\+vtt\+\_\+for\+\_\+tate(), E\+Fp\+\_\+\+E\+C\+A(), and E\+Fp\+\_\+\+E\+C\+D().
 
 
 \begin{DoxyCode}
 84                                 \{
-85     mpz\_sub(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0});
-86     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+85     mpz\_sub(ANS->x0,A->x0,B->x0);
+86     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 87 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 24
 \mbox{\Hypertarget{bn__fp_8h_a74d22d6603d509d2426313f28bf752a7}\label{bn__fp_8h_a74d22d6603d509d2426313f28bf752a7}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+sub\+\_\+mpz@{Fp\+\_\+sub\+\_\+mpz}}
 \index{Fp\+\_\+sub\+\_\+mpz@{Fp\+\_\+sub\+\_\+mpz}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+sub\+\_\+mpz()}{Fp\_sub\_mpz()}}
 {\footnotesize\ttfamily void Fp\+\_\+sub\+\_\+mpz (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{mpz\+\_\+t}]{B }\end{DoxyParamCaption})}
 
+Prime field subtraction with reduction as A\+NS = A-\/B mod prime
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send mpz\+\_\+t int B. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bn(), and Fp2\+\_\+sub\+\_\+mpz().
+Referenced by E\+Fp\+\_\+rational\+\_\+point\+\_\+bn().
 
 
 \begin{DoxyCode}
 94                                       \{
-95     mpz\_sub(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},B);
-96     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+95     mpz\_sub(ANS->x0,A->x0,B);
+96     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 97 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{bn__fp_8h_a3d6d4295ee158750aac0d3fd7d3a90d7}\label{bn__fp_8h_a3d6d4295ee158750aac0d3fd7d3a90d7}} 
+Here is the caller graph for this function\+:
+% FIG 25
+\mbox{\Hypertarget{bn__fp_8h_a89b6cb2f82f8281015b92a71e11e27f7}\label{bn__fp_8h_a89b6cb2f82f8281015b92a71e11e27f7}} 
 \index{bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}!Fp\+\_\+sub\+\_\+ui@{Fp\+\_\+sub\+\_\+ui}}
 \index{Fp\+\_\+sub\+\_\+ui@{Fp\+\_\+sub\+\_\+ui}!bn\+\_\+fp.\+h@{bn\+\_\+fp.\+h}}
 \subsubsection{\texorpdfstring{Fp\+\_\+sub\+\_\+ui()}{Fp\_sub\_ui()}}
-{\footnotesize\ttfamily void Fp\+\_\+sub\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{unsigned long int}]{UI }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily void Fp\+\_\+sub\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp}{Fp} $\ast$}]{A,  }\item[{unsigned long int}]{B }\end{DoxyParamCaption})}
+
+Prime field subtraction with reduction as A\+NS= A-\/B mod prime
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output A\+NS $<$ prime in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ send pointer A in \hyperlink{struct_fp}{Fp}. \\
+\hline
+\mbox{\tt in}  & {\em B} & -\/ send int B. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+parameters, and curve\+\_\+params\+::prime.
 
 
 
-References curve\+\_\+parameters, curve\+\_\+params\+::prime, and Fp\+::x0.
-
-
-
-Referenced by Fp2\+\_\+sub\+\_\+ui(), and get\+\_\+epsilon().
+Referenced by get\+\_\+epsilon().
 
 
 \begin{DoxyCode}
 89                                                   \{
-90     mpz\_sub\_ui(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},A->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},UI);
-91     mpz\_mod(ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},ANS->\hyperlink{struct_fp_a4e3b0a27353022f2fdbb4cf22a592149}{x0},\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime});
+90     mpz\_sub\_ui(ANS->x0,A->x0,UI);
+91     mpz\_mod(ANS->x0,ANS->x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime});
 92 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 26

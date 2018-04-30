@@ -8,11 +8,11 @@ digraph "include/ELiPS_bn_bls/bn_efp2.h"
   Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node2 [label="ELiPS_bn_bls/curve\l_dtypes.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$curve__dtypes_8h.html"];
   Node2 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node3 [label="ELiPS_bn_bls/bn_fp12.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp12_8h.html"];
+  Node3 [label="ELiPS_bn_bls/bn_fp12.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp12_8h_source.html"];
   Node3 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node4 [label="ELiPS_bn_bls/bn_fp6.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp6_8h.html"];
+  Node4 [label="ELiPS_bn_bls/bn_fp6.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp6_8h_source.html"];
   Node4 -> Node5 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node5 [label="ELiPS_bn_bls/bn_fp2.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp2_8h.html"];
+  Node5 [label="ELiPS_bn_bls/bn_fp2.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp2_8h_source.html"];
   Node5 -> Node6 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
   Node6 [label="ELiPS_bn_bls/bn_fp.h",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp_8h.html"];
   Node6 -> Node7 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];

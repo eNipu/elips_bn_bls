@@ -1,7 +1,7 @@
 var annotated_dup =
 [
-    [ "curve_params", "structcurve__params.html", null ],
-    [ "EFp", "struct_e_fp.html", null ],
+    [ "curve_params", "structcurve__params.html", "structcurve__params" ],
+    [ "EFp", "struct_e_fp.html", "struct_e_fp" ],
     [ "EFp12", "struct_e_fp12.html", null ],
     [ "EFp16", "struct_e_fp16.html", null ],
     [ "EFp2", "struct_e_fp2.html", null ],

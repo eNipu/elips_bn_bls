@@ -3,11 +3,21 @@ digraph "bls12_ff_ltt_vtt_for_tate"
   edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
   node [fontname="Helvetica",fontsize="10",shape=record];
   rankdir="LR";
-  Node8 [label="bls12_ff_ltt_vtt_for_tate",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
-  Node8 -> Node9 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node9 [label="EFp_clear",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__efp_8h.html#a8d12aae9ceed0cf06fffc1dc2c2aae40"];
-  Node8 -> Node10 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node10 [label="EFp_init",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__efp_8h.html#a2b1c0fe61a09134e31640f1565a48ed1"];
-  Node8 -> Node11 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
-  Node11 [label="EFp_set",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__efp_8h.html#abb438750cc5bfec2da8cd2f3863a985f"];
+  Node12 [label="bls12_ff_ltt_vtt_for_tate",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node12 -> Node13 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="EFp_clear",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__efp_8h.html#a8d12aae9ceed0cf06fffc1dc2c2aae40"];
+  Node13 -> Node14 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node14 [label="Fp_clear",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp_8h.html#a8020d216e590f1a4e3ed197dac0920fc"];
+  Node12 -> Node15 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node15 [label="EFp_init",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__efp_8h.html#a2b1c0fe61a09134e31640f1565a48ed1"];
+  Node15 -> Node16 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node16 [label="Fp_init",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp_8h.html#af102c589736284034064b7c2283000cb"];
+  Node12 -> Node17 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node17 [label="EFp_set",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__efp_8h.html#abb438750cc5bfec2da8cd2f3863a985f"];
+  Node17 -> Node18 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node18 [label="Fp_set",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp_8h.html#ab986f83b75086cf6c3f40105c5ae23b8"];
+  Node12 -> Node14 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 -> Node16 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 -> Node19 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node19 [label="Fp_sub",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$bn__fp_8h.html#ac462212d662d8bd7041f5fa8df436c2d"];
 }

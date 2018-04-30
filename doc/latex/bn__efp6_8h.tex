@@ -32,6 +32,9 @@ void \hyperlink{bn__efp6_8h_ac73f1716375d953d7cd2425052ad9b7c}{E\+Fp6\+\_\+\+S\+
 \end{DoxyCompactItemize}
 
 
+\subsection{Detailed Description}
+Interaface for elliptic cuve operation in BN and B\+L\+S12 curve in \hyperlink{struct_fp2}{Fp2} extension field 
+
 \subsection{Function Documentation}
 \mbox{\Hypertarget{bn__efp6_8h_aa53063f2fe49bc8bd381897203c4a04b}\label{bn__efp6_8h_aa53063f2fe49bc8bd381897203c4a04b}} 
 \index{bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}!E\+Fp6\+\_\+clear@{E\+Fp6\+\_\+clear}}
@@ -39,10 +42,13 @@ void \hyperlink{bn__efp6_8h_ac73f1716375d953d7cd2425052ad9b7c}{E\+Fp6\+\_\+\+S\+
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+clear()}{EFp6\_clear()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+clear (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P }\end{DoxyParamCaption})}
 
+Clears an \hyperlink{struct_e_fp6}{E\+Fp6} type structure
 
 
-References Fp6\+\_\+clear(), E\+Fp6\+::x, and E\+Fp6\+::y.
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em P} & -\/ input P in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\end{DoxyParams}
 
 
 Referenced by E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), and E\+Fp6\+\_\+\+S\+C\+M().
@@ -50,19 +56,32 @@ Referenced by E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), and E\+Fp6\+\_\+
 
 \begin{DoxyCode}
 36                         \{
-37     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-38     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&P->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y});
+37     Fp6\_clear(&P->x);
+38     Fp6\_clear(&P->y);
 39 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 2
 \mbox{\Hypertarget{bn__efp6_8h_af3eaac13b689847537377a64fc4733d1}\label{bn__efp6_8h_af3eaac13b689847537377a64fc4733d1}} 
 \index{bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}!E\+Fp6\+\_\+\+E\+CA@{E\+Fp6\+\_\+\+E\+CA}}
 \index{E\+Fp6\+\_\+\+E\+CA@{E\+Fp6\+\_\+\+E\+CA}!bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}}
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+\+E\+C\+A()}{EFp6\_ECA()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+\+E\+CA (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P1,  }\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P2 }\end{DoxyParamCaption})}
 
+E\+CA in \hyperlink{struct_e_fp6}{E\+Fp6} rational point
 
 
-References E\+Fp6\+\_\+clear(), E\+Fp6\+\_\+\+E\+C\+D(), E\+Fp6\+\_\+init(), E\+Fp6\+\_\+set(), Fp6\+\_\+clear(), Fp6\+\_\+cmp(), Fp6\+\_\+init(), Fp6\+\_\+inv(), Fp6\+\_\+mul(), Fp6\+\_\+sqr(), Fp6\+\_\+sub(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A\+NS} & -\/ output. \\
+\hline
+\mbox{\tt in}  & {\em P1} & -\/ input P1 in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\mbox{\tt in}  & {\em P2} & -\/ input P2 in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\end{DoxyParams}
+
+
+References E\+Fp6\+\_\+clear(), E\+Fp6\+\_\+\+E\+C\+D(), E\+Fp6\+\_\+init(), and E\+Fp6\+\_\+set().
 
 
 
@@ -71,60 +90,73 @@ Referenced by E\+Fp6\+\_\+\+S\+C\+M().
 
 \begin{DoxyCode}
 134                                           \{
-135     \textcolor{keywordflow}{if}(P1->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}==1)\{
-136         \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,P2);
+135     \textcolor{keywordflow}{if}(P1->infinity==1)\{
+136         \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,P2);
 137         \textcolor{keywordflow}{return};
-138     \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(P2->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}==1)\{
-139         \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,P1);
+138     \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(P2->infinity==1)\{
+139         \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,P1);
 140         \textcolor{keywordflow}{return};
-141     \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(\hyperlink{bn__fp6_8h_a6f943802be39b881ca8f60308ec582bb}{Fp6\_cmp}(&P1->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&P2->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x})==0)\{
-142         \textcolor{keywordflow}{if}(\hyperlink{bn__fp6_8h_a6f943802be39b881ca8f60308ec582bb}{Fp6\_cmp}(&P1->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},&P2->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y})!=0)\{
-143             ANS->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=1;
+141     \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(Fp6\_cmp(&P1->x,&P2->x)==0)\{
+142         \textcolor{keywordflow}{if}(Fp6\_cmp(&P1->y,&P2->y)!=0)\{
+143             ANS->infinity=1;
 144             \textcolor{keywordflow}{return};
 145         \}\textcolor{keywordflow}{else}\{
-146             \hyperlink{bn__efp6_8c_af37cf549288cd5cc08812d1a81f99066}{EFp6\_ECD}(ANS,P1);
+146             \hyperlink{bn__efp6_8h_af37cf549288cd5cc08812d1a81f99066}{EFp6\_ECD}(ANS,P1);
 147             \textcolor{keywordflow}{return};
 148         \}
 149     \}
 150     
 151     \hyperlink{struct_e_fp6}{EFp6} Tmp\_P1,Tmp\_P2;
-152     \hyperlink{bn__efp6_8c_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P1);
-153     \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P1,P1);
-154     \hyperlink{bn__efp6_8c_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P2);
-155     \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P2,P2);
+152     \hyperlink{bn__efp6_8h_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P1);
+153     \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P1,P1);
+154     \hyperlink{bn__efp6_8h_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P2);
+155     \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P2,P2);
 156     \hyperlink{struct_fp6}{Fp6} tmp1,tmp2,lambda;
-157     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&tmp1);
-158     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&tmp2);
-159     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&lambda);
+157     Fp6\_init(&tmp1);
+158     Fp6\_init(&tmp2);
+159     Fp6\_init(&lambda);
 160     
-161     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&tmp1,&Tmp\_P2.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&Tmp\_P1.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-162     \hyperlink{bn__fp6_8h_a5eb330d311465b16a04395f16a6fe20b}{Fp6\_inv}(&tmp1,&tmp1);
-163     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&tmp2,&Tmp\_P2.\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},&Tmp\_P1.\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y});
-164     \hyperlink{bn__fp6_8h_af6402e857651a82bdb2946e2c24c252e}{Fp6\_mul}(&lambda,&tmp1,&tmp2);
-165     \hyperlink{bn__fp6_8h_a28ef277ef511c74406be1f2de344579d}{Fp6\_sqr}(&tmp1,&lambda);
-166     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&tmp2,&tmp1,&Tmp\_P1.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-167     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&tmp2,&Tmp\_P2.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-168     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&tmp1,&Tmp\_P1.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-169     \hyperlink{bn__fp6_8h_af6402e857651a82bdb2946e2c24c252e}{Fp6\_mul}(&tmp2,&lambda,&tmp1);
-170     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&ANS->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},&tmp2,&Tmp\_P1.\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y});
+161     Fp6\_sub(&tmp1,&Tmp\_P2.x,&Tmp\_P1.x);
+162     Fp6\_inv(&tmp1,&tmp1);
+163     Fp6\_sub(&tmp2,&Tmp\_P2.y,&Tmp\_P1.y);
+164     Fp6\_mul(&lambda,&tmp1,&tmp2);
+165     Fp6\_sqr(&tmp1,&lambda);
+166     Fp6\_sub(&tmp2,&tmp1,&Tmp\_P1.x);
+167     Fp6\_sub(&ANS->x,&tmp2,&Tmp\_P2.x);
+168     Fp6\_sub(&tmp1,&Tmp\_P1.x,&ANS->x);
+169     Fp6\_mul(&tmp2,&lambda,&tmp1);
+170     Fp6\_sub(&ANS->y,&tmp2,&Tmp\_P1.y);
 171     
 172     \textcolor{comment}{//clear}
-173     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&tmp1);
-174     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&tmp2);
-175     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&lambda);
-176     \hyperlink{bn__efp6_8c_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P1);
-177     \hyperlink{bn__efp6_8c_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P2);
+173     Fp6\_clear(&tmp1);
+174     Fp6\_clear(&tmp2);
+175     Fp6\_clear(&lambda);
+176     \hyperlink{bn__efp6_8h_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P1);
+177     \hyperlink{bn__efp6_8h_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P2);
 178 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 3
+Here is the caller graph for this function\+:
+% FIG 4
 \mbox{\Hypertarget{bn__efp6_8h_af37cf549288cd5cc08812d1a81f99066}\label{bn__efp6_8h_af37cf549288cd5cc08812d1a81f99066}} 
 \index{bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}!E\+Fp6\+\_\+\+E\+CD@{E\+Fp6\+\_\+\+E\+CD}}
 \index{E\+Fp6\+\_\+\+E\+CD@{E\+Fp6\+\_\+\+E\+CD}!bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}}
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+\+E\+C\+D()}{EFp6\_ECD()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+\+E\+CD (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P }\end{DoxyParamCaption})}
 
+E\+CD in \hyperlink{struct_e_fp6}{E\+Fp6} rational point
 
 
-References E\+Fp6\+\_\+clear(), E\+Fp6\+\_\+init(), E\+Fp6\+\_\+set(), Fp6\+\_\+clear(), Fp6\+\_\+cmp\+\_\+zero(), Fp6\+\_\+init(), Fp6\+\_\+inv(), Fp6\+\_\+mul(), Fp6\+\_\+mul\+\_\+ui(), Fp6\+\_\+sqr(), Fp6\+\_\+sub(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A\+NS} & -\/ output. \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ input P in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\end{DoxyParams}
+
+
+References E\+Fp6\+\_\+clear(), E\+Fp6\+\_\+init(), and E\+Fp6\+\_\+set().
 
 
 
@@ -133,48 +165,55 @@ Referenced by E\+Fp6\+\_\+\+E\+C\+A(), and E\+Fp6\+\_\+\+S\+C\+M().
 
 \begin{DoxyCode}
 101                                 \{
-102     \textcolor{keywordflow}{if}(\hyperlink{bn__fp6_8h_abe4e8f21b4f1ee5392aa4a8ce4c8a276}{Fp6\_cmp\_zero}(&P->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y})==0)\{
-103         ANS->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=1;
+102     \textcolor{keywordflow}{if}(Fp6\_cmp\_zero(&P->y)==0)\{
+103         ANS->infinity=1;
 104         \textcolor{keywordflow}{return};
 105     \}
 106     
 107     \hyperlink{struct_e_fp6}{EFp6} Tmp\_P;
-108     \hyperlink{bn__efp6_8c_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P);
-109     \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P,P);
+108     \hyperlink{bn__efp6_8h_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P);
+109     \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P,P);
 110     \hyperlink{struct_fp6}{Fp6} tmp1,tmp2,lambda;
-111     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&tmp1);
-112     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&tmp2);
-113     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&lambda);
+111     Fp6\_init(&tmp1);
+112     Fp6\_init(&tmp2);
+113     Fp6\_init(&lambda);
 114     
-115     \hyperlink{bn__fp6_8h_aa1e9b466f9a1e09d337714f6f84c4d14}{Fp6\_mul\_ui}(&tmp1,&Tmp\_P.\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},2);
+115     Fp6\_mul\_ui(&tmp1,&Tmp\_P.y,2);
 116     
-117     \hyperlink{bn__fp6_8h_a5eb330d311465b16a04395f16a6fe20b}{Fp6\_inv}(&tmp1,&tmp1);
-118     \hyperlink{bn__fp6_8h_af6402e857651a82bdb2946e2c24c252e}{Fp6\_mul}(&tmp2,&Tmp\_P.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&Tmp\_P.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-119     \hyperlink{bn__fp6_8h_aa1e9b466f9a1e09d337714f6f84c4d14}{Fp6\_mul\_ui}(&tmp2,&tmp2,3);
-120     \hyperlink{bn__fp6_8h_af6402e857651a82bdb2946e2c24c252e}{Fp6\_mul}(&lambda,&tmp1,&tmp2);
-121     \hyperlink{bn__fp6_8h_a28ef277ef511c74406be1f2de344579d}{Fp6\_sqr}(&tmp1,&lambda);
-122     \hyperlink{bn__fp6_8h_aa1e9b466f9a1e09d337714f6f84c4d14}{Fp6\_mul\_ui}(&tmp2,&Tmp\_P.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},2);
-123     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&tmp1,&tmp2);
-124     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&tmp1,&Tmp\_P.\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-125     \hyperlink{bn__fp6_8h_af6402e857651a82bdb2946e2c24c252e}{Fp6\_mul}(&tmp2,&lambda,&tmp1);
-126     \hyperlink{bn__fp6_8h_a764205162bf3d1b3fd7011127e4623c5}{Fp6\_sub}(&ANS->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},&tmp2,&Tmp\_P.\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y});
+117     Fp6\_inv(&tmp1,&tmp1);
+118     Fp6\_mul(&tmp2,&Tmp\_P.x,&Tmp\_P.x);
+119     Fp6\_mul\_ui(&tmp2,&tmp2,3);
+120     Fp6\_mul(&lambda,&tmp1,&tmp2);
+121     Fp6\_sqr(&tmp1,&lambda);
+122     Fp6\_mul\_ui(&tmp2,&Tmp\_P.x,2);
+123     Fp6\_sub(&ANS->x,&tmp1,&tmp2);
+124     Fp6\_sub(&tmp1,&Tmp\_P.x,&ANS->x);
+125     Fp6\_mul(&tmp2,&lambda,&tmp1);
+126     Fp6\_sub(&ANS->y,&tmp2,&Tmp\_P.y);
 127     
-128     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&tmp1);
-129     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&tmp2);
-130     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&lambda);
-131     \hyperlink{bn__efp6_8c_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P);
+128     Fp6\_clear(&tmp1);
+129     Fp6\_clear(&tmp2);
+130     Fp6\_clear(&lambda);
+131     \hyperlink{bn__efp6_8h_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P);
 132 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 5
+Here is the caller graph for this function\+:
+% FIG 6
 \mbox{\Hypertarget{bn__efp6_8h_a5dd3a89e6944dc0966bb8f63cbf141b4}\label{bn__efp6_8h_a5dd3a89e6944dc0966bb8f63cbf141b4}} 
 \index{bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}!E\+Fp6\+\_\+init@{E\+Fp6\+\_\+init}}
 \index{E\+Fp6\+\_\+init@{E\+Fp6\+\_\+init}!bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}}
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+init()}{EFp6\_init()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+init (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P }\end{DoxyParamCaption})}
 
+Initialize an \hyperlink{struct_e_fp6}{E\+Fp6} type structure
 
 
-References Fp6\+\_\+init(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em P} & -\/ input P in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\end{DoxyParams}
 
 
 Referenced by E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), and E\+Fp6\+\_\+\+S\+C\+M().
@@ -182,30 +221,37 @@ Referenced by E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), and E\+Fp6\+\_\+
 
 \begin{DoxyCode}
 30                        \{
-31     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-32     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&P->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y});
-33     P->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=0;
+31     Fp6\_init(&P->x);
+32     Fp6\_init(&P->y);
+33     P->infinity=0;
 34 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 7
 \mbox{\Hypertarget{bn__efp6_8h_a613970476a6cdce33940fad308f8b550}\label{bn__efp6_8h_a613970476a6cdce33940fad308f8b550}} 
 \index{bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}!E\+Fp6\+\_\+printf@{E\+Fp6\+\_\+printf}}
 \index{E\+Fp6\+\_\+printf@{E\+Fp6\+\_\+printf}!bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}}
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+printf()}{EFp6\_printf()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+printf (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P,  }\item[{char $\ast$}]{str }\end{DoxyParamCaption})}
 
+Prints an \hyperlink{struct_e_fp6}{E\+Fp6} type structure
 
 
-References Fp6\+\_\+printf(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em P} & -\/ input P in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\mbox{\tt in}  & {\em str} & -\/ any string to print. \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyCode}
 41                                    \{
 42     gmp\_printf(\textcolor{stringliteral}{"%s"},str);
-43     \textcolor{keywordflow}{if}(P->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}==0)\{
+43     \textcolor{keywordflow}{if}(P->infinity==0)\{
 44         gmp\_printf(\textcolor{stringliteral}{"("});
-45         \hyperlink{bn__fp6_8h_a4206c905d908451f80aa1d8507cfb892}{Fp6\_printf}(&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},\textcolor{stringliteral}{""});
+45         Fp6\_printf(&P->x,\textcolor{stringliteral}{""});
 46         gmp\_printf(\textcolor{stringliteral}{","});
-47         \hyperlink{bn__fp6_8h_a4206c905d908451f80aa1d8507cfb892}{Fp6\_printf}(&P->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},\textcolor{stringliteral}{""});
+47         Fp6\_printf(&P->y,\textcolor{stringliteral}{""});
 48         gmp\_printf(\textcolor{stringliteral}{")"});
 49     \}\textcolor{keywordflow}{else}\{
 50         gmp\_printf(\textcolor{stringliteral}{"infinity"});
@@ -218,34 +264,41 @@ References Fp6\+\_\+printf(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+rational\+\_\+point()}{EFp6\_rational\_point()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+rational\+\_\+point (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P }\end{DoxyParamCaption})}
 
+Generate an \hyperlink{struct_e_fp6}{E\+Fp6} rational point
 
 
-References curve\+\_\+params\+::curve\+\_\+b, curve\+\_\+parameters, Fp6\+\_\+clear(), Fp6\+\_\+init(), Fp6\+\_\+legendre(), Fp6\+\_\+mul(), Fp6\+\_\+set\+\_\+random(), Fp6\+\_\+sqr(), Fp6\+\_\+sqrt(), E\+Fp6\+::x, Fp6\+::x0, and E\+Fp6\+::y.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em P} & -\/ input rational point P and. \\
+\hline
+\end{DoxyParams}
+
+
+References curve\+\_\+params\+::curve\+\_\+b, and curve\+\_\+parameters.
 
 
 \begin{DoxyCode}
 78                                  \{
 79     \hyperlink{struct_fp6}{Fp6} tmp1,tmp2;
-80     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&tmp1);
-81     \hyperlink{bn__fp6_8h_ad9895f5fe5f917fa67d9401055dfcb7d}{Fp6\_init}(&tmp2);
+80     Fp6\_init(&tmp1);
+81     Fp6\_init(&tmp2);
 82     gmp\_randstate\_t \hyperlink{bn__bls12__precoms_8h_adc6e5733fc3c22f0a7b2914188c49c90}{state};
 83     gmp\_randinit\_default (state);
 84     gmp\_randseed\_ui(state,(\textcolor{keywordtype}{unsigned} \textcolor{keywordtype}{long})time(NULL));
 85     
 86     \textcolor{keywordflow}{while}(1)\{
-87         \hyperlink{bn__fp6_8h_a97f33ce2a10f5bcd99c25a15d36d33a4}{Fp6\_set\_random}(&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},state);
-88         \hyperlink{bn__fp6_8h_a28ef277ef511c74406be1f2de344579d}{Fp6\_sqr}(&tmp1,&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-89         \hyperlink{bn__fp6_8h_af6402e857651a82bdb2946e2c24c252e}{Fp6\_mul}(&tmp2,&tmp1,&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-90         mpz\_sub(tmp2.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0.x0,tmp2.\hyperlink{struct_fp6_a83e12a39b3d9d0499b18d05d4f355223}{x0}.x0.x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
-      \hyperlink{structcurve__params_a60d46b23af98d15ddec3bb2e5150f686}{curve\_b});
-91         \textcolor{keywordflow}{if}(\hyperlink{bn__fp6_8h_a13a23e50695a7a65711f802d86d93a51}{Fp6\_legendre}(&tmp2)==1)\{
-92             \hyperlink{bn__fp6_8h_a362829dfe032cae7fcb9cdc6c41a7c1f}{Fp6\_sqrt}(&P->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},&tmp2);
+87         Fp6\_set\_random(&P->x,state);
+88         Fp6\_sqr(&tmp1,&P->x);
+89         Fp6\_mul(&tmp2,&tmp1,&P->x);
+90         mpz\_sub(tmp2.x0.x0.x0,tmp2.x0.x0.x0,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.
+      \hyperlink{structcurve__params_a69f572611e84fdb672a5042ddc78bb84}{curve\_b});
+91         \textcolor{keywordflow}{if}(Fp6\_legendre(&tmp2)==1)\{
+92             Fp6\_sqrt(&P->y,&tmp2);
 93             \textcolor{keywordflow}{break};
 94         \}
 95     \}
 96     
-97     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&tmp1);
-98     \hyperlink{bn__fp6_8h_a8607ba80d24b1c0005803541a3758701}{Fp6\_clear}(&tmp2);
+97     Fp6\_clear(&tmp1);
+98     Fp6\_clear(&tmp2);
 99 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__efp6_8h_ac73f1716375d953d7cd2425052ad9b7c}\label{bn__efp6_8h_ac73f1716375d953d7cd2425052ad9b7c}} 
@@ -254,54 +307,72 @@ References curve\+\_\+params\+::curve\+\_\+b, curve\+\_\+parameters, Fp6\+\_\+cl
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+\+S\+C\+M()}{EFp6\_SCM()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+\+S\+CM (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P,  }\item[{mpz\+\_\+t}]{scalar }\end{DoxyParamCaption})}
 
+S\+CM in \hyperlink{struct_e_fp6}{E\+Fp6} rational point
 
 
-References E\+Fp6\+\_\+clear(), E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), E\+Fp6\+\_\+init(), E\+Fp6\+\_\+set(), and E\+Fp6\+::infinity.
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A\+NS} & -\/ output. \\
+\hline
+\mbox{\tt in}  & {\em P1} & -\/ input P1 in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\mbox{\tt in}  & {\em scalar} & -\/ input scalar in mpz\+\_\+t integer. \\
+\hline
+\end{DoxyParams}
+
+
+References E\+Fp6\+\_\+clear(), E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), E\+Fp6\+\_\+init(), and E\+Fp6\+\_\+set().
 
 
 \begin{DoxyCode}
 180                                              \{
 181     \textcolor{keywordflow}{if}(mpz\_cmp\_ui(scalar,0)==0)\{
-182         ANS->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=1;
+182         ANS->infinity=1;
 183         \textcolor{keywordflow}{return};
 184     \}\textcolor{keywordflow}{else} \textcolor{keywordflow}{if}(mpz\_cmp\_ui(scalar,1)==0)\{
-185         \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,P);
+185         \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,P);
 186         \textcolor{keywordflow}{return};
 187     \}
 188     
 189     \hyperlink{struct_e_fp6}{EFp6} Tmp\_P,Next\_P;
-190     \hyperlink{bn__efp6_8c_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P);
-191     \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P,P);
-192     \hyperlink{bn__efp6_8c_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Next\_P);
+190     \hyperlink{bn__efp6_8h_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Tmp\_P);
+191     \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Tmp\_P,P);
+192     \hyperlink{bn__efp6_8h_a5dd3a89e6944dc0966bb8f63cbf141b4}{EFp6\_init}(&Next\_P);
 193     \textcolor{keywordtype}{int} i,length;
 194     length=(int)mpz\_sizeinbase(scalar,2);
 195     \textcolor{keywordtype}{char} binary[length];
 196     mpz\_get\_str(binary,2,scalar);
 197     
-198     \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Next\_P,&Tmp\_P);
+198     \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(&Next\_P,&Tmp\_P);
 199     \textcolor{keywordflow}{for}(i=1; i<length; i++)\{
-200         \hyperlink{bn__efp6_8c_af37cf549288cd5cc08812d1a81f99066}{EFp6\_ECD}(&Next\_P,&Next\_P);
+200         \hyperlink{bn__efp6_8h_af37cf549288cd5cc08812d1a81f99066}{EFp6\_ECD}(&Next\_P,&Next\_P);
 201         \textcolor{keywordflow}{if}(binary[i]==\textcolor{charliteral}{'1'})\{
-202             \hyperlink{bn__efp6_8c_af3eaac13b689847537377a64fc4733d1}{EFp6\_ECA}(&Next\_P,&Next\_P,&Tmp\_P);
+202             \hyperlink{bn__efp6_8h_af3eaac13b689847537377a64fc4733d1}{EFp6\_ECA}(&Next\_P,&Next\_P,&Tmp\_P);
 203         \}
 204     \}
 205     
-206     \hyperlink{bn__efp6_8c_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,&Next\_P);
+206     \hyperlink{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}{EFp6\_set}(ANS,&Next\_P);
 207     
-208     \hyperlink{bn__efp6_8c_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Next\_P);
-209     \hyperlink{bn__efp6_8c_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P);
+208     \hyperlink{bn__efp6_8h_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Next\_P);
+209     \hyperlink{bn__efp6_8h_aa53063f2fe49bc8bd381897203c4a04b}{EFp6\_clear}(&Tmp\_P);
 210 \}
 \end{DoxyCode}
+Here is the call graph for this function\+:
+% FIG 8
 \mbox{\Hypertarget{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}\label{bn__efp6_8h_abff7a2f423a0a3c52720a1db3b19672f}} 
 \index{bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}!E\+Fp6\+\_\+set@{E\+Fp6\+\_\+set}}
 \index{E\+Fp6\+\_\+set@{E\+Fp6\+\_\+set}!bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}}
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+set()}{EFp6\_set()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+set (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P }\end{DoxyParamCaption})}
 
+Sets \hyperlink{struct_e_fp6}{E\+Fp6} point an \hyperlink{struct_e_fp6}{E\+Fp6} type structure
 
 
-References Fp6\+\_\+set(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A\+NS} & -\/ output. \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ input P in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\end{DoxyParams}
 
 
 Referenced by E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), and E\+Fp6\+\_\+\+S\+C\+M().
@@ -309,27 +380,34 @@ Referenced by E\+Fp6\+\_\+\+E\+C\+A(), E\+Fp6\+\_\+\+E\+C\+D(), and E\+Fp6\+\_\+
 
 \begin{DoxyCode}
 54                                 \{
-55     \hyperlink{bn__fp6_8h_a490c667a7e148aa26e7cdc0f62761cf7}{Fp6\_set}(&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-56     \hyperlink{bn__fp6_8h_a490c667a7e148aa26e7cdc0f62761cf7}{Fp6\_set}(&ANS->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},&P->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y});
-57     ANS->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=P->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity};
+55     Fp6\_set(&ANS->x,&P->x);
+56     Fp6\_set(&ANS->y,&P->y);
+57     ANS->infinity=P->infinity;
 58 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 9
 \mbox{\Hypertarget{bn__efp6_8h_a14189816022f33fe040febafd01145fb}\label{bn__efp6_8h_a14189816022f33fe040febafd01145fb}} 
 \index{bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}!E\+Fp6\+\_\+set\+\_\+mpz@{E\+Fp6\+\_\+set\+\_\+mpz}}
 \index{E\+Fp6\+\_\+set\+\_\+mpz@{E\+Fp6\+\_\+set\+\_\+mpz}!bn\+\_\+efp6.\+h@{bn\+\_\+efp6.\+h}}
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+set\+\_\+mpz()}{EFp6\_set\_mpz()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+set\+\_\+mpz (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{A\+NS,  }\item[{mpz\+\_\+t}]{A }\end{DoxyParamCaption})}
 
+Sets mpz\+\_\+t in an \hyperlink{struct_e_fp6}{E\+Fp6} type structure
 
 
-References Fp6\+\_\+set\+\_\+mpz(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A\+NS} & -\/ output. \\
+\hline
+\mbox{\tt in}  & {\em str} & -\/ input A in mpz\+\_\+t int. \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyCode}
 66                                     \{
-67     \hyperlink{bn__fp6_8h_a29a584e5a6a75fb49a9413eef013f522}{Fp6\_set\_mpz}(&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},A);
-68     \hyperlink{bn__fp6_8h_a29a584e5a6a75fb49a9413eef013f522}{Fp6\_set\_mpz}(&ANS->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},A);
-69     ANS->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=0;
+67     Fp6\_set\_mpz(&ANS->x,A);
+68     Fp6\_set\_mpz(&ANS->y,A);
+69     ANS->infinity=0;
 70 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__efp6_8h_ac0c2cbecff661cf82b33f9b6feb60cce}\label{bn__efp6_8h_ac0c2cbecff661cf82b33f9b6feb60cce}} 
@@ -338,16 +416,21 @@ References Fp6\+\_\+set\+\_\+mpz(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+set\+\_\+neg()}{EFp6\_set\_neg()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+set\+\_\+neg (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{P }\end{DoxyParamCaption})}
 
+Negate an \hyperlink{struct_e_fp6}{E\+Fp6} type structure
 
 
-References Fp6\+\_\+set(), Fp6\+\_\+set\+\_\+neg(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A\+NS} & -\/ output. \\
+\hline
+\mbox{\tt in}  & {\em P} & -\/ input P in \hyperlink{struct_e_fp6}{E\+Fp6}. \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyCode}
 72                                     \{
-73     \hyperlink{bn__fp6_8h_a490c667a7e148aa26e7cdc0f62761cf7}{Fp6\_set}(&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},&P->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x});
-74     \hyperlink{bn__fp6_8h_a6affc9d5aa2954a1785830b857705a80}{Fp6\_set\_neg}(&ANS->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},&P->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y});
-75     ANS->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=P->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity};
+73     Fp6\_set(&ANS->x,&P->x);
+74     Fp6\_set\_neg(&ANS->y,&P->y);
+75     ANS->infinity=P->infinity;
 76 \}
 \end{DoxyCode}
 \mbox{\Hypertarget{bn__efp6_8h_a0de5b6d769bfadbf6e2e455d67d239f8}\label{bn__efp6_8h_a0de5b6d769bfadbf6e2e455d67d239f8}} 
@@ -356,15 +439,20 @@ References Fp6\+\_\+set(), Fp6\+\_\+set\+\_\+neg(), E\+Fp6\+::infinity, E\+Fp6\+
 \subsubsection{\texorpdfstring{E\+Fp6\+\_\+set\+\_\+ui()}{EFp6\_set\_ui()}}
 {\footnotesize\ttfamily void E\+Fp6\+\_\+set\+\_\+ui (\begin{DoxyParamCaption}\item[{\hyperlink{struct_e_fp6}{E\+Fp6} $\ast$}]{A\+NS,  }\item[{unsigned long int}]{UI }\end{DoxyParamCaption})}
 
+Sets unsigned int an \hyperlink{struct_e_fp6}{E\+Fp6} type structure
 
 
-References Fp6\+\_\+set\+\_\+ui(), E\+Fp6\+::infinity, E\+Fp6\+::x, and E\+Fp6\+::y.
-
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em A\+NS} & -\/ output. \\
+\hline
+\mbox{\tt in}  & {\em u} & -\/ input u in us integer. \\
+\hline
+\end{DoxyParams}
 
 \begin{DoxyCode}
 60                                                 \{
-61     \hyperlink{bn__fp6_8h_a6396eb28e03e9cf06cdc15309e884bac}{Fp6\_set\_ui}(&ANS->\hyperlink{struct_e_fp6_acb6224cec040ef07ad0083275f6f255d}{x},UI);
-62     \hyperlink{bn__fp6_8h_a6396eb28e03e9cf06cdc15309e884bac}{Fp6\_set\_ui}(&ANS->\hyperlink{struct_e_fp6_a2198b5cb0e307375a764260908630d15}{y},UI);
-63     ANS->\hyperlink{struct_e_fp6_a239ddd95b44d96363b4c61b42b11155e}{infinity}=0;
+61     Fp6\_set\_ui(&ANS->x,UI);
+62     Fp6\_set\_ui(&ANS->y,UI);
+63     ANS->infinity=0;
 64 \}
 \end{DoxyCode}

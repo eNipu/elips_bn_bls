@@ -26,30 +26,61 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interface for pairing friendly curve's data types.
+ *
+ * @ingroup elips
+ */
+
 #ifndef curve_dtypes_h
 #define curve_dtypes_h
 
 #include <ELiPS_bn_bls/bn_fp12.h>
 #include <ELiPS_bn_bls/field_dtype.h>
 
+/*============================================================================*/
+/* Struct definitions                                                          */
+/*============================================================================*/
+
+/**
+ * EFp is the basic type that represent rational point in prime field element.
+ *  Consist of affine coordinate x, y and an extra flag to infinity to point if the rational point is additive unity in EFp.
+ */
 typedef struct EFp EFp;
 struct EFp{
-    Fp x,y;
-    int infinity;
+    Fp x,y;         /**< Coordinate of curve curve_params#x  curve_params#y. */
+    int infinity;   /**< Flag to identify rational point as Point at infinity. 1 is TRUE, default vale 0. curve_params#infinity */
 };
 
+/**
+ * EFp2 is the basic type that represent rational point curve EFp2.
+ *  Consist of affine coordinate x, y in Fp2 .
+ *  Flag to infinity to point if the rational point is additive unity in EFp2.
+ */
 typedef struct EFp2 EFp2;
 struct EFp2{
     Fp2 x,y;
     int infinity;
 };
 
+/**
+ * EFp6 is the basic type that represent rational point curve EFp6.
+ *  Consist of affine coordinate x, y in Fp6 .
+ *  Flag to infinity to point if the rational point is additive unity in EFp6.
+ */
 typedef struct EFp6 EFp6;
 struct EFp6{
     Fp6 x,y;
     int infinity;
 };
 
+/**
+ * EFp12 is the basic type that represent rational point curve EFp12.
+ *  Consist of affine coordinate x, y in Fp12 .
+ *  Flag to infinity to point if the rational point is additive unity in EFp12.
+ */
 typedef struct EFp12 EFp12;
 struct EFp12{
     Fp12 x,y;

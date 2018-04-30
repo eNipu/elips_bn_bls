@@ -47,7 +47,7 @@ Calculate scalar multiplication G1 in B\+L\+S12 curve splitting of scallar into 
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+E\+Fp\+\_\+to\+\_\+\+E\+Fp12(), E\+Fp\+\_\+clear(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+\+E\+C\+D(), E\+Fp\+\_\+init(), and E\+Fp\+\_\+set().
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp(), bls12\+\_\+\+E\+Fp\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), E\+Fp12\+\_\+init(), E\+Fp\+\_\+\+E\+C\+A(), E\+Fp\+\_\+init(), E\+Fp\+\_\+set(), and E\+Fp\+::infinity.
 
 
 
@@ -60,7 +60,7 @@ Referenced by bls12\+\_\+test\+\_\+\+G1\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G
 49     
 50     \textcolor{keywordtype}{int} i,length\_s[2],loop\_length;
 51     \hyperlink{struct_e_fp12}{EFp12} Buf;
-52     EFp12\_init(&Buf);
+52     \hyperlink{bn__efp12_8h_a1cef63517b0aaf7a3c4c3f0b030d00aa}{EFp12\_init}(&Buf);
 53     \hyperlink{struct_e_fp}{EFp} next\_P,tmp\_P,skew\_P\_2;
 54     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&next\_P);
 55     \hyperlink{bn__efp_8h_a2b1c0fe61a09134e31640f1565a48ed1}{EFp\_init}(&tmp\_P);
@@ -80,7 +80,7 @@ Referenced by bls12\+\_\+test\+\_\+\+G1\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G
 69     \hyperlink{bls12__twist_8h_ab400c20c7379b8092500f351fda16323}{bls12\_EFp12\_to\_EFp}(&tmp\_P,P);
 70     \hyperlink{bls12__skew__frobenius_8h_a27f5995aeb743e8ca184d8fdfe4dd819}{bls12\_EFp\_skew\_frobenius\_map\_p2}(&skew\_P\_2,&tmp\_P);
 71     \textcolor{comment}{//set table}
-72     table[0].infinity=1;    \textcolor{comment}{//00}
+72     table[0].\hyperlink{struct_e_fp_a652f88fb6bac77f1882023c1410e84d3}{infinity}=1;    \textcolor{comment}{//00}
 73     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&table[1],&tmp\_P);    \textcolor{comment}{//01}
 74     \hyperlink{bn__efp_8h_abb438750cc5bfec2da8cd2f3863a985f}{EFp\_set}(&table[2],&skew\_P\_2);    \textcolor{comment}{//10}
 75     \hyperlink{bn__efp_8h_a4b290a91bf913cf38dffee13f1db784b}{EFp\_ECA}(&table[3],&tmp\_P,&skew\_P\_2);    \textcolor{comment}{//11}
@@ -126,7 +126,7 @@ Referenced by bls12\+\_\+test\+\_\+\+G1\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G
 115     \hyperlink{bls12__twist_8h_a1fff3d9b5a4da8df91e68493d344cb6b}{bls12\_EFp\_to\_EFp12}(ANS,&next\_P);
 116     
 117     
-118     EFp12\_clear(&Buf);
+118     \hyperlink{bn__efp12_8h_af82bf012407b635d6e636d5323cd5da8}{EFp12\_clear}(&Buf);
 119     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&next\_P);
 120     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&tmp\_P);
 121     \hyperlink{bn__efp_8h_a8d12aae9ceed0cf06fffc1dc2c2aae40}{EFp\_clear}(&skew\_P\_2);
@@ -166,7 +166,7 @@ Calculate scalar multiplication G1 in B\+L\+S12 curve splitting of scallar into 
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), and bls12\+\_\+\+E\+Fp2\+\_\+to\+\_\+\+E\+Fp12().
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), E\+Fp2\+\_\+\+E\+C\+A(), E\+Fp2\+\_\+init(), and E\+Fp2\+\_\+set().
 
 
 
@@ -179,9 +179,9 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm().
 153     
 154     \textcolor{keywordtype}{int} i,length\_s[2],loop\_length;
 155     \hyperlink{struct_e_fp2}{EFp2} next\_twisted\_Q,twisted\_Q,twisted\_Q\_2x;
-156     EFp2\_init(&next\_twisted\_Q);
-157     EFp2\_init(&twisted\_Q);
-158     EFp2\_init(&twisted\_Q\_2x);
+156     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&next\_twisted\_Q);
+157     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q);
+158     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q\_2x);
 159     mpz\_t s[2],buf;
 160     mpz\_init(buf);
 161     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
@@ -190,7 +190,7 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm().
 164     \textcolor{comment}{//table}
 165     \hyperlink{struct_e_fp2}{EFp2} table[4];
 166     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
-167         EFp2\_init(&table[i]);
+167         \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&table[i]);
 168     \}
 169     
 170     \textcolor{comment}{//set}
@@ -199,9 +199,9 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm().
       twisted\_Q\_2x}
 173     \textcolor{comment}{//set table}
 174     table[0].infinity=1;                        \textcolor{comment}{//00}
-175     EFp2\_set(&table[1],&twisted\_Q);            \textcolor{comment}{//01}
-176     EFp2\_set(&table[2],&twisted\_Q\_2x);            \textcolor{comment}{//10}
-177     EFp2\_ECA(&table[3],&twisted\_Q,&twisted\_Q\_2x);    \textcolor{comment}{//11}
+175     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&table[1],&twisted\_Q);            \textcolor{comment}{//01}
+176     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&table[2],&twisted\_Q\_2x);            \textcolor{comment}{//10}
+177     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[3],&twisted\_Q,&twisted\_Q\_2x);    \textcolor{comment}{//11}
 178     
 179     \textcolor{comment}{//s0,s1}
 180     mpz\_neg(buf,bls12\_X);
@@ -233,25 +233,25 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm().
 206         sprintf(str,\textcolor{stringliteral}{"%c%c"},binary\_s[1][i],binary\_s[0][i]);
 207         binary[i]=(int)strtol(str,&e,2);
 208     \}
-209     EFp2\_set(&next\_twisted\_Q,&table[binary[0]]);
+209     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&next\_twisted\_Q,&table[binary[0]]);
 210     
 211     \textcolor{comment}{//SCM}
 212     \textcolor{keywordflow}{for}(i=1; i<loop\_length; i++)\{
-213         EFp2\_ECD(&next\_twisted\_Q,&next\_twisted\_Q);
-214         EFp2\_ECA(&next\_twisted\_Q,&next\_twisted\_Q,&table[binary[i]]);
+213         \hyperlink{bn__efp2_8h_aab22a95931ba31d80f3ef4a3f72f6ce5}{EFp2\_ECD}(&next\_twisted\_Q,&next\_twisted\_Q);
+214         \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&next\_twisted\_Q,&next\_twisted\_Q,&table[binary[i]]);
 215     \}
 216     
 217     \hyperlink{bls12__twist_8h_aa558f3e6f2284e657e3218c9e713c018}{bls12\_EFp2\_to\_EFp12}(ANS,&next\_twisted\_Q);
 218     
 219     mpz\_clear(buf);
-220     EFp2\_clear(&next\_twisted\_Q);
-221     EFp2\_clear(&twisted\_Q);
-222     EFp2\_clear(&twisted\_Q\_2x);
+220     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&next\_twisted\_Q);
+221     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&twisted\_Q);
+222     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&twisted\_Q\_2x);
 223     \textcolor{keywordflow}{for}(i=0; i<2; i++)\{
 224         mpz\_clear(s[i]);
 225     \}
 226     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
-227         EFp2\_clear(&table[i]);
+227         \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&table[i]);
 228     \}
 229     
 230     gettimeofday(&t1,NULL);
@@ -281,7 +281,7 @@ Calculate scalar multiplication G1 in B\+L\+S12 curve splitting of scallar into 
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), and bls12\+\_\+\+E\+Fp2\+\_\+to\+\_\+\+E\+Fp12().
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p1(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p2(), bls12\+\_\+\+E\+Fp2\+\_\+skew\+\_\+frobenius\+\_\+map\+\_\+p3(), E\+Fp2\+\_\+\+E\+C\+A(), E\+Fp2\+\_\+init(), E\+Fp2\+\_\+set(), and E\+Fp2\+\_\+set\+\_\+neg().
 
 
 
@@ -294,11 +294,11 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G
 236     
 237     \textcolor{keywordtype}{int} i,length\_s[4],loop\_length;
 238     \hyperlink{struct_e_fp2}{EFp2} next\_twisted\_Q,twisted\_Q,twisted\_Q\_x,twisted\_Q\_2x,twisted\_Q\_3x;
-239     EFp2\_init(&next\_twisted\_Q);
-240     EFp2\_init(&twisted\_Q);
-241     EFp2\_init(&twisted\_Q\_x);
-242     EFp2\_init(&twisted\_Q\_2x);
-243     EFp2\_init(&twisted\_Q\_3x);
+239     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&next\_twisted\_Q);
+240     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q);
+241     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q\_x);
+242     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q\_2x);
+243     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q\_3x);
 244     mpz\_t A,B,s[4],x\_2,x\_1;
 245     mpz\_init(A);
 246     mpz\_init(B);
@@ -310,37 +310,37 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G
 252     \textcolor{comment}{//table}
 253     \hyperlink{struct_e_fp2}{EFp2} table[16];
 254     \textcolor{keywordflow}{for}(i=0; i<16; i++)\{
-255         EFp2\_init(&table[i]);
+255         \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&table[i]);
 256     \}
 257     
 258     \textcolor{comment}{//set twisted\_Q}
 259     \hyperlink{bls12__twist_8h_a069ee5f353c96be9b1821af349731fe3}{bls12\_EFp12\_to\_EFp2}(&twisted\_Q,Q);                    \textcolor{comment}{//twisted\_Q}
 260     \hyperlink{bls12__skew__frobenius_8h_a8d89c42f0d2898af5639f908ebc6ad72}{bls12\_EFp2\_skew\_frobenius\_map\_p1}(&twisted\_Q\_x,&twisted\_Q);        \textcolor{comment}{//
       twisted\_Q\_x}
-261     EFp2\_set\_neg(&twisted\_Q\_x,&twisted\_Q\_x);
+261     \hyperlink{bn__efp2_8h_a9dec6dd06434dcf90206232bd085146d}{EFp2\_set\_neg}(&twisted\_Q\_x,&twisted\_Q\_x);
 262     \hyperlink{bls12__skew__frobenius_8h_a53a7cd126428aa8a94732b2c521ad0f7}{bls12\_EFp2\_skew\_frobenius\_map\_p2}(&twisted\_Q\_2x,&twisted\_Q);    \textcolor{comment}{//
       twisted\_Q\_2x}
 263     \hyperlink{bls12__skew__frobenius_8h_a87f87eeb97f9ba92718de8561d8a486d}{bls12\_EFp2\_skew\_frobenius\_map\_p3}(&twisted\_Q\_3x,&twisted\_Q);    \textcolor{comment}{//
       twisted\_Q\_3x}
-264     EFp2\_set\_neg(&twisted\_Q\_3x,&twisted\_Q\_3x);
+264     \hyperlink{bn__efp2_8h_a9dec6dd06434dcf90206232bd085146d}{EFp2\_set\_neg}(&twisted\_Q\_3x,&twisted\_Q\_3x);
 265     
 266     \textcolor{comment}{//set table}
 267     table[0].infinity=1;                            \textcolor{comment}{//0000}
-268     EFp2\_set(&table[1],&twisted\_Q);                \textcolor{comment}{//0001}
-269     EFp2\_set(&table[2],&twisted\_Q\_x);                \textcolor{comment}{//0010}
-270     EFp2\_ECA(&table[3],&twisted\_Q\_x,&twisted\_Q);        \textcolor{comment}{//0011}
-271     EFp2\_set(&table[4],&twisted\_Q\_2x);                \textcolor{comment}{//0100}
-272     EFp2\_ECA(&table[5],&twisted\_Q\_2x,&twisted\_Q);        \textcolor{comment}{//0101}
-273     EFp2\_ECA(&table[6],&twisted\_Q\_2x,&twisted\_Q\_x);        \textcolor{comment}{//0110}
-274     EFp2\_ECA(&table[7],&table[6],&twisted\_Q);            \textcolor{comment}{//0111}
-275     EFp2\_set(&table[8],&twisted\_Q\_3x);                \textcolor{comment}{//1000}
-276     EFp2\_ECA(&table[9],&twisted\_Q\_3x,&twisted\_Q);        \textcolor{comment}{//1001}
-277     EFp2\_ECA(&table[10],&twisted\_Q\_3x,&twisted\_Q\_x);    \textcolor{comment}{//1010}
-278     EFp2\_ECA(&table[11],&twisted\_Q\_3x,&table[3]);        \textcolor{comment}{//1011}
-279     EFp2\_ECA(&table[12],&twisted\_Q\_3x,&twisted\_Q\_2x);    \textcolor{comment}{//1100}
-280     EFp2\_ECA(&table[13],&table[12],&twisted\_Q);        \textcolor{comment}{//1101}
-281     EFp2\_ECA(&table[14],&table[12],&twisted\_Q\_x);        \textcolor{comment}{//1110}
-282     EFp2\_ECA(&table[15],&table[14],&twisted\_Q);        \textcolor{comment}{//1111}
+268     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&table[1],&twisted\_Q);                \textcolor{comment}{//0001}
+269     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&table[2],&twisted\_Q\_x);                \textcolor{comment}{//0010}
+270     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[3],&twisted\_Q\_x,&twisted\_Q);        \textcolor{comment}{//0011}
+271     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&table[4],&twisted\_Q\_2x);                \textcolor{comment}{//0100}
+272     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[5],&twisted\_Q\_2x,&twisted\_Q);        \textcolor{comment}{//0101}
+273     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[6],&twisted\_Q\_2x,&twisted\_Q\_x);        \textcolor{comment}{//0110}
+274     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[7],&table[6],&twisted\_Q);            \textcolor{comment}{//0111}
+275     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&table[8],&twisted\_Q\_3x);                \textcolor{comment}{//1000}
+276     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[9],&twisted\_Q\_3x,&twisted\_Q);        \textcolor{comment}{//1001}
+277     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[10],&twisted\_Q\_3x,&twisted\_Q\_x);    \textcolor{comment}{//1010}
+278     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[11],&twisted\_Q\_3x,&table[3]);        \textcolor{comment}{//1011}
+279     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[12],&twisted\_Q\_3x,&twisted\_Q\_2x);    \textcolor{comment}{//1100}
+280     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[13],&table[12],&twisted\_Q);        \textcolor{comment}{//1101}
+281     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[14],&table[12],&twisted\_Q\_x);        \textcolor{comment}{//1110}
+282     \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&table[15],&table[14],&twisted\_Q);        \textcolor{comment}{//1111}
 283     
 284     \textcolor{comment}{//set}
 285     \textcolor{comment}{//s0,s1,s2,s3}
@@ -377,28 +377,28 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm(), and bls12\+\_\+test\+\_\+\+G
 316         binary[i]=(int)strtol(str,&e,2);
 317     \}
 318     
-319     EFp2\_set(&next\_twisted\_Q,&table[binary[0]]);
+319     \hyperlink{bn__efp2_8h_ab9ebc9caf2c47493f224e70b99d26cba}{EFp2\_set}(&next\_twisted\_Q,&table[binary[0]]);
 320     
 321     \textcolor{comment}{//SCM}
 322     \textcolor{keywordflow}{for}(i=1; i<loop\_length; i++)\{
-323         EFp2\_ECD(&next\_twisted\_Q,&next\_twisted\_Q);
-324         EFp2\_ECA(&next\_twisted\_Q,&next\_twisted\_Q,&table[binary[i]]);
+323         \hyperlink{bn__efp2_8h_aab22a95931ba31d80f3ef4a3f72f6ce5}{EFp2\_ECD}(&next\_twisted\_Q,&next\_twisted\_Q);
+324         \hyperlink{bn__efp2_8h_ae9f5dce3ffb3ddbf68b416ab7bcb7cfb}{EFp2\_ECA}(&next\_twisted\_Q,&next\_twisted\_Q,&table[binary[i]]);
 325     \}
 326     
 327     \hyperlink{bls12__twist_8h_aa558f3e6f2284e657e3218c9e713c018}{bls12\_EFp2\_to\_EFp12}(ANS,&next\_twisted\_Q);
 328     
-329     EFp2\_clear(&next\_twisted\_Q);
-330     EFp2\_clear(&twisted\_Q);
-331     EFp2\_clear(&twisted\_Q\_x);
-332     EFp2\_clear(&twisted\_Q\_2x);
-333     EFp2\_init(&twisted\_Q\_3x);
+329     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&next\_twisted\_Q);
+330     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&twisted\_Q);
+331     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&twisted\_Q\_x);
+332     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&twisted\_Q\_2x);
+333     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q\_3x);
 334     mpz\_clear(x\_1);
 335     mpz\_clear(x\_2);
 336     \textcolor{keywordflow}{for}(i=0; i<4; i++)\{
 337         mpz\_clear(s[i]);
 338     \}
 339     \textcolor{keywordflow}{for}(i=0; i<16; i++)\{
-340         EFp2\_clear(&table[i]);
+340         \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&table[i]);
 341     \}
 342     
 343     gettimeofday(&t1,NULL);
@@ -475,7 +475,7 @@ Calculate scalar multiplication G2 in B\+L\+S12 curve without any optimization/s
 \end{DoxyParams}
 
 
-References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), and bls12\+\_\+\+E\+Fp2\+\_\+to\+\_\+\+E\+Fp12().
+References bls12\+\_\+\+E\+Fp12\+\_\+to\+\_\+\+E\+Fp2(), bls12\+\_\+\+E\+Fp2\+\_\+to\+\_\+\+E\+Fp12(), E\+Fp2\+\_\+clear(), E\+Fp2\+\_\+init(), and E\+Fp2\+\_\+\+S\+C\+M().
 
 
 
@@ -487,13 +487,13 @@ Referenced by bls12\+\_\+test\+\_\+\+G2\+\_\+scm().
 136     gettimeofday(&t0,NULL);
 137     
 138     \hyperlink{struct_e_fp2}{EFp2} twisted\_Q;
-139     EFp2\_init(&twisted\_Q);
+139     \hyperlink{bn__efp2_8h_aaf4ebcd7da9b58a19626739159b1c468}{EFp2\_init}(&twisted\_Q);
 140     
 141     \hyperlink{bls12__twist_8h_a069ee5f353c96be9b1821af349731fe3}{bls12\_EFp12\_to\_EFp2}(&twisted\_Q,Q);
-142     EFp2\_SCM(&twisted\_Q,&twisted\_Q,scalar);
+142     \hyperlink{bn__efp2_8h_afe4377b41b2b704619c58e2af32bcb7e}{EFp2\_SCM}(&twisted\_Q,&twisted\_Q,scalar);
 143     \hyperlink{bls12__twist_8h_aa558f3e6f2284e657e3218c9e713c018}{bls12\_EFp2\_to\_EFp12}(ANS,&twisted\_Q);
 144     
-145     EFp2\_clear(&twisted\_Q);
+145     \hyperlink{bn__efp2_8h_a2fab68f8328464d8a3d32f6127e3de47}{EFp2\_clear}(&twisted\_Q);
 146     
 147     gettimeofday(&t1,NULL);
 148     bls12\_G2SCM\_PLAIN=timedifference\_msec(t0,t1);

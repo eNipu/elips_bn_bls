@@ -8,172 +8,200 @@ This graph shows which files directly or indirectly include this file\+:
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \hyperlink{bn__final__exp_8h_a8bb9e73f8f9ebe9942d855ea72f36d1c}{Final\+\_\+exp\+\_\+plain} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_fp12}{Fp12} $\ast$A)
+void \hyperlink{bn__final__exp_8h_acf5b18da3e5d4f15b415dd3724a97223}{bn\+\_\+final\+\_\+exp\+\_\+plain} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_fp12}{Fp12} $\ast$A)
 \item 
-void \hyperlink{bn__final__exp_8h_a3d64a816989df1bfce21e6d25f04316a}{Final\+\_\+exp\+\_\+optimal} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_fp12}{Fp12} $\ast$A)
+void \hyperlink{bn__final__exp_8h_abb85f14c86f8ad6b8f16f6e659101c5d}{bn\+\_\+final\+\_\+exp\+\_\+optimal} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_fp12}{Fp12} $\ast$A)
 \item 
-void \hyperlink{bn__final__exp_8h_a903a9008f0530adb70014ecd35ebd63d}{Fp12\+\_\+pow\+\_\+X} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_fp12}{Fp12} $\ast$A)
+void \hyperlink{bn__final__exp_8h_ac17ccb985f8af522cbdd8c562447cc3c}{bn\+\_\+fp12\+\_\+power\+\_\+motherparam} (\hyperlink{struct_fp12}{Fp12} $\ast$A\+NS, \hyperlink{struct_fp12}{Fp12} $\ast$A)
 \end{DoxyCompactItemize}
 
 
+\subsection{Detailed Description}
+Interaface for final exponentiation in BN curve 
+
 \subsection{Function Documentation}
-\mbox{\Hypertarget{bn__final__exp_8h_a3d64a816989df1bfce21e6d25f04316a}\label{bn__final__exp_8h_a3d64a816989df1bfce21e6d25f04316a}} 
-\index{bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}!Final\+\_\+exp\+\_\+optimal@{Final\+\_\+exp\+\_\+optimal}}
-\index{Final\+\_\+exp\+\_\+optimal@{Final\+\_\+exp\+\_\+optimal}!bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}}
-\subsubsection{\texorpdfstring{Final\+\_\+exp\+\_\+optimal()}{Final\_exp\_optimal()}}
-{\footnotesize\ttfamily void Final\+\_\+exp\+\_\+optimal (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{bn__final__exp_8h_abb85f14c86f8ad6b8f16f6e659101c5d}\label{bn__final__exp_8h_abb85f14c86f8ad6b8f16f6e659101c5d}} 
+\index{bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}!bn\+\_\+final\+\_\+exp\+\_\+optimal@{bn\+\_\+final\+\_\+exp\+\_\+optimal}}
+\index{bn\+\_\+final\+\_\+exp\+\_\+optimal@{bn\+\_\+final\+\_\+exp\+\_\+optimal}!bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}}
+\subsubsection{\texorpdfstring{bn\+\_\+final\+\_\+exp\+\_\+optimal()}{bn\_final\_exp\_optimal()}}
+{\footnotesize\ttfamily void bn\+\_\+final\+\_\+exp\+\_\+optimal (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Optimized final exp for BN curve
 
 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in \hyperlink{struct_fp12}{Fp12}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ input P in \hyperlink{struct_fp12}{Fp12} as obtained from Miller\textquotesingle{}s algo output. \\
+\hline
+\end{DoxyParams}
 
-References Fp12\+\_\+clear(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p1(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p3(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p6(), Fp12\+\_\+init(), Fp12\+\_\+inv(), Fp12\+\_\+mul(), Fp12\+\_\+pow\+\_\+\+X(), Fp12\+\_\+set(), Fp12\+\_\+sqr(), t1, and X\+\_\+binary.
 
-
-
-Referenced by bn12\+\_\+opt\+\_\+ate(), bn12\+\_\+plain\+\_\+ate(), bn12\+\_\+tate(), and bn12\+\_\+x\+\_\+ate().
+References bn\+\_\+fp12\+\_\+power\+\_\+motherparam(), and X\+\_\+binary.
 
 
 \begin{DoxyCode}
-59                                          \{
-60     \hyperlink{struct_fp12}{Fp12} t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1},t2,t3;
-61     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&t0);
-62     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&t1);
-63     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&t2);
-64     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&t3);
+59                                             \{
+60     \hyperlink{struct_fp12}{Fp12} t0,t1,t2,t3;
+61     Fp12\_init(&t0);
+62     Fp12\_init(&t1);
+63     Fp12\_init(&t2);
+64     Fp12\_init(&t3);
 65     
 66     
 67     \textcolor{comment}{//f←f^(p^6)*f^-1}
-68     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&t0,A);\textcolor{comment}{//f^(p^6)}
-69     \hyperlink{bn__fp12_8h_a0f7d180810497e6ee2646450da5e1b0d}{Fp12\_inv}(&t1,A);\textcolor{comment}{//f^-1}
-70     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(A,&t0,&t1);\textcolor{comment}{//f^(p^6)*f^-1}
+68     Fp12\_frobenius\_map\_p6(&t0,A);\textcolor{comment}{//f^(p^6)}
+69     Fp12\_inv(&t1,A);\textcolor{comment}{//f^-1}
+70     Fp12\_mul(A,&t0,&t1);\textcolor{comment}{//f^(p^6)*f^-1}
 71     
 72     \textcolor{comment}{//f←f^(p^2)*f}
-73     \hyperlink{bn__frobenius_8h_ac812390bfad0648fd56be78c70493c66}{Fp12\_frobenius\_map\_p2}(&t0,A);\textcolor{comment}{//f^(p^2)}
-74     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(A,&t0,A);\textcolor{comment}{//f^(p^2)*f}
+73     Fp12\_frobenius\_map\_p2(&t0,A);\textcolor{comment}{//f^(p^2)}
+74     Fp12\_mul(A,&t0,A);\textcolor{comment}{//f^(p^2)*f}
 75     
 76     \textcolor{comment}{//f←f^((p^4-p^2+1)/r)}
 77     
-78     \hyperlink{bn__final__exp_8c_a903a9008f0530adb70014ecd35ebd63d}{Fp12\_pow\_X}(&t0,A);        \textcolor{comment}{//t0←f^(u)}
-79     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&t0,&t0);            \textcolor{comment}{//t0←f^(-u)}
+78     \hyperlink{bn__final__exp_8h_ac17ccb985f8af522cbdd8c562447cc3c}{bn\_fp12\_power\_motherparam}(&t0,A);        \textcolor{comment}{//t0←f^(u)}
+79     Fp12\_frobenius\_map\_p6(&t0,&t0);            \textcolor{comment}{//t0←f^(-u)}
 80     
-81     \hyperlink{bn__fp12_8h_a654f330b76901a8053398b71149c5638}{Fp12\_sqr}(&t1,&t0);                \textcolor{comment}{//t1←t0^2}
-82     \hyperlink{bn__fp12_8h_a654f330b76901a8053398b71149c5638}{Fp12\_sqr}(&t0,&t1);                \textcolor{comment}{//t0←t1^2}
-83     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t0,&t1,&t0);                \textcolor{comment}{//t0←t1*t0}
-84     \hyperlink{bn__final__exp_8c_a903a9008f0530adb70014ecd35ebd63d}{Fp12\_pow\_X}(&t2,&t0);    \textcolor{comment}{//t2←t0^(u)}
-85     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&t2,&t2);            \textcolor{comment}{//t2←t0^(-u)}
+81     Fp12\_sqr(&t1,&t0);                \textcolor{comment}{//t1←t0^2}
+82     Fp12\_sqr(&t0,&t1);                \textcolor{comment}{//t0←t1^2}
+83     Fp12\_mul(&t0,&t1,&t0);                \textcolor{comment}{//t0←t1*t0}
+84     \hyperlink{bn__final__exp_8h_ac17ccb985f8af522cbdd8c562447cc3c}{bn\_fp12\_power\_motherparam}(&t2,&t0);    \textcolor{comment}{//t2←t0^(u)}
+85     Fp12\_frobenius\_map\_p6(&t2,&t2);            \textcolor{comment}{//t2←t0^(-u)}
 86     
 87     \hyperlink{curve__settings_8h_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[0]=0;
-88     \hyperlink{bn__final__exp_8c_a903a9008f0530adb70014ecd35ebd63d}{Fp12\_pow\_X}(&t3,&t2);    \textcolor{comment}{//t3←t2^(u+1)}
+88     \hyperlink{bn__final__exp_8h_ac17ccb985f8af522cbdd8c562447cc3c}{bn\_fp12\_power\_motherparam}(&t3,&t2);    \textcolor{comment}{//t3←t2^(u+1)}
 89     \hyperlink{curve__settings_8h_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[0]=-1;
-90     \hyperlink{bn__fp12_8h_a654f330b76901a8053398b71149c5638}{Fp12\_sqr}(&t3,&t3);                \textcolor{comment}{//t3←t3^2}
-91     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&t0,&t0);            \textcolor{comment}{//t0←t0^(-1)}
-92     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t3,&t3,&t0);                \textcolor{comment}{//t3←t3*t0}
-93     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&t2,&t2);            \textcolor{comment}{//t2←t2^(-1)}
-94     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t2,&t3,&t2);                \textcolor{comment}{//t2←t3*t2}
-95     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t3,&t3,A);                \textcolor{comment}{//t3←t3*f}
+90     Fp12\_sqr(&t3,&t3);                \textcolor{comment}{//t3←t3^2}
+91     Fp12\_frobenius\_map\_p6(&t0,&t0);            \textcolor{comment}{//t0←t0^(-1)}
+92     Fp12\_mul(&t3,&t3,&t0);                \textcolor{comment}{//t3←t3*t0}
+93     Fp12\_frobenius\_map\_p6(&t2,&t2);            \textcolor{comment}{//t2←t2^(-1)}
+94     Fp12\_mul(&t2,&t3,&t2);                \textcolor{comment}{//t2←t3*t2}
+95     Fp12\_mul(&t3,&t3,A);                \textcolor{comment}{//t3←t3*f}
 96     
-97     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t1,&t1,&t2);                \textcolor{comment}{//t1←t1*t2}
-98     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&t0,A);            \textcolor{comment}{//t0←f^(-1)}
-99     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t0,&t1,&t0);                \textcolor{comment}{//t0←t1*t0}
+97     Fp12\_mul(&t1,&t1,&t2);                \textcolor{comment}{//t1←t1*t2}
+98     Fp12\_frobenius\_map\_p6(&t0,A);            \textcolor{comment}{//t0←f^(-1)}
+99     Fp12\_mul(&t0,&t1,&t0);                \textcolor{comment}{//t0←t1*t0}
 100     
-101     \hyperlink{bn__frobenius_8h_ab847a85270e4534251b17ece161d3d41}{Fp12\_frobenius\_map\_p3}(&t0,&t0);            \textcolor{comment}{//t0←t0^(p^3)}
-102     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t0,&t0,&t3);                \textcolor{comment}{//t0←t0*t3}
-103     \hyperlink{bn__frobenius_8h_ad0cdc7eaf3a2db4151e9dda12631eb95}{Fp12\_frobenius\_map\_p1}(&t1,&t1);            \textcolor{comment}{//t1←t1^p}
-104     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t0,&t0,&t1);                \textcolor{comment}{//t0←t0*t1}
-105     \hyperlink{bn__frobenius_8h_ac812390bfad0648fd56be78c70493c66}{Fp12\_frobenius\_map\_p2}(&t2,&t2);            \textcolor{comment}{//t2←t2^(p^2)}
-106     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&t0,&t0,&t2);                \textcolor{comment}{//t0←t0*t2}
+101     Fp12\_frobenius\_map\_p3(&t0,&t0);            \textcolor{comment}{//t0←t0^(p^3)}
+102     Fp12\_mul(&t0,&t0,&t3);                \textcolor{comment}{//t0←t0*t3}
+103     Fp12\_frobenius\_map\_p1(&t1,&t1);            \textcolor{comment}{//t1←t1^p}
+104     Fp12\_mul(&t0,&t0,&t1);                \textcolor{comment}{//t0←t0*t1}
+105     Fp12\_frobenius\_map\_p2(&t2,&t2);            \textcolor{comment}{//t2←t2^(p^2)}
+106     Fp12\_mul(&t0,&t0,&t2);                \textcolor{comment}{//t0←t0*t2}
 107     
-108     \hyperlink{bn__fp12_8h_a95c271ea5c7c21d89c9a0123a896e47d}{Fp12\_set}(ANS,&t0);
+108     Fp12\_set(ANS,&t0);
 109     
-110     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&t0);
-111     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&t1);
-112     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&t2);
-113     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&t3);
+110     Fp12\_clear(&t0);
+111     Fp12\_clear(&t1);
+112     Fp12\_clear(&t2);
+113     Fp12\_clear(&t3);
 114 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{bn__final__exp_8h_a8bb9e73f8f9ebe9942d855ea72f36d1c}\label{bn__final__exp_8h_a8bb9e73f8f9ebe9942d855ea72f36d1c}} 
-\index{bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}!Final\+\_\+exp\+\_\+plain@{Final\+\_\+exp\+\_\+plain}}
-\index{Final\+\_\+exp\+\_\+plain@{Final\+\_\+exp\+\_\+plain}!bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}}
-\subsubsection{\texorpdfstring{Final\+\_\+exp\+\_\+plain()}{Final\_exp\_plain()}}
-{\footnotesize\ttfamily void Final\+\_\+exp\+\_\+plain (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A }\end{DoxyParamCaption})}
+Here is the call graph for this function\+:
+% FIG 2
+\mbox{\Hypertarget{bn__final__exp_8h_acf5b18da3e5d4f15b415dd3724a97223}\label{bn__final__exp_8h_acf5b18da3e5d4f15b415dd3724a97223}} 
+\index{bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}!bn\+\_\+final\+\_\+exp\+\_\+plain@{bn\+\_\+final\+\_\+exp\+\_\+plain}}
+\index{bn\+\_\+final\+\_\+exp\+\_\+plain@{bn\+\_\+final\+\_\+exp\+\_\+plain}!bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}}
+\subsubsection{\texorpdfstring{bn\+\_\+final\+\_\+exp\+\_\+plain()}{bn\_final\_exp\_plain()}}
+{\footnotesize\ttfamily void bn\+\_\+final\+\_\+exp\+\_\+plain (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Un-\/optimized final exp for BN curve
 
 
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em P} & -\/ input P in \hyperlink{struct_e_fp12}{E\+Fp12}. \\
+\hline
+\end{DoxyParams}
 
-References curve\+\_\+parameters, Fp12\+\_\+clear(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p2(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p6(), Fp12\+\_\+init(), Fp12\+\_\+inv(), Fp12\+\_\+mul(), Fp12\+\_\+pow(), curve\+\_\+params\+::order, curve\+\_\+params\+::prime, and t1.
+
+References curve\+\_\+parameters, curve\+\_\+params\+::order, and curve\+\_\+params\+::prime.
 
 
 \begin{DoxyCode}
-31                                        \{
-32     \hyperlink{struct_fp12}{Fp12} t0,\hyperlink{bn__utils_8h_a438b7652e31fb33d3baed83b8095da68}{t1};
-33     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&t0);
-34     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&t1);
+31                                           \{
+32     \hyperlink{struct_fp12}{Fp12} t0,t1;
+33     Fp12\_init(&t0);
+34     Fp12\_init(&t1);
 35     mpz\_t exp,buf;
 36     mpz\_init(exp);
 37     mpz\_init(buf);
 38     
-39     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&t0,A);
-40     \hyperlink{bn__fp12_8h_a0f7d180810497e6ee2646450da5e1b0d}{Fp12\_inv}(&t1,A);
-41     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(A,&t0,&t1);
+39     Fp12\_frobenius\_map\_p6(&t0,A);
+40     Fp12\_inv(&t1,A);
+41     Fp12\_mul(A,&t0,&t1);
 42     
-43     \hyperlink{bn__frobenius_8h_ac812390bfad0648fd56be78c70493c66}{Fp12\_frobenius\_map\_p2}(&t0,A);
-44     \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(A,&t0,A);
+43     Fp12\_frobenius\_map\_p2(&t0,A);
+44     Fp12\_mul(A,&t0,A);
 45     
-46     mpz\_pow\_ui(exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},4);
-47     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_a4b5acca8bd5ca1620a07c273ae027745}{prime},2);
+46     mpz\_pow\_ui(exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},4);
+47     mpz\_pow\_ui(buf,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aba84e227126f9481f3f1a07737f563c2}{prime},2);
 48     mpz\_sub(exp,exp,buf);
 49     mpz\_add\_ui(exp,exp,1);
-50     mpz\_tdiv\_q(exp,exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_ac2b1dde162309c5b128df475f3251683}{order});
-51     \hyperlink{bn__fp12_8h_ae9b06eeeb7e3a87287323afbe1397910}{Fp12\_pow}(ANS,A,exp);
+50     mpz\_tdiv\_q(exp,exp,\hyperlink{curve__settings_8h_a8fe8b8f22840ac29ddd581c9a4c8225c}{curve\_parameters}.\hyperlink{structcurve__params_aead4939b8a895eace7b64a9567e02627}{order});
+51     Fp12\_pow(ANS,A,exp);
 52     
 53     mpz\_clear(exp);
 54     mpz\_clear(buf);
-55     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&t0);
-56     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&t1);
+55     Fp12\_clear(&t0);
+56     Fp12\_clear(&t1);
 57 \}
 \end{DoxyCode}
-\mbox{\Hypertarget{bn__final__exp_8h_a903a9008f0530adb70014ecd35ebd63d}\label{bn__final__exp_8h_a903a9008f0530adb70014ecd35ebd63d}} 
-\index{bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}!Fp12\+\_\+pow\+\_\+X@{Fp12\+\_\+pow\+\_\+X}}
-\index{Fp12\+\_\+pow\+\_\+X@{Fp12\+\_\+pow\+\_\+X}!bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}}
-\subsubsection{\texorpdfstring{Fp12\+\_\+pow\+\_\+\+X()}{Fp12\_pow\_X()}}
-{\footnotesize\ttfamily void Fp12\+\_\+pow\+\_\+X (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{bn__final__exp_8h_ac17ccb985f8af522cbdd8c562447cc3c}\label{bn__final__exp_8h_ac17ccb985f8af522cbdd8c562447cc3c}} 
+\index{bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}!bn\+\_\+fp12\+\_\+power\+\_\+motherparam@{bn\+\_\+fp12\+\_\+power\+\_\+motherparam}}
+\index{bn\+\_\+fp12\+\_\+power\+\_\+motherparam@{bn\+\_\+fp12\+\_\+power\+\_\+motherparam}!bn\+\_\+final\+\_\+exp.\+h@{bn\+\_\+final\+\_\+exp.\+h}}
+\subsubsection{\texorpdfstring{bn\+\_\+fp12\+\_\+power\+\_\+motherparam()}{bn\_fp12\_power\_motherparam()}}
+{\footnotesize\ttfamily void bn\+\_\+fp12\+\_\+power\+\_\+motherparam (\begin{DoxyParamCaption}\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A\+NS,  }\item[{\hyperlink{struct_fp12}{Fp12} $\ast$}]{A }\end{DoxyParamCaption})}
+
+Efficient exponentiation by mother parameter
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt out}  & {\em A\+NS} & -\/ output in \hyperlink{struct_fp12}{Fp12}. \\
+\hline
+\mbox{\tt in}  & {\em A} & -\/ input P in \hyperlink{struct_e_fp12}{E\+Fp12}. \\
+\hline
+\end{DoxyParams}
+
+
+References bn\+\_\+\+X\+\_\+length, and X\+\_\+binary.
 
 
 
-References bn\+\_\+\+X\+\_\+length, Fp12\+\_\+clear(), Fp12\+\_\+frobenius\+\_\+map\+\_\+p6(), Fp12\+\_\+init(), Fp12\+\_\+mul(), Fp12\+\_\+set(), Fp12\+\_\+sqr(), and X\+\_\+binary.
-
-
-
-Referenced by Final\+\_\+exp\+\_\+optimal().
+Referenced by bn\+\_\+final\+\_\+exp\+\_\+optimal().
 
 
 \begin{DoxyCode}
-116                                   \{
+116                                                  \{
 117     \textcolor{keywordtype}{int} i;
 118     \hyperlink{struct_fp12}{Fp12} tmp,A\_inv;
-119     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&tmp);
-120     \hyperlink{bn__fp12_8h_a5f810d84380234c2771497927cb90032}{Fp12\_init}(&A\_inv);
-121     \hyperlink{bn__frobenius_8h_afbf99e72d2b899660df086fa20dacae2}{Fp12\_frobenius\_map\_p6}(&A\_inv,A);
+119     Fp12\_init(&tmp);
+120     Fp12\_init(&A\_inv);
+121     Fp12\_frobenius\_map\_p6(&A\_inv,A);
 122     
-123     \hyperlink{bn__fp12_8h_a95c271ea5c7c21d89c9a0123a896e47d}{Fp12\_set}(&tmp,A);
+123     Fp12\_set(&tmp,A);
 124     \textcolor{keywordflow}{for}(i=\hyperlink{curve__settings_8h_a3dbc93f4417196de7a75ec030d19da6f}{bn\_X\_length}-1; i>=0; i--)\{
 125         \textcolor{keywordflow}{switch}(\hyperlink{curve__settings_8h_a7e6229b428ac099d12ef360d8ded4733}{X\_binary}[i])\{
 126             \textcolor{keywordflow}{case} 0:
-127                 \hyperlink{bn__fp12_8h_a654f330b76901a8053398b71149c5638}{Fp12\_sqr}(&tmp,&tmp);
+127                 Fp12\_sqr(&tmp,&tmp);
 128                 \textcolor{keywordflow}{break};
 129             \textcolor{keywordflow}{case} 1:
-130                 \hyperlink{bn__fp12_8h_a654f330b76901a8053398b71149c5638}{Fp12\_sqr}(&tmp,&tmp);
-131                 \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&tmp,&tmp,A);
+130                 Fp12\_sqr(&tmp,&tmp);
+131                 Fp12\_mul(&tmp,&tmp,A);
 132                 \textcolor{keywordflow}{break};
 133             \textcolor{keywordflow}{case} -1:
-134                 \hyperlink{bn__fp12_8h_a654f330b76901a8053398b71149c5638}{Fp12\_sqr}(&tmp,&tmp);
-135                 \hyperlink{bn__fp12_8h_a588658661271c36aa50c685534155a4d}{Fp12\_mul}(&tmp,&tmp,&A\_inv);
+134                 Fp12\_sqr(&tmp,&tmp);
+135                 Fp12\_mul(&tmp,&tmp,&A\_inv);
 136                 \textcolor{keywordflow}{break};
 137             \textcolor{keywordflow}{default}:
 138                 \textcolor{keywordflow}{break};
 139         \}
 140     \}
-141     \hyperlink{bn__fp12_8h_a95c271ea5c7c21d89c9a0123a896e47d}{Fp12\_set}(ANS,&tmp);
+141     Fp12\_set(ANS,&tmp);
 142     
-143     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&tmp);
-144     \hyperlink{bn__fp12_8h_ae15dd8da77c8bcdd89015bfcd082b44b}{Fp12\_clear}(&A\_inv);
+143     Fp12\_clear(&tmp);
+144     Fp12\_clear(&A\_inv);
 145 \}
 \end{DoxyCode}
+Here is the caller graph for this function\+:
+% FIG 3

@@ -1,0 +1,41 @@
+This document describes how to make existing E\+Li\+PS library working in Linux environment. This is expected that it will work any 32-\/bit and 64bit Unix distribution (not tested). Autotools intallation may vary. If found any bug related to installation, please infrom in {\ttfamily khandaker@s.\+okayama-\/u.\+ac.\+jp}
+
+
+\begin{DoxyEnumerate}
+\item Follow the instructions to install {\ttfamily G\+MP} library. Latest vesion is ok.
+\item Check if {\ttfamily autoconf} is installed in your environment. {\ttfamily autoconf -\/-\/version}. You migh see someting like this . If it is not installed then follow point 3. autoconf (G\+NU Autoconf) 2.\+69 Copyright (C) 2012 Free Software Foundation, Inc. License G\+P\+Lv3+/\+Autoconf\+: G\+NU G\+PL version 3 or later \href{http://gnu.org/licenses/gpl.html}{\tt http\+://gnu.\+org/licenses/gpl.\+html}, \href{http://gnu.org/licenses/exceptions.html}{\tt http\+://gnu.\+org/licenses/exceptions.\+html} This is free software\+: you are free to change and redistribute it. There is NO W\+A\+R\+R\+A\+N\+TY, to the extent permitted by law.
+
+Written by David J. Mac\+Kenzie and Akim Demaille.
+\item Install {\ttfamily autoconf} as follows sudo apt-\/get update sudo apt-\/get install autoconf
+\item Install {\ttfamily libtool} as follows sudo apt-\/get install libtool-\/bin
+\item git clone {\ttfamily \href{https://github.com/eNipu/elips_bn_bls.git}{\tt https\+://github.\+com/e\+Nipu/elips\+\_\+bn\+\_\+bls.\+git}}
+\item From terminal enter to {\ttfamily $<$elips\+\_\+bn\+\_\+bls$>$} directory.
+\item Run the following commands {\ttfamily autoreconf -\/i}
+\end{DoxyEnumerate}
+
+The output will be almost as follows \begin{DoxyVerb}libtoolize: Consider adding 'AC_CONFIG_MACRO_DIRS([m4])' to configure.ac,
+libtoolize: and rerunning libtoolize and aclocal.
+libtoolize: Consider adding '-I m4' to ACLOCAL_AMFLAGS in Makefile.am.
+libtoolize: 'AC_PROG_RANLIB' is rendered obsolete by 'LT_INIT'
+configure.ac:7: warning: AM_INIT_AUTOMAKE: two- and three-arguments forms are deprecated.  For more info, see:
+configure.ac:7: http://www.gnu.org/software/automake/manual/automake.html#Modernize-AM_005fINIT_005fAUTOMAKE-invocation 
+\end{DoxyVerb}
+
+\begin{DoxyEnumerate}
+\item Next run {\ttfamily ./confgure}
+\item Then {\ttfamily make}
+\item Finally {\ttfamily sudo make install}
+\end{DoxyEnumerate}
+\begin{DoxyEnumerate}
+\item To uninstall {\ttfamily sudo make uninstall} from the directory
+\end{DoxyEnumerate}
+
+If you face {\ttfamily cannot open shared object file\+: No such file or directory} while running then follow this steps\+:
+
+
+\begin{DoxyEnumerate}
+\item Run from terminal sudo ldconfig
+\item echo \$\+L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH
+\item If the command of point 2 gives blank result then L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH=/usr/local/lib
+\item Check if again of {\ttfamily echo \$\+L\+D\+\_\+\+L\+I\+B\+R\+A\+R\+Y\+\_\+\+P\+A\+TH} . If path is set then run again. 
+\end{DoxyEnumerate}
