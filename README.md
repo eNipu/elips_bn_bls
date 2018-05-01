@@ -39,14 +39,14 @@ The output will be almost as follows
 If you face `cannot open shared object file: No such file or directory` while running then follow this steps:
 
 1. Run from terminal 
-    sudo ldconfig
+   ` sudo ldconfig`
 
 
 2. 
-    echo $LD_LIBRARY_PATH
+    `echo $LD_LIBRARY_PATH`
 
 
 3. If the command of point 2 gives blank result then
-    LD_LIBRARY_PATH=/usr/local/lib
+    `LD_LIBRARY_PATH=/usr/local/lib`
 4. Check if again of `echo $LD_LIBRARY_PATH` . If path is set then run again.
 
