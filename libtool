@@ -4260,7 +4260,7 @@ The following components of LINK-COMMAND are treated specially:
                     do not do any dynamic linking of libtool libraries
   -version-info CURRENT[:REVISION[:AGE]]
                     specify library version info [each variable defaults to 0]
-  -weak LIbnAME     declare that the target provides the LIBNAME interface
+  -weak LIBNAME     declare that the target provides the LIBNAME interface
   -Wc,FLAG
   -Xcompiler FLAG   pass linker-specific FLAG directly to the compiler
   -Wl,FLAG
