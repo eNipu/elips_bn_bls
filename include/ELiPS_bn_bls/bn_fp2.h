@@ -26,6 +26,14 @@
  * along with ELiPS. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file
+ *
+ * Interaface of degree 2 extension field (Fp2) operations
+ *
+ * @ingroup ff
+ */
+
 #ifndef bn_fp2_h
 #define bn_fp2_h
 
@@ -34,15 +42,81 @@
 #include <ELiPS_bn_bls/field_dtype.h>
 #include <ELiPS_bn_bls/bn_bls12_precoms.h>
 
-//Fp2
+/*============================================================================*/
+/* Function prototypes                                                        */
+/*============================================================================*/
+
+/**
+ * Initializes an Fp2 type struct
+ *
+ * @param[in] A			        -  input A is a pointer of Fp2 type struct.
+ */
 extern void Fp2_init(Fp2 *A);
+
+/**
+ * Clears an Fp2 type struct from memory
+ *
+ * @param[in] A			        -  input A is a pointer of Fp2 type struct.
+ */
 extern void Fp2_clear(Fp2 *A);
+
+/**
+ * Prints an Fp2 type struct
+ *
+ * @param[in] A			        -  input A is a pointer of Fp2 type struct.
+ * @param[in] str			    -  input str is a string pointer.
+ */
 extern void Fp2_printf(Fp2 *A,char *str);
+
+/**
+ * Sets an Fp2 type struct to another Fp2 struct
+ *
+ * @param[out] ANS			-  input A is a pointer of Fp2 type struct.
+ * @param[in] A			    -  input A is a pointer of Fp2 type struct.
+ */
 extern void Fp2_set(Fp2 *ANS,Fp2 *A);
-extern void Fp2_set_ui(Fp2 *ANS,unsigned long int UI);
+
+/**
+ * Sets an unsigned long int type element to another Fp2 struct
+ *
+ * @param[out] ANS			-  input A is a pointer of Fp2 type struct.
+ * @param[in] A			    -  input A is a unsigned long integer.
+ */
+extern void Fp2_set_ui(Fp2 *ANS,unsigned long int A);
+
+/**
+ * Sets an mpz_t type integer to another Fp2 struct. 
+ * It calls the similar functions in Fp for each elements in Fp.
+ *
+ * @param[out] ANS			-  input A is a pointer of Fp2 type struct.
+ * @param[in] A			    -  input str is a string pointer.
+ */
 extern void Fp2_set_mpz(Fp2 *ANS,mpz_t A);
+
+/**
+ * Negate A and sets it in ANS as a Fp2 vector. It calls Fp_set_neg fuctions for each elements.
+ * 
+ *
+ * @param[out] ANS			    -  set 
+ * @param[in] A                 -  send A as Fp.
+ */
 extern void Fp2_set_neg(Fp2 *ANS,Fp2 *A);
+
+/**
+ * Sets a random Fp2 element in ANS where each Fp coefficient < prime
+ *
+ * @param[out] ANS			    -  output an random Fp2 vector.
+ * @param[in] state                 -  send a gmp_randstate_t.
+ */
 extern void Fp2_set_random(Fp2 *ANS,gmp_randstate_t state);
+
+/**
+ * Fp2 extension field multiplication with reduction as ANS= A*B mod prime
+ *
+ * @param[out] ANS			    -  output ANS < prime in Fp.
+ * @param[in] A                 -  send pointer A in Fp.
+ * @param[in] B                 -  send pointer B in Fp.
+ */
 extern void Fp2_mul(Fp2 *ANS,Fp2 *A,Fp2 *B);
 extern void Fp2_mul_ui(Fp2 *ANS,Fp2 *A,unsigned long int UI);
 extern void Fp2_mul_mpz(Fp2 *ANS,Fp2 *A,mpz_t B);
