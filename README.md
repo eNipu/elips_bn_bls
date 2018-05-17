@@ -1,5 +1,5 @@
 # ELiPS Installation
-This document describes how to make existing ELiPS library working in Linux environment. This is expected that it will work any 32-bit and 64bit Unix distribution Ububtu, OS X (not tested). Autotools intallation may vary for Linux and OS X. Please keep in mind that it is still in developing phase. If found any bug related to installation, please infrom in `khandaker@s.okayama-u.ac.jp`
+This document describes how to make existing ELiPS library working in Linux environment. This is expected that it will work any 32-bit and 64bit Unix distribution Ububtu, OS X (not tested). Autotools installation may vary for Linux and OS X. Please keep in mind that it is still in developing phase. If found any bug related to installation, please infrom in `khandaker@s.okayama-u.ac.jp`
 
 
 1. Follow the instructions to install `GMP` library. Latest vesion is ok.
