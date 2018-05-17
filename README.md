@@ -30,7 +30,7 @@ The output will be almost as follows
     libtoolize: 'AC_PROG_RANLIB' is rendered obsolete by 'LT_INIT'
     configure.ac:7: warning: AM_INIT_AUTOMAKE: two- and three-arguments forms are deprecated.  For more info, see:
     configure.ac:7: http://www.gnu.org/software/automake/manual/automake.html#Modernize-AM_005fINIT_005fAUTOMAKE-invocation 
-8. Next run `./confgure` 
+8. Next run `./configure` 
 9. Then `make`
 10. Finally `sudo make install`
 10. To uninstall `sudo make uninstall` from the directory

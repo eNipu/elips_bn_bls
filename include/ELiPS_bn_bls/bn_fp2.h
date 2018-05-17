@@ -111,11 +111,15 @@ extern void Fp2_set_neg(Fp2 *ANS,Fp2 *A);
 extern void Fp2_set_random(Fp2 *ANS,gmp_randstate_t state);
 
 /**
- * Fp2 extension field multiplication with reduction as ANS= A*B mod prime
+ * Fp2 extension field multiplication with modular reduction for.
+ * Modular polynomial reduction x^2-c whre c has no sqare root in prime field Fp, 
+ * needs to be defined before to use Fp_mul_basis function. 
  *
- * @param[out] ANS			    -  output ANS < prime in Fp.
- * @param[in] A                 -  send pointer A in Fp.
- * @param[in] B                 -  send pointer B in Fp.
+ * @param[out] ANS			    -  output ANS as pinter in Fp2.
+ * @param[in] ANS			    -  send ANS as pinter in Fp2. 
+ *                                 It will be returned as result of multiplication.
+ * @param[in] A                 -  send pointer A in Fp2.
+ * @param[in] B                 -  send pointer B in Fp2.
  */
 extern void Fp2_mul(Fp2 *ANS,Fp2 *A,Fp2 *B);
 extern void Fp2_mul_ui(Fp2 *ANS,Fp2 *A,unsigned long int UI);
