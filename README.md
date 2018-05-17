@@ -1,5 +1,5 @@
 # ELiPS Installation
-This document describes how to make existing ELiPS library working in Linux environment. This is expected that it will work any 32-bit and 64bit Unix distribution (not tested). Autotools intallation may vary. If found any bug related to installation, please infrom in `khandaker@s.okayama-u.ac.jp`
+This document describes how to make existing ELiPS library working in Linux environment. This is expected that it will work any 32-bit and 64bit Unix distribution Ububtu, OS X (not tested). Autotools intallation may vary for Linux and OS X. Please keep in mind that it is still in developing phase. If found any bug related to installation, please infrom in `khandaker@s.okayama-u.ac.jp`
 
 
 1. Follow the instructions to install `GMP` library. Latest vesion is ok.
@@ -13,10 +13,10 @@ This document describes how to make existing ELiPS library working in Linux envi
     
     Written by David J. MacKenzie and Akim Demaille.
 3. Install `autoconf`  as follows 
-    sudo apt-get update
-    sudo apt-get install autoconf
+    `sudo apt-get update`
+    `sudo apt-get install autoconf`
 4. Install `libtool` as follows 
-    sudo apt-get install libtool-bin
+    `sudo apt-get install libtool-bin`
 5. git clone `https://github.com/eNipu/elips_bn_bls.git`
 6. From terminal enter to `<elips_bn_bls>` directory.
 7. Run the following commands 
@@ -35,6 +35,7 @@ The output will be almost as follows
 10. Finally `sudo make install`
 10. To uninstall `sudo make uninstall` from the directory
 
+Still there is no single header. Therefore please `/usr/local/include/ELiPS_bn_bls` directory to get the header declaration. 
 
 If you face `cannot open shared object file: No such file or directory` while running then follow this steps:
 
@@ -48,5 +49,5 @@ If you face `cannot open shared object file: No such file or directory` while ru
 
 3. If the command of point 2 gives blank result then
     `LD_LIBRARY_PATH=/usr/local/lib`
-4. Check if again of `echo $LD_LIBRARY_PATH` . If path is set then run again.
+4. Check if again of `echo $LD_LIBRARY_PATH`. If path is set then run again.
 
