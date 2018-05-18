@@ -48,6 +48,10 @@
  * Implementations may not be correct or secure and may include patented algorithms. Backward API compatibility with early
  * versions may not necessarily be maintained. 
  * Use at your own risk.
+ * 
+ * @Documentation 
+ * As a part of incremental developement we are trying to put documentation.
+ * Please follow the link to access the documentation <https://enipu.github.io/elips_bn_bls>
  */
 
 /**

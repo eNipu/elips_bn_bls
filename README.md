@@ -10,8 +10,8 @@ This document describes how to make existing ELiPS library working in Linux envi
     <http://gnu.org/licenses/gpl.html>, <http://gnu.org/licenses/exceptions.html>
     This is free software: you are free to change and redistribute it.
     There is NO WARRANTY, to the extent permitted by law.
-    
     Written by David J. MacKenzie and Akim Demaille.
+    
 3. Install `autoconf`  as follows 
     `sudo apt-get update`
     `sudo apt-get install autoconf`
