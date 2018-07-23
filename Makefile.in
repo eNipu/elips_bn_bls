@@ -192,7 +192,7 @@ CTAGS = ctags
 CSCOPE = cscope
 DIST_SUBDIRS = $(SUBDIRS)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in COPYING \
-	COPYING.LESSER compile config.guess config.sub depcomp \
+	COPYING.LESSER INSTALL compile config.guess config.sub depcomp \
 	install-sh ltmain.sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
@@ -358,6 +358,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = src
 AM_CPPFLAGS = -I../include
+ACLOCAL_AMFLAGS = -I m4
 library_includedir = $(includedir)/ELiPS_bn_bls
 library_include_HEADERS = include/ELiPS_bn_bls/Commont_headers.h\
 include/ELiPS_bn_bls/bls12_G3_exp.h\

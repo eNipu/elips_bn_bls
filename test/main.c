@@ -37,18 +37,37 @@
 
 int main(int argc, const char * argv[]) {
     
-    bls12_inits();
-    bls12_print_parameters();
-    bls12_test_opt_ate_pairing();
-    clear_parameters();
+    // bls12_inits();
+    // bls12_print_parameters();
+    // bls12_test_opt_ate_pairing();
+    // clear_parameters();
     
     init_bn();
-    print_curve_parameters();
-    bn12_test_x_ate_pairing();
-    bn12_test_plain_ate_pairing();
-    bn12_test_opt_ate_pairing();
-    clear_parameters();
  
+    mpz_t scalar1, scalar2;
+    mpz_init(scalar1);
+    mpz_init(scalar2);
+    mpz_set_str(scalar1,"59049",10);
+    mpz_set_str(scalar1,"46656",10);
+
+    struct EFp12 P,Q, ANS;
+    EFp12_init(&P);
+    EFp12_init(&Q);
+    EFp12_init(&ANS);
+
+    bn12_generate_G2_point(&P);
+    EFp12_SCM(&ANS,&P,scalar1);
+    EFp12_SCM(&Q,&P,scalar2);
+
+    EFp12_printf(&ANS,"sc 1");
+    printf("\n");
+    EFp12_printf(&Q,"sc 2");
+    
+   print_curve_parameters();
+    // bn12_test_x_ate_pairing();
+    // bn12_test_plain_ate_pairing();
+    // bn12_test_opt_ate_pairing();
+    clear_parameters();
     
     return 0;
 }

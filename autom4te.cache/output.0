@@ -2575,7 +2575,9 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
 #Automake init
+#AM_INIT_AUTOMAKE([elipsbnbls12], [1.0.1], [no-define])
 am__api_version='1.15'
 
 ac_aux_dir=
@@ -3092,8 +3094,17 @@ fi
 # Define the identity of the package.
 
  PACKAGE=elipsbnbls12
- VERSION=1.0.1
+ VERSION=no-define
 
+
+cat >>confdefs.h <<_ACEOF
+@%:@define PACKAGE "$PACKAGE"
+_ACEOF
+
+ 
+cat >>confdefs.h <<_ACEOF
+@%:@define VERSION "$VERSION"
+_ACEOF
 
 # Some tools Automake needs.
 
@@ -12314,6 +12325,15 @@ fi
  PACKAGE='elipsbnbls12'
  VERSION='1.0.1'
 
+
+cat >>confdefs.h <<_ACEOF
+@%:@define PACKAGE "$PACKAGE"
+_ACEOF
+
+ 
+cat >>confdefs.h <<_ACEOF
+@%:@define VERSION "$VERSION"
+_ACEOF
 
 # Some tools Automake needs.
 

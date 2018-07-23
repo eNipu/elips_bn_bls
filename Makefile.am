@@ -2,6 +2,7 @@
 SUBDIRS = src
 
 AM_CPPFLAGS = -I../include
+ACLOCAL_AMFLAGS = -I m4
 
 library_includedir = $(includedir)/ELiPS_bn_bls
 library_include_HEADERS = include/ELiPS_bn_bls/Commont_headers.h\
