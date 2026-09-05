@@ -168,3 +168,86 @@ it is outward-facing.
 Phase 2 (issue #3) — fix the confirmed defects on the existing architecture.
 Now unblocked, with an oracle and CI in place to catch regressions. Note that
 Phase 2 inherits issue #16, which needs a maintainer decision first.
+
+---
+
+## Phase 2 — Fix the confirmed defects (issue #3)
+
+**Status: complete. Exit gate met.**
+
+### Fixed
+
+All 20 defects from the audit, minus A3 and A4 which are structural and belong
+to Phase 3, plus three found during the work.
+
+| ID | Defect |
+|---|---|
+| M7 | `mpz_get_str` writes its NUL at index `length`; the `char binary[length]` VLA overflowed by one byte at 14 sites |
+| **M8** | **new** — split-scalar `memmove` copied `sizeof(buffer)` instead of the digit count, writing past the row for any short sub-scalar. Six sites |
+| M1 | `bls12_generate_prime` called `mpz_init` where it meant `mpz_clear`, on all three exit paths |
+| M2 | `EFpd_total` written by `weil()` and read by both G2 generators, never initialised |
+| M3 | `curve_a` read and released without ever being initialised |
+| M4 | `f_ltq` leaked an `Fp2` per call, inside the Miller loop |
+| M5 | `bls12_finalexp_optimal` initialised two unused `Fp12` and leaked them |
+| M6 | `bls12_4split_G2_scm` called `EFp2_init` in its cleanup block |
+| **M9** | **new** — `clear_parameters` missed three fields; `init_precoms` had no teardown at all |
+| **M10** | **new** — 18 shadowing `gmp_randstate_t`, none released; each call leaked a Mersenne Twister state |
+| A1 | `Fp2_mul_Fp` read its output instead of its input |
+| A2 | Three `Fp12` routines did the same |
+| A5 | `Fp_inv` and `Fp_div` discarded `mpz_invert`'s status; `Fp_div` had no declaration |
+| A6 | `bls12_generate_order` inverted the success convention; callers ignored it |
+| A7 | `gmp_printf` argument with no conversion specifier |
+| A8 | Duplicate declaration across two headers |
+| X1–X5 | Retired wholesale by deleting the KSS16 tree |
+
+### Measured
+
+| Check | Before | After |
+|---|---|---|
+| Build warnings | 8 | **0** |
+| Leaks, 10 / 40 / 160 pairings | 48 / 168 / 648 | **0 / 0 / 0** |
+| Leaks, 2 / 8 / 32 point generations | 5 / 17 / 65 | **0 / 0 / 0** |
+| Pairing time | 8.614 ms | 8.678 ms (within noise, as required) |
+| Vectors | 857 x 3 pass | 857 x 3 pass |
+| CTest | 8/8 | 8/8 |
+| ASan + UBSan | clean | clean |
+
+Leaks previously grew linearly with work. They are now zero at every scale.
+
+The KSS16 deletion removed 1576 lines, none of it reachable from any pairing.
+
+### New tests
+
+`property_tests.c` gained a split-scalar consistency check: 2-split and 4-split
+G1/G2 scalar multiplication and G3 exponentiation must agree with the plain
+versions over random scalars. This guards the M8 fix, which changed the
+semantics of the memmove that builds the window indices.
+
+### Corrections to earlier assumptions
+
+**ASan does not catch M7 or M8.** Both are VLA overflows and ASan does not
+instrument VLAs. M7 was confirmed by showing `mpz_get_str` writes at index
+`length` for every value tested; M8 by computing the write range against the row
+size and measuring how often real scalars trigger it (about two thirds). The
+plan's assumption that sanitizers would surface the memory defects was wrong for
+exactly the two that matter most.
+
+**M10 was invisible to the pairing-scaling leak test.** Leaks looked constant at
+43 because point generation happens once per run. Scaling *point generation*
+rather than pairings exposed it immediately. Worth remembering: scale the thing
+that allocates, not the thing that looks expensive.
+
+### Deliberately not done
+
+**Issue #16** (final exponentiation raises to the wrong exponent) is untouched.
+It needs a maintainer decision first, because the BLS12 factor of 3 may be a
+deliberate Hayashida–Hayasaka–Teruya optimization. The expected-failure test in
+CTest keeps it visible.
+
+**A3 and A4** stay for Phase 3, which deletes the globals that cause them.
+
+### Next
+
+Phase 3 (issue #4) — fixed-width `mpn` representation and Montgomery arithmetic.
+This is the phase that has to deliver a measured 3x or the plan's model of where
+time goes is wrong.
