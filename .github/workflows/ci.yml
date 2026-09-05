@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [master, 'claude/**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }} / ${{ matrix.build_type }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-latest is x86-64, macos-latest is AArch64, so the matrix
+        # covers both Phase 6 assembly targets from the start.
+        os: [ubuntu-latest, macos-latest]
+        build_type: [Release, Asan, Ubsan]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GMP (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgmp-dev
+
+      - name: Install GMP (macOS)
+        if: runner.os == 'macOS'
+        run: brew list gmp >/dev/null 2>&1 || brew install gmp
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure --timeout 900
+
+  # The reference implementation is the oracle; if it stops self-checking, the
+  # vectors it produced mean nothing. Also verifies the committed vectors are
+  # exactly what the generator produces, so they cannot drift unnoticed.
+  reference-oracle:
+    name: reference self-test and vector reproducibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Field axioms and tower relations
+        run: python3 tools/reference/selftest.py
+      - name: Committed vectors match the generator
+        run: |
+          python3 tools/reference/gen_vectors.py /tmp/regen
+          for f in bn_462 bls12_461 bls12_381; do
+            diff -q "test/kat/$f.vec" "/tmp/regen/$f.vec" \
+              || { echo "::error::test/kat/$f.vec is stale"; exit 1; }
+          done
+      - name: Final exponentiation exponents (documents issue #16)
+        run: python3 tools/reference/trace_finalexp.py
+
+  install:
+    name: install and consume via find_package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y libgmp-dev
+      - name: Build and install
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/tmp/prefix
+          cmake --build build -j
+          cmake --install build
+      - name: A downstream project can find and link it
+        run: |
+          mkdir -p /tmp/consumer && cd /tmp/consumer
+          cat > CMakeLists.txt <<'EOC'
+          cmake_minimum_required(VERSION 3.16)
+          project(consumer C)
+          find_package(ELiPS REQUIRED)
+          add_executable(consumer main.c)
+          target_link_libraries(consumer PRIVATE ELiPS::elips)
+          EOC
+          cat > main.c <<'EOC'
+          #include <ELiPS_bn_bls/bn_inits.h>
+          #include <ELiPS_bn_bls/curve_settings.h>
+          int main(void){ init_bn(); return mpz_sizeinbase(curve_parameters.prime,2)==462?0:1; }
+          EOC
+          cmake -B b -DCMAKE_PREFIX_PATH=/tmp/prefix && cmake --build b
+          ./b/consumer
+
+# Deliberately not running MemorySanitizer. MSan reports false positives unless
+# every dependency is also instrumented, and GMP is not. Running it against a
+# stock libgmp would produce noise, not findings. Revisit in Phase 3, when the
+# arithmetic moves off mpz_t and an instrumented build becomes practical.

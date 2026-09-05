@@ -1,4 +1,21 @@
-# Autotools generated
+# Build directories
+/build*/
+/cmake-build*/
+_deps/
+
+# Compiled output
+*.o
+*.lo
+*.la
+*.a
+*.so
+*.so.*
+*.dylib
+*.dSYM/
+*.tar.gz
+test/a.out
+
+# Legacy autotools output (build system removed in favour of CMake)
 /configure
 /Makefile
 /Makefile.in
@@ -17,24 +34,16 @@
 /depcomp
 /compile
 /stamp-h1
+/m4/
 src/Makefile
 src/Makefile.in
 src/.deps/
 src/.libs/
 
-# Build output
-*.o
-*.lo
-*.la
-*.a
-*.so
-*.dylib
-*.tar.gz
-test/a.out
+# Python
+__pycache__/
+*.pyc
 
-# Bazel
-/bazel-*
-
-# Misc
-/fontconfig/
+# Editor and OS
 .DS_Store
+/fontconfig/

@@ -1,0 +1,15 @@
+# Negative control for the vector runner: corrupt one expected result and
+# require a non-zero exit. Run by the kat.detects_corruption test.
+file(READ "${SRC}" _txt)
+string(REGEX REPLACE "(\nfp12_mul [^\n]*)= [0-9a-f]+" "\\1= deadbeef" _bad "${_txt}" )
+if(_bad STREQUAL _txt)
+  message(FATAL_ERROR "corruption harness failed to alter the vector file")
+endif()
+set(_tmp "${CMAKE_CURRENT_BINARY_DIR}/corrupted.vec")
+file(WRITE "${_tmp}" "${_bad}")
+execute_process(COMMAND "${RUNNER}" "${_tmp}" RESULT_VARIABLE _rc OUTPUT_QUIET ERROR_QUIET)
+file(REMOVE "${_tmp}")
+if(_rc EQUAL 0)
+  message(FATAL_ERROR "runner returned 0 on a corrupted vector file; the oracle cannot detect errors")
+endif()
+message(STATUS "runner correctly rejected corrupted vectors (exit ${_rc})")

@@ -1,53 +1,98 @@
-# ELiPS Installation
-This document describes how to make existing ELiPS library working in Linux environment. This is expected that it will work any 32-bit and 64bit Unix distribution Ububtu, OS X (not tested). Autotools installation may vary for Linux and OS X. Please keep in mind that it is still in developing phase. If found any bug related to installation, please infrom in `khandaker@s.okayama-u.ac.jp`
+# ELiPS — Efficient Library for Pairing-based Systems
 
+Pairing-based cryptography over BN and BLS12 curves, built on GMP.
 
-1. Follow the instructions to install `GMP` library. Latest vesion is ok.
-2. Check if `autoconf` is installed in your environment. `autoconf --version`. You migh see someting like this . If it is not installed then follow point 3.
-    autoconf (GNU Autoconf) 2.69
-    Copyright (C) 2012 Free Software Foundation, Inc.
-    License GPLv3+/Autoconf: GNU GPL version 3 or later
-    <http://gnu.org/licenses/gpl.html>, <http://gnu.org/licenses/exceptions.html>
-    This is free software: you are free to change and redistribute it.
-    There is NO WARRANTY, to the extent permitted by law.
-    Written by David J. MacKenzie and Akim Demaille.
-    
-3. Install `autoconf`  as follows 
-    `sudo apt-get update`
-    `sudo apt-get install autoconf`
-4. Install `libtool` as follows 
-    `sudo apt-get install libtool-bin`
-5. git clone `https://github.com/eNipu/elips_bn_bls.git`
-6. From terminal enter to `<elips_bn_bls>` directory.
-7. Run the following commands 
-    `autoreconf -i`
+> **Status: under active modernization.** See [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md)
+> for the roadmap and [`PROGRESS.md`](PROGRESS.md) for what has landed.
+>
+> **Known defect:** the optimal final exponentiation raises to the wrong
+> exponent — `e^3` on BLS12 and `e^(~12·X³)` on BN. The result is still a valid
+> bilinear pairing, but it does not match `finalexp_plain` in this same library
+> and will not interoperate with other implementations.
+> See [issue #16](https://github.com/eNipu/elips_bn_bls/issues/16).
 
-The output will be almost as follows
+## Requirements
 
-    libtoolize: Consider adding 'AC_CONFIG_MACRO_DIRS([m4])' to configure.ac,
-    libtoolize: and rerunning libtoolize and aclocal.
-    libtoolize: Consider adding '-I m4' to ACLOCAL_AMFLAGS in Makefile.am.
-    libtoolize: 'AC_PROG_RANLIB' is rendered obsolete by 'LT_INIT'
-    configure.ac:7: warning: AM_INIT_AUTOMAKE: two- and three-arguments forms are deprecated.  For more info, see:
-    configure.ac:7: http://www.gnu.org/software/automake/manual/automake.html#Modernize-AM_005fINIT_005fAUTOMAKE-invocation 
-8. Next run `./configure` 
-9. Then `make`
-10. Finally `sudo make install`
-10. To uninstall `sudo make uninstall` from the directory
+- CMake 3.16 or newer
+- A C11 compiler
+- [GMP](https://gmplib.org/) (`libgmp-dev` on Debian/Ubuntu, `brew install gmp` on macOS)
 
-Still there is no single header. Therefore please `/usr/local/include/ELiPS_bn_bls` directory to get the header declaration. 
+## Build
 
-If you face `cannot open shared object file: No such file or directory` while running then follow this steps:
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+```
 
-1. Run from terminal 
-   ` sudo ldconfig`
+## Test
 
+```bash
+ctest --test-dir build --output-on-failure
+```
 
-2. 
-    `echo $LD_LIBRARY_PATH`
+The suite runs known-answer vectors for BN-462, BLS12-461 and BLS12-381,
+property tests including subgroup order checks, and a negative control that
+confirms the vector runner actually detects corrupted input.
 
+## Install
 
-3. If the command of point 2 gives blank result then
-    `LD_LIBRARY_PATH=/usr/local/lib`
-4. Check if again of `echo $LD_LIBRARY_PATH`. If path is set then run again.
+```bash
+cmake --install build --prefix /usr/local
+```
 
+Then from a downstream project:
+
+```cmake
+find_package(ELiPS REQUIRED)
+target_link_libraries(your_target PRIVATE ELiPS::elips)
+```
+
+## Sanitizer builds
+
+```bash
+cmake -B build-asan -DCMAKE_BUILD_TYPE=Asan     # address + undefined
+cmake -B build-ubsan -DCMAKE_BUILD_TYPE=Ubsan   # undefined only
+```
+
+MemorySanitizer is not wired up: it needs every dependency instrumented, and
+GMP is not, so it would report noise rather than findings.
+
+## Test oracle
+
+`tools/reference/` holds an independent Python implementation of the field
+tower, curve arithmetic and the optimal ate pairing, written from the defining
+equations rather than from `src/`. It generates the vectors in `test/kat/` and
+is what found the final exponentiation defect.
+
+```bash
+python3 tools/reference/selftest.py        # field axioms and tower relations
+python3 tools/reference/gen_vectors.py test/kat
+python3 tools/reference/trace_finalexp.py  # exact exponent of each chain
+```
+
+A useful structural fact: the tower collapses to a single polynomial. Since
+`v = w²` and `1+u = v³ = w⁶`, we have `u = w⁶−1` and therefore
+
+```
+Fp12 = Fp[w] / (w¹² − 2w⁶ + 2)
+```
+
+which is irreducible over all three primes. Sage can build exactly this field
+rather than an abstract `GF(p¹²)`, so its pairing is comparable coefficient by
+coefficient.
+
+## Curves
+
+| Curve | p | r | Status |
+|---|---|---|---|
+| BN-462 | 462 bits | 462 bits | supported |
+| BLS12-461 | 461 bits | 308 bits | supported |
+| BLS12-381 | 381 bits | 255 bits | field layer only; curve support in Phase 3 |
+
+## Licence
+
+LGPL. See [`COPYING.LESSER`](COPYING.LESSER).
+
+## Contact
+
+khandaker@s.okayama-u.ac.jp
