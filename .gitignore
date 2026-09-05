@@ -1,2 +1,40 @@
-*.in
-*.m4
+# Autotools generated
+/configure
+/Makefile
+/Makefile.in
+/aclocal.m4
+/autom4te.cache/
+/config.h
+/config.h.in
+/config.log
+/config.status
+/config.guess
+/config.sub
+/libtool
+/ltmain.sh
+/install-sh
+/missing
+/depcomp
+/compile
+/stamp-h1
+src/Makefile
+src/Makefile.in
+src/.deps/
+src/.libs/
+
+# Build output
+*.o
+*.lo
+*.la
+*.a
+*.so
+*.dylib
+*.tar.gz
+test/a.out
+
+# Bazel
+/bazel-*
+
+# Misc
+/fontconfig/
+.DS_Store
