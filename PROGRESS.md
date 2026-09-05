@@ -63,9 +63,9 @@ Four suspected bugs did not survive checking. Each would have caused a regressio
 
 ### Remaining in Phase 0
 
-- [ ] #8 — fold the ad-hoc build commands into `tools/build_reference.sh`; push tag `phase0-reference`
-- [ ] #14 — property tests as a standing suite (`[r]P = O`, `e(P,Q)^r = 1`, additivity, four-variant cross-check). The checks exist and have been run; they are not yet a committed test target.
-- [ ] #15 — replace the single-sample baseline with repetitions and spread
+- [x] #8 — superseded by the CMake build in Phase 1; tag `phase0-reference` created at `987ed77`
+- [x] #14 — property tests are now a committed CTest target (`test/property_tests.c`)
+- [ ] #15 — replace the single-sample baseline with repetitions and spread (deferred to Phase 4, where the speedup gates need it)
 
 ### Reproduce
 
@@ -86,3 +86,85 @@ Hayashida–Hayasaka–Teruya style optimization. The BN factor of roughly `12·
 harder to read as intentional.
 
 Phase 1 can start regardless — it touches the build system, not the mathematics.
+
+
+---
+
+## Phase 1 — CMake build system and repository hygiene (issue #2)
+
+**Status: complete. Exit gate met.**
+
+### What exists now
+
+| Artifact | Purpose |
+|---|---|
+| `CMakeLists.txt` | Library, tests, install, package config |
+| `cmake/FindGMP.cmake` | Locates GMP, exports `GMP::GMP` |
+| `cmake/CorruptCheck.cmake` | Negative control driving the vector runner |
+| `test/property_tests.c` | Subgroup, non-degeneracy, bilinearity, additivity |
+| `test/finalexp_agreement.c` | Pins issue #16 as an expected failure |
+| `.github/workflows/ci.yml` | Matrix build and test |
+| `.github/workflows/docs.yml` | Doxygen to gh-pages |
+
+### Results
+
+Eight CTest targets, all green on a clean configure:
+
+```
+kat.bn_462            kat.bls12_461         kat.bls12_381
+kat.detects_corruption
+property.bn           property.bls12
+finalexp.agreement.bn finalexp.agreement.bls12   (WILL_FAIL, issue #16)
+```
+
+Property tests pass on both curves, including `[r]P = O` and `[r]Q = O`, which
+nothing in the repository checked before.
+
+CI covers `ubuntu-latest` (x86-64) and `macos-latest` (AArch64) across Release,
+Asan and Ubsan, so both Phase 6 assembly targets are exercised from the start.
+A separate job re-runs the reference self-test and regenerates the vectors, so
+the committed ones cannot drift unnoticed.
+
+### Decisions taken
+
+**MemorySanitizer omitted.** It needs every dependency instrumented and GMP is
+not, so it would produce false positives rather than findings. Revisit in
+Phase 3 when the arithmetic moves off `mpz_t`.
+
+**`-DELIPS_CURVE` deferred to Phase 3.** Compile-time curve selection only means
+something once `FP_LIMBS` is a constant. Today the curve is chosen at runtime by
+`init_bn()` / `bls12_inits()`, so the switch would be scaffolding with nothing
+behind it.
+
+**Autotools inputs deleted, not kept alongside.** `configure.ac`, both
+`Makefile.am` and `INSTALL` are gone. Two build systems guarantee one rots.
+
+### Corrections to earlier assumptions
+
+**ASan does not catch defect M7.** The Phase 1 gate assumed sanitizers would
+surface the memory defects. They do not surface this one, because ASan does not
+instrument variable-length arrays. M7 was instead confirmed directly:
+`mpz_get_str` writes its NUL terminator at index `length`, exactly one past a
+`char binary[length]` VLA, for every value tested. The defect is real; the
+detection method in the plan was wrong. Phase 2 must fix it by review, not by
+waiting for a sanitizer report.
+
+### Open question for the maintainer
+
+`docs/` is still tracked: 1280 of the 1406 remaining files. GitHub Pages serves
+from `master:/docs`, so untracking it takes
+https://enipu.github.io/elips_bn_bls/ offline. `.github/workflows/docs.yml`
+regenerates and publishes to `gh-pages`; once Pages is repointed there,
+
+```bash
+git rm -r --cached docs && git commit -m "Untrack the generated Doxygen site"
+```
+
+drops the repository to about 126 tracked files. Not done unilaterally because
+it is outward-facing.
+
+### Next
+
+Phase 2 (issue #3) — fix the confirmed defects on the existing architecture.
+Now unblocked, with an oracle and CI in place to catch regressions. Note that
+Phase 2 inherits issue #16, which needs a maintainer decision first.
