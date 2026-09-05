@@ -62,7 +62,10 @@ void bls12_Miller_algo_for_plain_ate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     mpz_neg(loop,loop);
     
     length=(int)mpz_sizeinbase(loop,2);
-    char binary[length];
+    /* M7: mpz_get_str writes mpz_sizeinbase() digits plus a NUL terminator,
+     * and a sign byte for negatives, so the buffer needs length+2. Sizing it
+     * to length exactly overflowed by one byte on every call. */
+    char binary[length + 2];
     mpz_get_str(binary,2,loop);
     
     //miller

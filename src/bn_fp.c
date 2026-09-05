@@ -8,8 +8,6 @@
 
 #include <ELiPS_bn_bls/bn_fp.h>
 
-#define c1 2
-#define C1_INV
 void Fp_init(Fp *A){
     mpz_init(A->x0);
 }
@@ -61,11 +59,6 @@ void Fp_mul_basis(Fp *ANS,Fp *A){
     mpz_sub(ANS->x0,curve_parameters.prime,A->x0);
 }
 
-void Fp_mul_basis_KSS16(Fp *ANS,Fp *A){
-    mpz_mul_ui(ANS->x0,A->x0,c1);
-    mpz_mod(ANS->x0,ANS->x0,curve_parameters.curve_a);
-}
-
 void Fp_add(Fp *ANS,Fp *A,Fp *B){
     mpz_add(ANS->x0,A->x0,B->x0);
     mpz_mod(ANS->x0,ANS->x0,curve_parameters.prime);
@@ -96,13 +89,24 @@ void Fp_sub_mpz(Fp *ANS,Fp *A,mpz_t B){
     mpz_mod(ANS->x0,ANS->x0,curve_parameters.prime);
 }
 
-void Fp_inv(Fp *ANS,Fp *A){
-    mpz_invert(ANS->x0,A->x0,curve_parameters.prime);
+/* A5: mpz_invert returns 0 when the argument is not invertible, and the old
+ * code discarded that, leaving ANS holding whatever was there before. Both
+ * routines now report failure and leave ANS at a defined value. */
+int Fp_inv(Fp *ANS,Fp *A){
+    if(mpz_invert(ANS->x0,A->x0,curve_parameters.prime)==0){
+        mpz_set_ui(ANS->x0,0);
+        return 0;
+    }
+    return 1;
 }
-void Fp_div(Fp *ANS, Fp *A, Fp *B){
-    mpz_invert(ANS->x0,B->x0,curve_parameters.prime);
+int Fp_div(Fp *ANS, Fp *A, Fp *B){
+    if(mpz_invert(ANS->x0,B->x0,curve_parameters.prime)==0){
+        mpz_set_ui(ANS->x0,0);
+        return 0;
+    }
     mpz_mul(ANS->x0,A->x0,ANS->x0);
     mpz_mod(ANS->x0,ANS->x0,curve_parameters.prime);
+    return 1;
 }
 
 int  Fp_legendre(Fp *A){
@@ -144,9 +148,6 @@ void Fp_sqrt(Fp *ANS,Fp *A){
     mpz_init(q);
     mpz_init(z);
     mpz_init(result);
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     Fp_set_random(&n,state);
     
     while(Fp_legendre(&n)!=-1){
@@ -203,7 +204,10 @@ void Fp_sqrt(Fp *ANS,Fp *A){
 void Fp_pow(Fp *ANS,Fp *A,mpz_t scalar){
     int i,length;
     length=(int)mpz_sizeinbase(scalar,2);
-    char binary[length];
+    /* M7: mpz_get_str writes mpz_sizeinbase() digits plus a NUL terminator,
+     * and a sign byte for negatives, so the buffer needs length+2. Sizing it
+     * to length exactly overflowed by one byte on every call. */
+    char binary[length + 2];
     mpz_get_str(binary,2,scalar);
     Fp tmp;
     Fp_init(&tmp);

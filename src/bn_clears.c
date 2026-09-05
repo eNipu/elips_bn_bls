@@ -42,6 +42,10 @@ void clear_parameters(){
     mpz_clear(curve_parameters.trace_t);
     
     mpz_clear(curve_parameters.EFp_total);
+    /* M9: these three were initialised by init_*_parameters and never freed. */
+    mpz_clear(curve_parameters.EFp2_total);
+    mpz_clear(curve_parameters.EFp6_total);
+    mpz_clear(curve_parameters.EFp12_total);
     
 //    printf(" has exact length %zu in base %d\n", strlen(mpz_get_str(NULL, base, curve_parameters.EFpd_total)), base);
 //    printf("Size in base %d\n ",(int)mpz_sizeinbase(curve_parameters.EFpd_total,10));
@@ -52,6 +56,8 @@ void clear_parameters(){
 //    printf("Size in base after %d\n ",(int)mpz_sizeinbase(curve_parameters.EFpd_total,2));
     mpz_clear(curve_parameters.curve_b);
     mpz_clear(curve_parameters.curve_a);
+    /* M2: EFpd_total is initialised now, so it must be released too. */
+    mpz_clear(curve_parameters.EFpd_total);
     
     Fp_clear(&Fp_basis);
     Fp2_clear(&Fp2_basis);
@@ -67,6 +73,7 @@ void clear_parameters(){
             Fp2_clear(&d12_skew_frobenius_constant[i][j]);
         }
     }
+    clear_precoms();   /* M9 */
     //    }
     //    isCleared = 1;
 }

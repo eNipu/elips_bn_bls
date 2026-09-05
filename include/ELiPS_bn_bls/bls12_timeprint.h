@@ -55,10 +55,8 @@ extern double bls12_G3EXP_PLAIN,bls12_G3EXP_2SPLIT,bls12_G3EXP_4SPLIT;
 /* Function prototypes                                                        */
 /*============================================================================*/
 
-/**
- * Prints curve parameter: BLS12 curve
- */
-extern void bls12_print_parameters(void);
+/* A8: bls12_print_parameters is declared in curve_settings.h; the duplicate
+ * declaration that used to sit here has been removed. */
 
 /**
  * Prints G1 rational point: BLS12 curve

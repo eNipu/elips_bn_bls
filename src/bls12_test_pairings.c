@@ -49,9 +49,6 @@ void bls12_test_tate_pairing(){
     mpz_init(s2);
     mpz_init(s12);
     
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     mpz_urandomm(s1,state,curve_parameters.order);
     mpz_urandomm(s2,state,curve_parameters.order);
     mpz_mul(s12,s1,s2);
@@ -135,9 +132,6 @@ void bls12_test_plain_ate_pairing(){
     mpz_init(s2);
     mpz_init(s12);
     
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     mpz_urandomm(s1,state,curve_parameters.order);
     mpz_urandomm(s2,state,curve_parameters.order);
     mpz_mul(s12,s1,s2);
@@ -222,9 +216,6 @@ void bls12_test_opt_ate_pairing(){
     mpz_init(s2);
     mpz_init(s12);
     
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     mpz_urandomm(s1,state,curve_parameters.order);
     mpz_urandomm(s2,state,curve_parameters.order);
     mpz_mul(s12,s1,s2);
@@ -301,9 +292,6 @@ void bls12_test_G1_scm(){
     mpz_init(scalar);
     
     //scalar
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     mpz_urandomm(scalar,state,curve_parameters.order);
     //printf("scalar:");
     //gmp_printf("%Zd",scalar);
@@ -348,9 +336,6 @@ void bls12_test_G2_scm(){
     mpz_init(scalar);
     
     //scalar
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     mpz_urandomm(scalar,state,curve_parameters.order);
     //printf("scalar:");
     //gmp_printf("%Zd",scalar);
@@ -410,9 +395,6 @@ void bls12_test_G3_exp(){
     mpz_init(s12);
     
     //S
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     mpz_urandomm(s1,state,curve_parameters.order);    //s1
     mpz_urandomm(s2,state,curve_parameters.order);    //s2
     mpz_mul(s12,s1,s2);            //s12

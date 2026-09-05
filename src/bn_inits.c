@@ -28,7 +28,8 @@
 
 #include <ELiPS_bn_bls/bn_inits.h>
 
-void init_bn(void){
-    init_bn_settings();
+int init_bn(void){
+    if(init_bn_settings()!=1) return 0;   /* A6 */
     init_precoms(1);
+    return 1;
 }

@@ -97,7 +97,10 @@ void bls12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
             char binary_buf[loop_length+1];
             mpz_get_str(binary_buf,2,s[i]);
             memset(binary_s[i],'0',sizeof(binary_s[i]));
-            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,sizeof(binary_buf));
+            /* M8: copy only the digits. sizeof(binary_buf) is loop_length+1,
+             * so starting at offset loop_length-length_s[i] wrote up to
+             * loop_length-length_s[i] bytes past the end of the row. */
+            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,length_s[i]);
         }
     }
     for(i=0; i<loop_length; i++){
@@ -199,7 +202,10 @@ void bls12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
             char binary_buf[loop_length+1];
             mpz_get_str(binary_buf,2,s[i]);
             memset(binary_s[i],'0',sizeof(binary_s[i]));
-            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,sizeof(binary_buf));
+            /* M8: copy only the digits. sizeof(binary_buf) is loop_length+1,
+             * so starting at offset loop_length-length_s[i] wrote up to
+             * loop_length-length_s[i] bytes past the end of the row. */
+            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,length_s[i]);
         }
     }
     for(i=0; i<loop_length; i++){
@@ -308,7 +314,10 @@ void bls12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
             char binary_buf[loop_length+1];
             mpz_get_str(binary_buf,2,s[i]);
             memset(binary_s[i],'0',sizeof(binary_s[i]));
-            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,sizeof(binary_buf));
+            /* M8: copy only the digits. sizeof(binary_buf) is loop_length+1,
+             * so starting at offset loop_length-length_s[i] wrote up to
+             * loop_length-length_s[i] bytes past the end of the row. */
+            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,length_s[i]);
         }
     }
     for(i=0; i<loop_length; i++){
@@ -330,7 +339,7 @@ void bls12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     EFp2_clear(&twisted_Q);
     EFp2_clear(&twisted_Q_x);
     EFp2_clear(&twisted_Q_2x);
-    EFp2_init(&twisted_Q_3x);
+    EFp2_clear(&twisted_Q_3x);   /* M6: was EFp2_init */
     mpz_clear(x_1);
     mpz_clear(x_2);
     for(i=0; i<4; i++){

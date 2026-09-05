@@ -54,7 +54,6 @@ extern void Fp6_sub_mpz(Fp6 *ANS,Fp6 *A,mpz_t B);
 extern void Fp6_inv(Fp6 *ANS,Fp6 *A);
 extern int  Fp6_legendre(Fp6 *A);
 extern int  Fp6_isCNR(Fp6 *A);
-extern void Fp6_sqrt(Fp6 *ANS,Fp6 *A);
 extern void Fp6_pow(Fp6 *ANS,Fp6 *A,mpz_t scalar);
 extern int  Fp6_cmp(Fp6 *A,Fp6 *B);
 extern int  Fp6_cmp_ui(Fp6 *A,unsigned long int UI);

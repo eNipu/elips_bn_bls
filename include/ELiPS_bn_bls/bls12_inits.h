@@ -51,6 +51,6 @@
  * This methods needs to be called before using the BLS12 curve for pairing.
  * It initialized the curve as y^2=x^3+4 with parameters suggested in https://eprint.iacr.org/2017/334. 
  */
-extern void bls12_inits(void);
+extern int  bls12_inits(void);   /**< returns 0 if curve setup failed */
 
 #endif /* bls12_inits_h */

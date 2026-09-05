@@ -70,9 +70,27 @@ void init_precoms(int curvetype){
     }
     
     
+    /* M10: the shared random state. Every *_rational_point and *_sqrt used
+     * to declare a local gmp_randstate_t that shadowed this global, and none
+     * of them released it, so each call leaked a Mersenne Twister state.
+     *
+     * The seeding is unchanged from before and is NOT cryptographically
+     * sound; replacing it with a real CSPRNG is Phase 5 (issue #6). */
+    gmp_randinit_default(state);
+    gmp_randseed_ui(state,(unsigned long)time(NULL));
+
     get_epsilon();
     set_basis();
     set_frobenius_constant();
+}
+
+/* M9: prime_p and Fp2_basis_inv are set up by init_precoms and had no
+ * matching teardown, so clear_parameters() could not fully release the
+ * library's one-time state. */
+void clear_precoms(void){
+    mpz_clear(prime_p);
+    Fp2_clear(&Fp2_basis_inv);
+    gmp_randclear(state);   /* M10 */
 }
 
 void get_epsilon(){

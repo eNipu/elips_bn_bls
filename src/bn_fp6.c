@@ -304,47 +304,14 @@ int  Fp6_isCNR(Fp6 *A){
     }
 }
 
-void Fp6_sqrt(Fp6 *ANS,Fp6 *A){
-    Fp6 tmp1,tmp2;
-    Fp6_init(&tmp1);
-    Fp6_init(&tmp2);
-    mpz_t exp,buf;
-    mpz_init(exp);
-    mpz_init(buf);
-    
-    Fp2_set(&tmp1.x0,&A->x0);
-//    Fp2_mul_mpz(&tmp1.x1,&A->x1,d12_frobenius_constant[f_p4][1].x0.x0);
-//    Fp2_mul_mpz(&tmp1.x2,&A->x2,d12_frobenius_constant[f_p4][2].x0.x0);
-    
-    Fp2_set(&tmp2.x0,&A->x0);
-//    Fp2_mul_mpz(&tmp2.x1,&A->x1,d12_frobenius_constant[f_p2][1].x0.x0);
-//    Fp2_mul_mpz(&tmp2.x2,&A->x2,d12_frobenius_constant[f_p2][2].x0.x0);
-    
-    Fp6_mul(&tmp1,&tmp1,&tmp2);
-    Fp6_mul(&tmp1,&tmp1,A);
-    Fp6_set_ui(&tmp2,0);
-    Fp2_sqrt(&tmp2.x0,&tmp1.x0);
-    Fp2_inv(&tmp2.x0,&tmp2.x0);
-    Fp2_set(&tmp2.x0,&tmp2.x0);
-    mpz_pow_ui(exp,curve_parameters.prime,8);
-    mpz_pow_ui(buf,curve_parameters.prime,4);
-    mpz_add(exp,exp,buf);
-    mpz_add_ui(exp,exp,2);
-    mpz_tdiv_q_ui(exp,exp,2);
-    Fp6_pow(&tmp1,A,exp);
-    Fp6_mul(&tmp1,&tmp1,&tmp2);
-    Fp6_set(ANS,&tmp1);
-    
-    mpz_clear(exp);
-    mpz_clear(buf);
-    Fp6_clear(&tmp1);
-    Fp6_clear(&tmp2);
-}
 
 void Fp6_pow(Fp6 *ANS,Fp6 *A,mpz_t scalar){
     int i,length;
     length=(int)mpz_sizeinbase(scalar,2);
-    char binary[length];
+    /* M7: mpz_get_str writes mpz_sizeinbase() digits plus a NUL terminator,
+     * and a sign byte for negatives, so the buffer needs length+2. Sizing it
+     * to length exactly overflowed by one byte on every call. */
+    char binary[length + 2];
     mpz_get_str(binary,2,scalar);
     Fp6 tmp;
     Fp6_init(&tmp);

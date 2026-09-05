@@ -23,9 +23,19 @@
 #include <ELiPS_bn_bls/bls12_pairings.h>
 #include <ELiPS_bn_bls/bls12_generate_points.h>
 #include <ELiPS_bn_bls/bls12_twist.h>
+#include <ELiPS_bn_bls/bls12_scm.h>
+#include <ELiPS_bn_bls/bls12_G3_exp.h>
 #include <ELiPS_bn_bls/curve_settings.h>
 
 static int failures;
+
+/* EFp12 has no comparison function in the library; points are equal when both
+ * are at infinity or both coordinates match. */
+static int EFp12_cmp_for_test(EFp12 *A, EFp12 *B)
+{
+    if (A->infinity || B->infinity) return !(A->infinity && B->infinity);
+    return (Fp12_cmp(&A->x, &B->x) != 0) || (Fp12_cmp(&A->y, &B->y) != 0);
+}
 
 static void ok(int cond, const char *what)
 {
@@ -168,6 +178,46 @@ int main(int argc, char **argv)
         EFp12_clear(&A); EFp12_clear(&B); EFp12_clear(&S);
         EFp_clear(&p1); EFp_clear(&p_a); EFp_clear(&p_b); EFp_clear(&p_sum);
         mpz_clears(a, b, NULL);
+    }
+
+    /* ---- 6. split-scalar routines agree with the plain ones.
+     * Guards the M8 fix: those routines right-align each sub-scalar's binary
+     * expansion into a fixed-width row, and the memmove that did it copied
+     * sizeof(buffer) rather than the digit count, running off the end of the
+     * row for any sub-scalar shorter than the widest one -- about two thirds
+     * of random scalars. BLS12 only; BN has no split variants. ---- */
+    if (bls) {
+        int trials = 6, bad = 0;
+        for (int t = 0; t < trials; t++) {
+            mpz_t k; mpz_init(k);
+            mpz_urandomm(k, st, curve_parameters.order);
+
+            EFp12 r_plain, r_2, r_4;
+            EFp12_init(&r_plain); EFp12_init(&r_2); EFp12_init(&r_4);
+
+            bls12_plain_G1_scm(&r_plain, &P, k);
+            bls12_2split_G1_scm(&r_2, &P, k);
+            if (EFp12_cmp_for_test(&r_plain, &r_2)) bad++;
+
+            bls12_plain_G2_scm(&r_plain, &Q, k);
+            bls12_2split_G2_scm(&r_2, &Q, k);
+            bls12_4split_G2_scm(&r_4, &Q, k);
+            if (EFp12_cmp_for_test(&r_plain, &r_2)) bad++;
+            if (EFp12_cmp_for_test(&r_plain, &r_4)) bad++;
+
+            Fp12 e_plain, e_2, e_4;
+            Fp12_init(&e_plain); Fp12_init(&e_2); Fp12_init(&e_4);
+            bls12_plain_G3_exp(&e_plain, &z, k);
+            bls12_2split_G3_exp(&e_2, &z, k);
+            bls12_4split_G3_exp(&e_4, &z, k);
+            if (Fp12_cmp(&e_plain, &e_2) != 0) bad++;
+            if (Fp12_cmp(&e_plain, &e_4) != 0) bad++;
+
+            Fp12_clear(&e_plain); Fp12_clear(&e_2); Fp12_clear(&e_4);
+            EFp12_clear(&r_plain); EFp12_clear(&r_2); EFp12_clear(&r_4);
+            mpz_clear(k);
+        }
+        ok(bad == 0, "split-scalar G1/G2 SCM and G3 exp agree with the plain versions");
     }
 
     Fp12_clear(&z); EFp12_clear(&P); EFp12_clear(&Q);

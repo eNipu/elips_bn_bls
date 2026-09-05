@@ -36,7 +36,10 @@ void Miller_algo_for_tate(Fp12 *ANS,EFp12 *P,EFp12 *Q){
     Fp12_init(&f);
     int i,length;
     length=(int)mpz_sizeinbase(curve_parameters.order,2);
-    char binary[length];
+    /* M7: mpz_get_str writes mpz_sizeinbase() digits plus a NUL terminator,
+     * and a sign byte for negatives, so the buffer needs length+2. Sizing it
+     * to length exactly overflowed by one byte on every call. */
+    char binary[length + 2];
     mpz_get_str(binary,2,curve_parameters.order);
     
     //set

@@ -28,7 +28,8 @@
 
 #include <ELiPS_bn_bls/bls12_inits.h>
 
-void bls12_inits(){
-    init_bls12_settings();
+int bls12_inits(){
+    if(init_bls12_settings()!=1) return 0;   /* A6 */
     init_precoms(2);
+    return 1;
 }

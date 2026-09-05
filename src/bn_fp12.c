@@ -140,8 +140,9 @@ void Fp12_add_ui(Fp12 *ANS,Fp12 *A,unsigned long int UI){
 }
 
 void Fp12_add_mpz(Fp12 *ANS,Fp12 *A,mpz_t B){
-    Fp6_add_mpz(&ANS->x0,&ANS->x0,B);
-    Fp6_add_mpz(&ANS->x1,&ANS->x1,B);
+    /* A2: read A, not ANS. */
+    Fp6_add_mpz(&ANS->x0,&A->x0,B);
+    Fp6_add_mpz(&ANS->x1,&A->x1,B);
 }
 
 void Fp12_sub(Fp12 *ANS,Fp12 *A,Fp12 *B){
@@ -150,13 +151,15 @@ void Fp12_sub(Fp12 *ANS,Fp12 *A,Fp12 *B){
 }
 
 void Fp12_sub_ui(Fp12 *ANS,Fp12 *A,unsigned long int UI){
-    Fp6_sub_ui(&ANS->x0,&ANS->x0,UI);
-    Fp6_sub_ui(&ANS->x1,&ANS->x1,UI);
+    /* A2: read A, not ANS. */
+    Fp6_sub_ui(&ANS->x0,&A->x0,UI);
+    Fp6_sub_ui(&ANS->x1,&A->x1,UI);
 }
 
 void Fp12_sub_mpz(Fp12 *ANS,Fp12 *A,mpz_t B){
-    Fp6_sub_mpz(&ANS->x0,&ANS->x0,B);
-    Fp6_sub_mpz(&ANS->x1,&ANS->x1,B);
+    /* A2: read A, not ANS. */
+    Fp6_sub_mpz(&ANS->x0,&A->x0,B);
+    Fp6_sub_mpz(&ANS->x1,&A->x1,B);
 }
 
 void Fp12_inv(Fp12 *ANS,Fp12 *A){
@@ -212,9 +215,6 @@ void Fp12_sqrt(Fp12 *ANS,Fp12 *A){
     mpz_init(q);
     mpz_init(z);
     mpz_init(result);
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     
     Fp12_set_random(&n,state);
     while(Fp12_legendre(&n)!=-1){
@@ -272,7 +272,10 @@ void Fp12_sqrt(Fp12 *ANS,Fp12 *A){
 void Fp12_pow(Fp12 *ANS,Fp12 *A,mpz_t scalar){
     int i,length;
     length=(int)mpz_sizeinbase(scalar,2);
-    char binary[length];
+    /* M7: mpz_get_str writes mpz_sizeinbase() digits plus a NUL terminator,
+     * and a sign byte for negatives, so the buffer needs length+2. Sizing it
+     * to length exactly overflowed by one byte on every call. */
+    char binary[length + 2];
     mpz_get_str(binary,2,scalar);
     Fp12 tmp;
     Fp12_init(&tmp);

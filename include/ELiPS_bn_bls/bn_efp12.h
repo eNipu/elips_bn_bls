@@ -37,7 +37,11 @@
 #ifndef bn_efp12_h
 #define bn_efp12_h
 
-#include <ELiPS_bn_bls/bn_efp6.h>
+/* bn_efp6.h used to be included here purely to reach these two headers;
+ * EFp6 itself was removed in Phase 2, so depend on them directly. */
+#include <ELiPS_bn_bls/bn_efp2.h>
+#include <ELiPS_bn_bls/bn_fp12.h>
+
 /*============================================================================*/
 /* Function prototypes                                                        */
 /*============================================================================*/

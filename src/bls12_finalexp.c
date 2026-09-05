@@ -62,13 +62,11 @@ void bls12_finalexp_plain(Fp12 *ANS,Fp12 *A){
 }
 
 void bls12_finalexp_optimal(Fp12 *ANS,Fp12 *A){
-    Fp12 t0,t1,t2,t3,t4,t5;
+    Fp12 t0,t1,t2,t3;   /* M5: t4 and t5 were unused and leaked */
     Fp12_init(&t0);
     Fp12_init(&t1);
     Fp12_init(&t2);
     Fp12_init(&t3);
-    Fp12_init(&t5);
-    Fp12_init(&t4);
     
     //-------------------------------------------------------//
     //f←f^(p^6)*f^-1

@@ -60,14 +60,6 @@ struct Fp2{
 };
 
 /**
- * Fp4 is degree 2 extension over Fp2. Consist of two Fp2 element.
- */
-typedef struct Fp4 Fp4;
-struct Fp4{
-    struct Fp2 x0,x1;
-};
-
-/**
  * Fp6 is degree 3 extension over Fp2. Consist of three Fp2 element.
  */
 typedef struct Fp6 Fp6;
@@ -76,27 +68,11 @@ struct Fp6{
 };
 
 /**
- * Fp8 is degree 2 extension over Fp4. Consist of three Fp4 element.
- */
-typedef struct Fp8 Fp8;
-struct Fp8{
-    struct Fp4 x0,x1;
-};
-
-/**
  * Fp12 is degree 2 extension over Fp6. Consist of three Fp2 element.
  */
 typedef struct Fp12 Fp12;
 struct Fp12{
     Fp6 x0,x1;
-};
-
-/**
- * Fp16 is degree 2 extension over Fp8. Consist of three Fp8 element.
- */
-typedef struct Fp16 Fp16;
-struct Fp16{
-    struct Fp8 x0,x1;
 };
 
 

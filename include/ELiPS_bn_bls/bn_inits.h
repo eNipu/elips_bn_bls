@@ -52,6 +52,6 @@
  * This methods needs to be called before using the BN curve for pairing.
  * It initialized the curve as y^2=x^3-4 with parameters suggested in https://eprint.iacr.org/2017/334. 
  */
-extern void init_bn(void);
+extern int  init_bn(void);   /**< returns 0 if curve setup failed */
 
 #endif /* bn_inits_h */

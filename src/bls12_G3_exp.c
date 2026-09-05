@@ -91,7 +91,10 @@ void bls12_2split_G3_exp(Fp12 *ANS,Fp12 *A,mpz_t scalar){
             char binary_buf[loop_length+1];
             mpz_get_str(binary_buf,2,s[i]);
             memset(binary_s[i],'0',sizeof(binary_s[i]));
-            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,sizeof(binary_buf));
+            /* M8: copy only the digits. sizeof(binary_buf) is loop_length+1,
+             * so starting at offset loop_length-length_s[i] wrote up to
+             * loop_length-length_s[i] bytes past the end of the row. */
+            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,length_s[i]);
         }
     }
     for(i=0; i<loop_length; i++){
@@ -201,7 +204,10 @@ void bls12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar){
             char binary_buf[loop_length+1];
             mpz_get_str(binary_buf,2,s[i]);
             memset(binary_s[i],'0',sizeof(binary_s[i]));
-            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,sizeof(binary_buf));
+            /* M8: copy only the digits. sizeof(binary_buf) is loop_length+1,
+             * so starting at offset loop_length-length_s[i] wrote up to
+             * loop_length-length_s[i] bytes past the end of the row. */
+            memmove(binary_s[i]+loop_length-length_s[i],binary_buf,length_s[i]);
         }
     }
     for(i=0; i<loop_length; i++){

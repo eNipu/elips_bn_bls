@@ -111,6 +111,11 @@ extern void init_precoms(int curvetype);
 /**
  * Calculate primitive cubic root of 1 in Fp.
  */
+/**
+ * Release the state allocated by init_precoms().
+ */
+extern void clear_precoms(void);
+
 extern void get_epsilon(void);
 
 /**

@@ -81,9 +81,6 @@ void EFp_rational_point_bn(EFp *P){
     Fp_init(&tmp1);
     Fp_init(&tmp2);
     Fp_init(&tmp_x);
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     
     while(1){
         Fp_set_random(&P->x,state);
@@ -106,9 +103,6 @@ void EFp_rational_point_bls12(EFp *P){
     Fp_init(&tmp1);
     Fp_init(&tmp2);
     Fp_init(&tmp_x);
-    gmp_randstate_t state;
-    gmp_randinit_default (state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
     
     while(1){
         Fp_set_random(&P->x,state);
@@ -220,7 +214,10 @@ void EFp_SCM(EFp *ANS,EFp *P,mpz_t scalar){
     EFp_init(&Next_P);
     int i,length;
     length=(int)mpz_sizeinbase(scalar,2);
-    char binary[length];
+    /* M7: mpz_get_str writes mpz_sizeinbase() digits plus a NUL terminator,
+     * and a sign byte for negatives, so the buffer needs length+2. Sizing it
+     * to length exactly overflowed by one byte on every call. */
+    char binary[length + 2];
     mpz_get_str(binary,2,scalar);
     
     EFp_set(&Next_P,&Tmp_P);

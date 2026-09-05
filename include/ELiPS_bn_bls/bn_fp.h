@@ -155,7 +155,6 @@ extern void Fp_mul_basis(Fp *ANS,Fp *A);
  * @param[in] A                 -  send pointer A in Fp.
  * @param[in] B                 -  send basis element \alpha^2 = c is a int
  */
-extern void Fp_mul_basis_KSS16(Fp *ANS,Fp *A);
 
 /**
  * Prime field addition with reduction as ANS= A+B mod prime
@@ -217,7 +216,13 @@ extern void Fp_sub_mpz(Fp *ANS,Fp *A,mpz_t B);
  * @param[out] ANS			    -  output A^-1 mod prime in Fp.
  * @param[in] A                 -  send pointer A in Fp.
  */
-extern void Fp_inv(Fp *ANS,Fp *A);
+extern int  Fp_inv(Fp *ANS,Fp *A);   /**< returns 0 if A is not invertible */
+
+/**
+ *  ANS = A / B in Fp. Returns 0 if B is not invertible.
+ *  (A5: previously defined in bn_fp.c with no declaration anywhere.)
+ */
+extern int  Fp_div(Fp *ANS,Fp *A,Fp *B);
 
 /**
  * Calculate legendre symbol  (A/prime) to determine A has any sqare root in prime field.

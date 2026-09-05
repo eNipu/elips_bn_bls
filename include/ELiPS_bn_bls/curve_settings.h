@@ -128,7 +128,7 @@ extern int bls12_X_binary[78];
  *  Initialize BN curves settings.
  *
  */
-extern void init_bn_settings(void);
+extern int  init_bn_settings(void);   /**< returns 0 if parameter generation failed */
 
 /**
  *  Initialize BN curves parameter generation.
@@ -183,7 +183,7 @@ extern void print_curve_parameters(void);
  *  Initialize BLS12 curve settings.
  *
  */
-extern void init_bls12_settings(void);
+extern int  init_bls12_settings(void);   /**< returns 0 if parameter generation failed */
 
 /**
  *  Initialize BLS12 curve parameters.
@@ -234,19 +234,9 @@ extern void bls12_weil(void);
 extern void bls12_print_parameters(void);
 
 
-//KSS-16
-#define TRUE 1
-#define FALSE 0
-#define KSS16_X_length 35
+/* The KSS-16 declarations that used to sit here are gone with the rest of
+ * that tree. See MODERNIZATION_PLAN.md section 9.1 for why a future
+ * implementation must be written from a reference rather than restored
+ * from history: the deleted code carried five mathematical defects. */
 
-extern char X_bit_binary_kss16[KSS16_X_length+1];
-
-extern mpz_t C1_INV; //c=2 its iverse value
-//mpz_t PRIME_P,order_r,trace_t, order_EFp, a_x;
-//mpz_t tmp_a;
-
-extern void init_kss16_settings(void);
-extern void generate_kss16_motherparam(void);
-extern void generate_kss16_parameters(void);
-extern void init_kss16_parameters(void);
 #endif /* bn_settings_h */

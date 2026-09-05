@@ -29,6 +29,10 @@
 #include <ELiPS_bn_bls/bn_line_ate.h>
 
 void ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L){
+    /* P is unused: Pseudo_8_sparse_mapping already folded P's coordinates
+     * into L, which is what the line evaluation actually reads. Kept in the
+     * signature for API stability; the parameter goes away in Phase 3. */
+    (void)P;
     EFp2 Tmp_T;
     EFp2_init(&Tmp_T);
     Fp12 ff,ltt;
@@ -78,6 +82,10 @@ void ff_ltt(Fp12 *f,EFp2 *T,EFp *P,Fp *L){
 }
 
 void f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L){
+    /* P is unused: Pseudo_8_sparse_mapping already folded P's coordinates
+     * into L, which is what the line evaluation actually reads. Kept in the
+     * signature for API stability; the parameter goes away in Phase 3. */
+    (void)P;
     EFp2 Tmp_T;
     EFp2_init(&Tmp_T);
     Fp12 ltq;
@@ -118,4 +126,5 @@ void f_ltq(Fp12 *f,EFp2 *T,EFp2 *Q,EFp *P,Fp *L){
     Fp2_clear(&B);
     Fp2_clear(&C);
     Fp2_clear(&D);
+    Fp2_clear(&E);   /* M4: initialised but never released, inside the Miller loop */
 }
