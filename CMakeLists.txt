@@ -72,41 +72,24 @@ mark_as_advanced(CMAKE_C_FLAGS_ASAN CMAKE_C_FLAGS_UBSAN CMAKE_C_FLAGS_MSAN)
 find_package(GMP REQUIRED)
 
 # ------------------------------------------------------------------- library
-file(GLOB ELIPS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
-file(GLOB ELIPS_HEADERS CONFIGURE_DEPENDS
-     "${CMAKE_CURRENT_SOURCE_DIR}/include/ELiPS_bn_bls/*.h")
+# One library, built once per curve (issue #17 retired the second one).
+#
+# There used to be a runtime-curve mpz_t layer under src/*.c alongside this,
+# carrying the public headers, defects A3 and A4, and the wrong-exponent final
+# exponentiation of issue #16. It is gone; these are the only sources now.
+set(ELIPS_ARITH_SOURCES
+  src/arith/fp.c
+  src/arith/fpx.c
+  src/arith/ec.c
+  src/arith/serialize.c
+  src/pairing/miller.c
+  src/hash/sha256.c
+  src/hash/hash_to_curve.c
+  src/util/random.c
+  src/util/sysrand.c)
 
-# src/util/sysrand.c is the system CSPRNG. It carries no curve dependency, so
-# both layers compile it: the legacy library needs it to seed its gmp_randstate,
-# which used to come from time(NULL).
-add_library(elips ${ELIPS_SOURCES} src/util/sysrand.c)
-add_library(ELiPS::elips ALIAS elips)
-
-target_include_directories(elips
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
-target_link_libraries(elips PUBLIC GMP::GMP)
-set_target_properties(elips PROPERTIES
-  VERSION   ${PROJECT_VERSION}
-  SOVERSION ${PROJECT_VERSION_MAJOR}
-  C_VISIBILITY_PRESET default
-  POSITION_INDEPENDENT_CODE ON)
-
-target_compile_options(elips PRIVATE -Wall -Wextra)
-if(ELIPS_WERROR)
-  target_compile_options(elips PRIVATE -Werror)
-endif()
-
-# ------------------------------------------------- Phase 3 arithmetic (new)
-# Built once per curve. These are the fixed-width Montgomery routines that
-# replace the heap mpz_t field layer; see include/elips/fp.h.
 foreach(_cv IN LISTS ELIPS_CURVES)
-  add_library(elips_arith_${_cv} STATIC
-    src/arith/fp.c src/arith/fpx.c src/arith/ec.c
-    src/arith/serialize.c src/util/random.c src/util/sysrand.c
-    src/pairing/miller.c
-    src/hash/sha256.c src/hash/hash_to_curve.c)
+  add_library(elips_arith_${_cv} STATIC ${ELIPS_ARITH_SOURCES})
   target_include_directories(elips_arith_${_cv} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
@@ -117,7 +100,10 @@ foreach(_cv IN LISTS ELIPS_CURVES)
   if(ELIPS_WERROR)
     target_compile_options(elips_arith_${_cv} PRIVATE -Werror)
   endif()
-  set_target_properties(elips_arith_${_cv} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  set_target_properties(elips_arith_${_cv} PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+    VERSION   ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR})
 endforeach()
 
 # The selected curve, under a stable name. This is what gets installed, so a
@@ -139,43 +125,10 @@ if(ELIPS_BUILD_TESTS)
     endif()
   endfunction()
 
-  # Known-answer vectors. One process per curve: the library keeps its curve
-  # parameters in globals, so init_bn() and bls12_inits() overwrite each other.
-  # That constraint goes away in Phase 3.
-  add_executable(kat_runner test/kat_runner.c)
-  target_link_libraries(kat_runner PRIVATE elips)
-  elips_test_warnings(kat_runner)
-
-  foreach(_curve bn_462 bls12_461 bls12_381)
-    add_test(NAME kat.${_curve}
-             COMMAND kat_runner "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/${_curve}.vec")
-  endforeach()
-
-  # Negative control: the runner must actually fail on a corrupted vector.
-  # A test oracle that cannot fail is not an oracle, so this is not optional.
-  add_test(NAME kat.detects_corruption
-           COMMAND ${CMAKE_COMMAND}
-                   -DRUNNER=$<TARGET_FILE:kat_runner>
-                   -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/test/kat/bn_462.vec
-                   -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
-
-  add_executable(property_tests test/property_tests.c)
-  target_link_libraries(property_tests PRIVATE elips)
-  elips_test_warnings(property_tests)
-  foreach(_c bn bls12)
-    add_test(NAME property.${_c} COMMAND property_tests ${_c})
-  endforeach()
-
-  # The library's two final exponentiations must agree and currently do not.
-  # Registered as an expected failure so the bug is visible in CI without
-  # blocking the gate. Remove WILL_FAIL when issue #16 is fixed.
-  add_executable(finalexp_agreement test/finalexp_agreement.c)
-  target_link_libraries(finalexp_agreement PRIVATE elips)
-  elips_test_warnings(finalexp_agreement)
-  foreach(_c bn bls12)
-    add_test(NAME finalexp.agreement.${_c} COMMAND finalexp_agreement ${_c})
-    set_tests_properties(finalexp.agreement.${_c} PROPERTIES WILL_FAIL TRUE)
-  endforeach()
+  # Curve-name to vector-file mapping, used by several suites below.
+  set(_vec_BLS12_381 bls12_381)
+  set(_vec_BLS12_461 bls12_461)
+  set(_vec_BN_462    bn_462)
 
   # Differential test: the new Montgomery layer against GMP's mpz, on random
   # inputs plus the boundary values that Montgomery code actually gets wrong.
@@ -187,27 +140,27 @@ if(ELIPS_BUILD_TESTS)
     set_tests_properties(fp.diff.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
 
-  # The Phase 0 vectors run against the NEW layer too, so both implementations
-  # are checked against the same independent oracle rather than against each
-  # other. Vector file and compiled curve must match; the runner enforces it.
-  set(_vec_BLS12_381 bls12_381)
-  set(_vec_BLS12_461 bls12_461)
-  set(_vec_BN_462    bn_462)
+  # The Phase 0 field and curve vectors, from the independent Python oracle.
+  # Vector file and compiled curve must match; the runner enforces it.
   foreach(_cv IN LISTS ELIPS_CURVES)
-    add_executable(kat_new_${_cv} test/kat_runner_new.c)
-    target_link_libraries(kat_new_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
-    elips_test_warnings(kat_new_${_cv})
-    add_test(NAME kat.new.${_cv}
-             COMMAND kat_new_${_cv}
+    add_executable(kat_runner_${_cv} test/kat_runner.c)
+    target_link_libraries(kat_runner_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(kat_runner_${_cv})
+    add_test(NAME kat.${_cv}
+             COMMAND kat_runner_${_cv}
                      "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/${_vec_${_cv}}.vec")
-    set_tests_properties(kat.new.${_cv} PROPERTIES TIMEOUT 900)
+    set_tests_properties(kat.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
 
-  # The new pairing against the value Phase 0 established as correct, plus
-  # non-degeneracy and mu_r membership. BLS12-461 only: the reference side is
-  # the legacy library, which initialises that curve at runtime.
-  # The new layer on its own, no legacy library linked. All three curves,
-  # including BLS12-381, which the legacy layer never supported at all.
+  # Negative control: the runner must actually fail on a corrupted vector.
+  # A test oracle that cannot fail is not an oracle, so this is not optional.
+  add_test(NAME kat.detects_corruption
+           COMMAND ${CMAKE_COMMAND}
+                   -DRUNNER=$<TARGET_FILE:kat_runner_BLS12_381>
+                   -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/test/kat/bls12_381.vec
+                   -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
+
+  # All three curves, with no second implementation linked in.
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(standalone_${_cv} test/standalone_test.c)
     target_link_libraries(standalone_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
@@ -291,28 +244,36 @@ if(ELIPS_BUILD_TESTS)
     endforeach()
   endif()
 
-  # BLS12-461 and BN-462: the reference side is the legacy library, which picks
-  # its curve at runtime, so only the curves it can actually initialise. The
-  # BLS12-381 field and curve layers are covered by the vector tests instead.
-  foreach(_cv BLS12_461 BN_462)
+  # The pairing, against the independent Python oracle in
+  # tools/reference/pairing_ref.py rather than against a second implementation.
+  # All three curves, including BLS12-381, which had no pairing reference at all
+  # while the legacy layer was the reference side (issue #17).
+  foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(pairing_test_${_cv} test/pairing_test.c)
-    target_link_libraries(pairing_test_${_cv} PRIVATE elips_arith_${_cv} elips GMP::GMP)
+    target_link_libraries(pairing_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
     elips_test_warnings(pairing_test_${_cv})
-    add_test(NAME pairing.matches_reference.${_cv} COMMAND pairing_test_${_cv})
-    set_tests_properties(pairing.matches_reference.${_cv} PROPERTIES TIMEOUT 900)
+    add_test(NAME pairing.${_cv}
+             COMMAND pairing_test_${_cv}
+                     "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/pairing_${_vec_${_cv}}.vec")
+    set_tests_properties(pairing.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
 
-  # Group-law properties. Only the BLS12-461 build: the test borrows a genuine
-  # G2 point from the legacy layer, which initialises that curve at runtime.
+  # And the pairing runner must be able to fail too.
+  add_test(NAME pairing.detects_corruption
+           COMMAND ${CMAKE_COMMAND}
+                   -DRUNNER=$<TARGET_FILE:pairing_test_BLS12_381>
+                   -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/test/kat/pairing_bls12_381.vec
+                   -DPATTERN=pair
+                   -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
+
+  # Group-law properties. One curve is enough: the code is a template shared by
+  # all three, and the vectors cover each curve's arithmetic separately.
   add_executable(ec_test test/ec_test.c)
-  target_link_libraries(ec_test PRIVATE elips_arith_BLS12_461 elips GMP::GMP)
+  target_link_libraries(ec_test PRIVATE elips_arith_BLS12_461 GMP::GMP)
   elips_test_warnings(ec_test)
   add_test(NAME ec.properties COMMAND ec_test)
   set_tests_properties(ec.properties PROPERTIES TIMEOUT 900)
 
-  set_tests_properties(kat.bn_462 kat.bls12_461 kat.bls12_381
-                       property.bn property.bls12
-                       PROPERTIES TIMEOUT 600)
 endif()
 
 # ------------------------------------------------------------------ examples
@@ -344,16 +305,10 @@ endif()
 
 # ------------------------------------------------------------------- install
 include(GNUInstallDirs)
-# Both libraries are installed: the legacy one under its historical name, and
-# the selected-curve modern one as ELiPS::arith. Until Phase 5b the modern
-# headers were not installed at all, so the API that has the pairing, the
-# serialization and the hash-to-curve could not be consumed by anyone.
-install(TARGETS elips elips_arith_${ELIPS_CURVE} EXPORT elipsTargets
+install(TARGETS elips_arith_${ELIPS_CURVE} EXPORT elipsTargets
   LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${ELIPS_HEADERS}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ELiPS_bn_bls)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/elips
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h")
@@ -371,12 +326,18 @@ list(APPEND CMAKE_MODULE_PATH \"\${CMAKE_CURRENT_LIST_DIR}\")
 find_dependency(GMP)
 include(\"\${CMAKE_CURRENT_LIST_DIR}/ELiPSTargets.cmake\")
 
-# The modern library is built per curve, so its exported name carries one.
+# The library is built per curve, so its exported name carries one.
 # ELiPS::arith is the stable alias a consumer links against, and
 # ELiPS_CURVE says which curve this installation was built for.
 set(ELiPS_CURVE \"${ELIPS_CURVE}\")
 if(NOT TARGET ELiPS::arith)
   add_library(ELiPS::arith ALIAS ELiPS::elips_arith_${ELIPS_CURVE})
+endif()
+# ELiPS::elips named the runtime-curve mpz layer, retired by issue #17. Kept as
+# an alias so an existing consumer still configures; it now resolves to the
+# same library as ELiPS::arith.
+if(NOT TARGET ELiPS::elips)
+  add_library(ELiPS::elips ALIAS ELiPS::elips_arith_${ELIPS_CURVE})
 endif()
 ")
 install(FILES

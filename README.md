@@ -5,13 +5,14 @@ Pairing-based cryptography over BN and BLS12 curves, built on GMP.
 > **Status: under active modernization.** See [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md)
 > for the roadmap and [`PROGRESS.md`](PROGRESS.md) for what has landed.
 >
-> There are two layers in the tree. **New code should use the modern one**,
-> `include/elips/*.h`: fixed-width Montgomery arithmetic, constant-time scalar
-> multiplication, standard serialization and RFC 9380 hash-to-curve. The legacy
-> `include/ELiPS_bn_bls/*.h` layer is retained only until
-> [issue #17](https://github.com/eNipu/elips_bn_bls/issues/17) retires it, and
-> it still has the wrong-exponent final exponentiation of
-> [issue #16](https://github.com/eNipu/elips_bn_bls/issues/16).
+> The API is `include/elips/*.h`: fixed-width Montgomery arithmetic,
+> constant-time scalar multiplication, standard serialization and RFC 9380
+> hash-to-curve. The original runtime-curve `mpz_t` layer under
+> `include/ELiPS_bn_bls/` was retired by
+> [issue #17](https://github.com/eNipu/elips_bn_bls/issues/17), taking with it
+> the wrong-exponent final exponentiation of
+> [issue #16](https://github.com/eNipu/elips_bn_bls/issues/16) and the two
+> global-state defects that depended on it.
 
 ## Requirements
 
@@ -91,7 +92,8 @@ uint8_t enc[EP_SER_COMPRESSED_BYTES];
 ep_write_compressed(enc, &P);
 ```
 
-`ELiPS::elips` still exists and links the legacy runtime-curve layer.
+`ELiPS::elips` is kept as an alias of the same library, so a build file written
+against the old name still configures.
 
 ## Examples
 
@@ -131,10 +133,17 @@ is what found the final exponentiation defect.
 ```bash
 python3 tools/reference/selftest.py        # field axioms and tower relations
 python3 tools/reference/h2c_ref.py         # RFC 9380 maps, isogenies, SvdW
-python3 tools/reference/gen_vectors.py test/kat
-python3 tools/reference/gen_h2c_vectors.py test/kat
+python3 tools/reference/gen_vectors.py test/kat          # field and curve
+python3 tools/reference/gen_pairing_vectors.py test/kat  # the pairing itself
+python3 tools/reference/gen_h2c_vectors.py test/kat      # hash to curve
 python3 tools/reference/trace_finalexp.py  # exact exponent of each chain
 ```
+
+Every suite in `test/` is driven by these vectors, so the library is checked
+against a Python implementation written from the defining equations rather than
+against a second C implementation of the same ideas. That distinction is why the
+pairing reference survived retiring the old layer: the oracle was never the old
+code.
 
 A useful structural fact: the tower collapses to a single polynomial. Since
 `v = w²` and `1+u = v³ = w⁶`, we have `u = w⁶−1` and therefore

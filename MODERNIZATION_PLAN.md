@@ -896,12 +896,30 @@ hash-to-curve, serialization and the pairing in place, that layer is thin and
 can be built on top without touching this library — and §10.6 is the one thing
 it will want that is missing.
 
-### 10.9 Retiring the legacy layer — SCHEDULED, issue #17
+### 10.9 Retiring the legacy layer — DONE, issue #17
 
-Unchanged and still the largest single cleanup. It is what finally deletes
-defects A3 and A4 and closes issue #16. The modern layer now covers every entry
-point the legacy one has, plus serialization and hash-to-curve, which it never
-had.
+12,271 lines deleted: `src/*.c`, `include/ELiPS_bn_bls/`, and the four tests
+that existed only to exercise them. Tracked files outside the generated Doxygen
+site drop from 169 to 76.
+
+**Defects A3 and A4 are gone, checked rather than assumed.** Both lived in the
+legacy final exponentiation — one writing through its input pointer, the other
+mutating global curve parameters mid-computation. Every object file in the
+library was inspected for non-const file-scope symbols and there are none, so
+that class of defect has nowhere left to live. Issue #16 describes code that no
+longer exists.
+
+The plan's "curve context struct" was never built and never needed: the
+remaining layer's constants are compile-time.
+
+**What made this possible was replacing the reference, not deleting the code.**
+`test/pairing_test.c` used to assert that the new pairing agreed with the old
+one, which is the weaker of the two available statements — two implementations
+can share a misreading of the twist conventions. It is now driven by
+`test/kat/pairing_*.vec`, generated from `tools/reference/pairing_ref.py`. Every
+suite in `test/` is now checked against the Python oracle; nothing compares one
+C implementation against another. BLS12-381 gained a pairing reference it never
+had, since the legacy layer did not support it.
 
 ### 10.10 Phase 6 assembly — the target has changed
 

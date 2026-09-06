@@ -64,6 +64,14 @@ jobs:
               || { echo "::error::test/kat/$f.vec is stale"; exit 1; }
           done
 
+      - name: Committed pairing vectors match the generator
+        run: |
+          python3 tools/reference/gen_pairing_vectors.py /tmp/regen_pair
+          for f in bn_462 bls12_461 bls12_381; do
+            diff -q "test/kat/pairing_$f.vec" "/tmp/regen_pair/pairing_$f.vec" \
+              || { echo "::error::test/kat/pairing_$f.vec is stale"; exit 1; }
+          done
+
       # The hash-to-curve reference checks itself against the RFC 9380 vectors
       # and proves the committed isogeny data really is an isogeny, so it has to
       # pass before its vectors mean anything.
@@ -107,7 +115,7 @@ jobs:
           find_package(ELiPS REQUIRED)
           message(STATUS "ELiPS built for ${ELiPS_CURVE}")
           add_executable(consumer main.c)
-          target_link_libraries(consumer PRIVATE ELiPS::arith ELiPS::elips)
+          target_link_libraries(consumer PRIVATE ELiPS::arith)
           target_compile_options(consumer PRIVATE -Wall -Wextra -Werror)
           EOC
           cat > main.c <<'EOC'

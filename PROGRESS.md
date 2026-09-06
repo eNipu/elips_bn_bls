@@ -1446,6 +1446,105 @@ sanitizer, zero warnings with `-Werror` on gcc and clang, all three curves.
 
 ---
 
+## Phase 5d — the legacy layer is gone (issue #17)
+
+**Status: complete. Exit criteria met. Defects A3 and A4 are gone with it, and
+issue #16 no longer has anything to describe.**
+
+### What went
+
+| Deleted | Size |
+|---|---|
+| `src/*.c` — the runtime-curve mpz layer | 44 files, 7241 lines |
+| `include/ELiPS_bn_bls/*.h` | 47 headers |
+| `test/kat_runner.c` (legacy vector runner) | superseded |
+| `test/property_tests.c` | its properties are covered by `standalone_*` and `edge_*` |
+| `test/finalexp_agreement.c` | pinned issue #16 as an expected failure; the code it described is gone |
+| `test/main.c`, `dump_pairing.c`, `diag_pairing.c` | orphans, in no build |
+
+**12,271 lines deleted against 659 added.** Tracked files, excluding the
+generated Doxygen site, drop from 169 to 76. The whole library is now 5408
+lines, of which 2495 are generated parameter tables.
+
+### The one piece of real work: replacing the reference
+
+`test/pairing_test.c` used to say "the new pairing agrees with the old one".
+That is the weaker of the two available statements — two implementations can
+share a misreading of the twist conventions and agree on a wrong answer — and it
+was the last thing keeping the old layer alive.
+
+`tools/reference/gen_pairing_vectors.py` now emits `test/kat/pairing_*.vec` from
+`pairing_ref.py`, the independent optimal ate written from the defining
+equations, with the final exponentiation computed as one exponentiation by
+`(p^12-1)/r` rather than by any addition chain. The points are read back out of
+the generated `fp_params.h`, so the vectors pin the pairing on exactly the
+generators the library ships, and the generator script asserts they are on their
+curves and of order `r` before using them.
+
+Four pairings per curve — `e([a]G1, [b]G2)` for `(a,b)` in `(1,1) (7,1) (1,11)
+(5,9)` — so the file witnesses bilinearity with concrete values rather than only
+asserting it. Eight checks per record: both inputs in their subgroups, the exact
+value against the reference, non-degeneracy, `mu_r` membership, the fast chain's
+relationship to the exact one, and `elips_pairing` agreeing with the pieces it is
+built from.
+
+**Only the value after the full final exponentiation is recorded.** A raw Miller
+value depends on how the line functions are normalised, and those constants
+cancel in the final exponentiation, so pinning one would pin a convention rather
+than the pairing — and that convention already changed once, when the curve
+layer moved to RCB.
+
+**BLS12-381 has a pairing reference for the first time.** The legacy layer never
+supported it, so while it was the reference side that curve's pairing value was
+checked against nothing.
+
+`test/ec_test.c` also stopped borrowing a G2 point from the old layer; it uses
+`ep2_generator` and its multiples, which the parameter generator asserts is on
+the twist and of order exactly `r` — stronger provenance than the borrowed point
+had.
+
+### A3 and A4, confirmed rather than assumed
+
+Both were structural defects of the legacy final exponentiation: A3 wrote
+through its input pointer, A4 mutated global curve parameters mid-computation.
+Phase 2 left them alone deliberately.
+
+They are gone, and the check is mechanical rather than a reading: every object
+file in the library was inspected for non-const file-scope symbols, and there
+are none. The library has no mutable global state left for that class of defect
+to live in. The "curve context struct" the plan called for was never needed —
+the constants are compile-time.
+
+### The suite after
+
+38 CTest targets, down from 43 but covering more:
+
+- `kat.*` now runs the Phase 0 field and curve vectors on all three curves
+  against the only remaining implementation, with its corruption control.
+- `pairing.*` is new on all three curves, with its own corruption control.
+- `property.*` and `finalexp.agreement.*` are gone with the code they tested.
+
+Every suite is now driven by the Python oracle. Nothing in `test/` compares one
+C implementation against another.
+
+28 under each sanitizer, zero warnings under `-Werror` on gcc and clang.
+
+### Packaging
+
+One library, `ELiPS::arith`, built for the curve `-DELIPS_CURVE` selects.
+`ELiPS::elips` is kept as an alias of it, so a build file written against the
+old name still configures — verified by building a consumer against each name.
+`include/ELiPS_bn_bls/` is no longer installed because it no longer exists.
+
+### Note for whoever repoints GitHub Pages
+
+`docs/` is still tracked and is now 1280 of the 76+1280 tracked files —
+94% of the repository is a generated Doxygen site describing code that in large
+part no longer exists. Untracking it is a one-line change once Pages serves from
+`gh-pages`; the workflow for that already exists.
+
+---
+
 # HAND-OFF — next session starts at Phase 6
 
 **Phases 0 to 5b are complete.** Phase 6 (assembly) is next, and §10.10 of the
@@ -1454,10 +1553,13 @@ plan changed its target: read that before starting.
 ## Where things stand
 
 Branch `claude/pairing-crypto-modernize-2faff2`.
-43 CTest targets green on Release (including the three examples), 27 on Asan and
+38 CTest targets green on Release (including the three examples), 28 on Asan and
 Ubsan (dudect is not registered under sanitizers), zero warnings under
 `-Werror` on gcc and clang. CI sets `-DELIPS_WERROR=ON`, so that is a gate
 rather than a claim.
+
+**One layer.** The legacy mpz layer was retired by issue #17; every test is now
+driven by the Python oracle rather than by a second C implementation.
 
 | Curve | pairing value | serialized G1/G2 | hash-to-curve | GLV |
 |---|---|---|---|---|
@@ -1490,14 +1592,12 @@ so their vectors pin self-consistency.
 | Multi-pairing + fixed-argument precomputation (§10.6) | ~40% of a signature verification | low; it is bookkeeping over the existing loop |
 | Karabina compressed squaring (§10.5) | 10–15% of the final exponentiation | low |
 | GLV on G1, and on BN G2 (§10.4) | ~1.4x on those ladders | low; the constant-time decomposition already exists |
-| Retire the legacy layer (#17) | deletes A3, A4, closes #16 | mechanical, large diff |
 
-## Three open issues worth reading first
+## Open issues
 
-- **#17 retire the legacy mpz layer.** The modern layer now covers every entry
-  point it has, plus serialization and hash-to-curve, which it never had.
-- **#16 final exponentiation exponent.** Resolved on the modern layer; closes
-  with #17.
+- **#17 retire the legacy mpz layer** — done, Phase 5d. Ready to close.
+- **#16 final exponentiation exponent** — the code it described is deleted.
+  Ready to close.
 - **#15 baseline measurements.** Superseded by the RELIC comparison.
 
 ## Things a fresh session should not re-derive
@@ -1532,10 +1632,11 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 - `hash_to_g2` rebuilds a window table for each of its two short ladders; a
   shared table would help.
 - No signature layer. §10.8 explains why that line is where it is.
-- The legacy layer's RNG is seeded properly but is still a Mersenne Twister.
-- `docs/` is still tracked, 1280 files, because GitHub Pages serves from
-  `master:/docs`. A workflow to publish from `gh-pages` exists; once Pages is
-  repointed, `git rm -r --cached docs` drops the repo to ~126 tracked files.
+- `docs/` is still tracked: 1280 files against 76 of everything else, so 94% of
+  the repository is a generated Doxygen site, much of it describing code that no
+  longer exists. GitHub Pages serves from `master:/docs`; a workflow to publish
+  from `gh-pages` exists, and once Pages is repointed `git rm -r --cached docs`
+  drops the repository to 76 tracked files.
 - The IACR survey behind §10 was done through search abstracts: the egress
   policy blocks `eprint.iacr.org`, so no full text was read. Citations are
   pointers, not sources of copied formulas.

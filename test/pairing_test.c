@@ -1,141 +1,202 @@
-/* Does the new pairing equal the value Phase 0 established as correct?
+/*
+ * Does the pairing compute the right value?
  *
- * The legacy finalexp_plain path was proved in Phase 0 to equal
- * f^((p^12-1)/r) exactly (issue #16: it is the *optimal* variant that is off by
- * a factor). So legacy_miller followed by legacy_finalexp_plain is the
- * reference here, and it shares no code with the new layer. */
+ * The reference is test/kat/pairing_<curve>.vec, produced by
+ * tools/reference/pairing_ref.py -- an independent optimal ate written from the
+ * defining equations, with the final exponentiation done as one exponentiation
+ * by (p^12-1)/r rather than by any addition chain.
+ *
+ * Until issue #17 the reference was the legacy mpz layer, so this test said
+ * "the new pairing agrees with the old one". That is the weaker of the two
+ * available statements: two implementations can share a misreading of the twist
+ * conventions and agree on a wrong answer. Against the oracle they cannot, and
+ * BLS12-381 gets a pairing reference for the first time -- the legacy layer
+ * never supported it.
+ *
+ * Exit codes: 0 all passed, 1 a check failed, 2 the vector file is unusable.
+ */
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <gmp.h>
+
 #include "elips/pairing.h"
-#include <ELiPS_bn_bls/curve_settings.h>
-#ifdef ELIPS_FAMILY_BN
-#  include <ELiPS_bn_bls/bn_inits.h>
-#  include <ELiPS_bn_bls/bn_generate_points.h>
-#  include <ELiPS_bn_bls/bn_twist.h>
-#  include <ELiPS_bn_bls/bn_miller_optate.h>
-#  include <ELiPS_bn_bls/bn_final_exp.h>
-#  define CURVE_INIT()        init_bn()
-#  define GEN_G1(P)           bn12_generate_G1_point(P)
-#  define GEN_G2(Q)           bn12_generate_G2_point(Q)
-#  define TO_EFP(o, P)        do { Fp_set(&(o).x,&(P).x.x0.x0.x0); \
-                                   Fp_set(&(o).y,&(P).y.x0.x0.x0); } while (0)
-#  define TO_EFP2(o, Q)       EFp12_to_EFp2(&(o), &(Q))
-#  define REF_MILLER(f,P,Q)   Miller_algo_for_opt_ate(f,P,Q)
-#  define REF_FINALEXP(f)     bn_final_exp_plain(f,f)
-#else
-#  include <ELiPS_bn_bls/bls12_inits.h>
-#  include <ELiPS_bn_bls/bls12_generate_points.h>
-#  include <ELiPS_bn_bls/bls12_twist.h>
-#  include <ELiPS_bn_bls/bls12_miller_optate.h>
-#  include <ELiPS_bn_bls/bls12_finalexp.h>
-#  define CURVE_INIT()        bls12_inits()
-#  define GEN_G1(P)           bls12_generate_G1_point(P)
-#  define GEN_G2(Q)           bls12_generate_G2_point(Q)
-#  define TO_EFP(o, P)        bls12_EFp12_to_EFp(&(o), &(P))
-#  define TO_EFP2(o, Q)       bls12_EFp12_to_EFp2(&(o), &(Q))
-#  define REF_MILLER(f,P,Q)   bls12_Miller_algo_for_opt_ate(f,P,Q)
-#  define REF_FINALEXP(f)     bls12_finalexp_plain(f,f)
-#endif
+
+static int fails, checks;
+static long cur_line;
+
+static void ok(int c, const char *what)
+{
+    checks++;
+    if (!c) { fails++; printf("  [FAIL] %s (line %ld)\n", what, cur_line); }
+}
 
 static void ld(fp_t r, const mpz_t v)
-{ limb_t l[FP_LIMBS]; memset(l,0,sizeof l);
-  mpz_export(l,NULL,-1,sizeof(limb_t),0,0,v); fp_from_limbs(r,l); }
-static void st(mpz_t o, const fp_t a)
-{ limb_t l[FP_LIMBS]; fp_to_limbs(l,a); mpz_import(o,FP_LIMBS,-1,sizeof(limb_t),0,0,l); }
-
-int main(void)
 {
-    CURVE_INIT();
-    printf("pairing test [%s]\n", ELIPS_CURVE_NAME);
-    EFp12 P12, Q12; EFp12_init(&P12); EFp12_init(&Q12);
-    GEN_G1(&P12);
-    GEN_G2(&Q12);
+    limb_t l[FP_LIMBS];
+    memset(l, 0, sizeof l);
+    mpz_export(l, NULL, -1, sizeof(limb_t), 0, 0, v);
+    fp_from_limbs(r, l);
+}
 
-    EFp mp; EFp2 mq; EFp_init(&mp); EFp2_init(&mq);
-    TO_EFP(mp, P12);
-    TO_EFP2(mq, Q12);
+static void st(mpz_t o, const fp_t a)
+{
+    limb_t l[FP_LIMBS];
+    fp_to_limbs(l, a);
+    mpz_import(o, FP_LIMBS, -1, sizeof(limb_t), 0, 0, l);
+}
 
-    /* new layer */
-    fp_t px, py; fp2_t qx, qy;
-    ld(px, mp.x.x0); ld(py, mp.y.x0);
-    ld(qx[0], mq.x.x0.x0); ld(qx[1], mq.x.x1.x0);
-    ld(qy[0], mq.y.x0.x0); ld(qy[1], mq.y.x1.x0);
-    fp12_t nf, nz;
-    pairing_miller(nf, qx, qy, px, py);
-    pairing_final_exp_plain(nz, nf);
-
-    /* legacy reference (Miller + the plain, provably correct final exp) */
-    Fp12 lf; Fp12_init(&lf);
-    REF_MILLER(&lf, &P12, &Q12);
-    REF_FINALEXP(&lf);
-
-    mpz_t a, b; mpz_inits(a, b, NULL);
-    int diff = 0;
-    const limb_t *nc[12] = { nz[0][0][0], nz[0][0][1], nz[0][1][0], nz[0][1][1],
-                           nz[0][2][0], nz[0][2][1], nz[1][0][0], nz[1][0][1],
-                           nz[1][1][0], nz[1][1][1], nz[1][2][0], nz[1][2][1] };
-    mpz_t *lc[12];
-    Fp6 *six[2] = { &lf.x0, &lf.x1 };
+/* The vector file lists the twelve coefficients as d0.c0.a, d0.c0.b, d0.c1.a,
+ * ... d1.c2.b, which is the order tools/reference/elips_ref.py's fp12_to_list
+ * produces. */
+static void fp12_coeffs(const limb_t *out[12], const fp12_t z)
+{
     int k = 0;
-    for (int s2 = 0; s2 < 2; s2++) {
-        Fp2 *cc[3] = { &six[s2]->x0, &six[s2]->x1, &six[s2]->x2 };
-        for (int j = 0; j < 3; j++) { lc[k++] = &cc[j]->x0.x0; lc[k++] = &cc[j]->x1.x0; }
-    }
-    for (int i = 0; i < 12; i++) {
-        st(a, nc[i]);
-        mpz_mod(b, *lc[i], curve_parameters.prime);
-        if (mpz_cmp(a, b) != 0) {
-            diff++;
-            if (diff <= 3) gmp_printf("  coord %2d  new=%Zx\n            ref=%Zx\n", i, a, b);
+    for (int d = 0; d < 2; d++)
+        for (int c = 0; c < 3; c++)
+            for (int b = 0; b < 2; b++)
+                out[k++] = z[d][c][b];
+}
+
+int main(int argc, char **argv)
+{
+    if (argc < 2) { fprintf(stderr, "usage: %s <pairing.vec>\n", argv[0]); return 2; }
+    FILE *f = fopen(argv[1], "r");
+    if (!f) { perror(argv[1]); return 2; }
+
+    printf("pairing vectors [%s]\n", ELIPS_CURVE_NAME);
+
+    mpz_t prime, tmp, got, want;
+    mpz_inits(prime, tmp, got, want, NULL);
+
+    char *line = NULL;
+    size_t cap = 0;
+    ssize_t len;
+    long records = 0;
+
+    while ((len = getline(&line, &cap, f)) > 0) {
+        cur_line++;
+        if (line[0] == '#' || line[0] == '\n') continue;
+
+        char *save = NULL;
+        char *op = strtok_r(line, " \t\n", &save);
+        if (!op) continue;
+
+        if (strcmp(op, "prime") == 0) {
+            mpz_set_str(prime, strtok_r(NULL, " \t\n", &save), 16);
+            /* The vector file and the compiled curve must be the same one, or
+             * every value below is quietly meaningless. */
+            mpz_import(tmp, FP_LIMBS, -1, sizeof(limb_t), 0, 0, FP_MODULUS);
+            if (mpz_cmp(tmp, prime) != 0) {
+                fprintf(stderr, "vector file is for a different curve than %s\n",
+                        ELIPS_CURVE_NAME);
+                free(line); fclose(f);
+                mpz_clears(prime, tmp, got, want, NULL);
+                return 2;
+            }
+            continue;
         }
-    }
-    printf("  [%s] new pairing == Phase 0 reference value\n", diff ? "FAIL" : "PASS");
 
-    /* Independent properties, so a shared misunderstanding of the conventions
-     * cannot make both sides agree on a wrong answer. */
-    int fails = diff ? 1 : 0;
-    fp12_t one, chk;
-    fp12_set_one(one);
-    if (fp12_eq(nz, one)) { printf("  [FAIL] pairing is degenerate\n"); fails++; }
-    else printf("  [PASS] e(P,Q) != 1\n");
+        if (strcmp(op, "pair") != 0) {
+            fprintf(stderr, "unknown op '%s' line %ld\n", op, cur_line);
+            free(line); fclose(f);
+            mpz_clears(prime, tmp, got, want, NULL);
+            return 2;
+        }
 
-    {   /* e(P,Q)^r == 1 */
-        limb_t rr[FP_LIMBS]; memset(rr, 0, sizeof rr);
-        mpz_export(rr, NULL, -1, sizeof(limb_t), 0, 0, curve_parameters.order);
-        int rbits = (int)mpz_sizeinbase(curve_parameters.order, 2);
-        fp12_exp(chk, nz, rr, rbits);
-        if (!fp12_eq(chk, one)) { printf("  [FAIL] e(P,Q)^r != 1\n"); fails++; }
-        else printf("  [PASS] e(P,Q)^r == 1\n");
-    }
+        /* px py qx0 qx1 qy0 qy1 = c0 .. c11 */
+        char *tok[19];
+        int missing = 0;
+        for (int i = 0; i < 19; i++) {
+            tok[i] = strtok_r(NULL, " \t\n", &save);
+            if (!tok[i]) missing = 1;
+        }
+        if (missing || strcmp(tok[6], "=") != 0) {
+            fprintf(stderr, "malformed record at line %ld\n", cur_line);
+            free(line); fclose(f);
+            mpz_clears(prime, tmp, got, want, NULL);
+            return 2;
+        }
 
-#ifdef ELIPS_FAMILY_BLS12
-    {   /* The fast chain must equal the exact value cubed. It computes e^3 by
-         * design, because 3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3 has a short
-         * evaluation and lambda alone does not. See issue #16. */
-        fp12_t fast, cube;
-        pairing_final_exp_fast(fast, nf);
-        fp12_sqr(cube, nz); fp12_mul(cube, cube, nz);
-        if (!fp12_eq(fast, cube)) { printf("  [FAIL] fast chain != exact^3\n"); fails++; }
-        else printf("  [PASS] fast final exponentiation == exact^3\n");
-    }
-#else
-    {   /* BN's hard part decomposes exactly, so its fast chain must equal the
-         * exact value with no factor -- unlike BLS12. */
+        fp_t px, py;
+        fp2_t qx, qy;
+        mpz_set_str(tmp, tok[0], 16); ld(px, tmp);
+        mpz_set_str(tmp, tok[1], 16); ld(py, tmp);
+        mpz_set_str(tmp, tok[2], 16); ld(qx[0], tmp);
+        mpz_set_str(tmp, tok[3], 16); ld(qx[1], tmp);
+        mpz_set_str(tmp, tok[4], 16); ld(qy[0], tmp);
+        mpz_set_str(tmp, tok[5], 16); ld(qy[1], tmp);
+
+        /* The inputs must be what the file says they are before the output is
+         * worth comparing. */
+        ep_t P;
+        ep2_t Q;
+        ep_from_affine(&P, px, py);
+        ep2_from_affine(&Q, qx, qy);
+        ok(ep_in_subgroup(&P),  "P from the vector is in G1");
+        ok(ep2_in_subgroup(&Q), "Q from the vector is in G2");
+
+        fp12_t raw, exact;
+        pairing_miller(raw, qx, qy, px, py);
+        pairing_final_exp_plain(exact, raw);
+
+        const limb_t *c[12];
+        fp12_coeffs(c, exact);
+        int diff = 0;
+        for (int i = 0; i < 12; i++) {
+            st(got, c[i]);
+            mpz_set_str(want, tok[7 + i], 16);
+            if (mpz_cmp(got, want) != 0) {
+                if (diff == 0)
+                    gmp_printf("  coord %2d  got  %Zx\n            want %Zx\n",
+                               i, got, want);
+                diff++;
+            }
+        }
+        ok(diff == 0, "exact pairing matches the reference value");
+
+        /* Properties the vector cannot fake: a reference that was itself wrong
+         * would still have to satisfy these. */
+        fp12_t one, chk;
+        fp12_set_one(one);
+        ok(!fp12_eq(exact, one), "e(P,Q) != 1");
+        fp12_exp(chk, exact, ELIPS_ORDER, ELIPS_ORDER_BITS);
+        ok(fp12_eq(chk, one), "e(P,Q)^r == 1");
+
+        /* And the relationship between the two final exponentiations, which is
+         * internal to this library and has no reference outside it. */
         fp12_t fast;
-        pairing_final_exp_fast(fast, nf);
-        if (!fp12_eq(fast, nz)) { printf("  [FAIL] BN fast chain != exact e\n"); fails++; }
-        else printf("  [PASS] fast final exponentiation == exact e\n");
-    }
+        pairing_final_exp_fast(fast, raw);
+#ifdef ELIPS_FAMILY_BLS12
+        /* The fast chain computes e^3 by design: 3*lambda has a short
+         * evaluation and lambda alone does not. See issue #16. */
+        fp12_t cube;
+        fp12_sqr(cube, exact);
+        fp12_mul(cube, cube, exact);
+        ok(fp12_eq(fast, cube), "fast final exponentiation == exact^3");
+#else
+        /* BN's hard part decomposes exactly, so no stray factor. */
+        ok(fp12_eq(fast, exact), "fast final exponentiation == exact e");
 #endif
 
-    printf("%s\n", fails ? "FAILED" : "OK");
-    mpz_clears(a, b, NULL);
-    /* The legacy types are heap-allocated mpz underneath, and LeakSanitizer
-     * runs by default with AddressSanitizer on Linux, so a test that abandons
-     * them turns the Asan job red without any library defect behind it. */
-    Fp12_clear(&lf);
-    EFp_clear(&mp); EFp2_clear(&mq);
-    EFp12_clear(&P12); EFp12_clear(&Q12);
+        /* elips_pairing must agree with the pieces it is built from. */
+        fp12_t whole;
+        ok(elips_pairing(whole, &P, &Q) == 1, "elips_pairing accepts the inputs");
+        ok(fp12_eq(whole, fast), "elips_pairing == miller + fast final exp");
+
+        records++;
+    }
+
+    free(line);
+    fclose(f);
+    mpz_clears(prime, tmp, got, want, NULL);
+
+    if (records == 0) {
+        fprintf(stderr, "no pairing records in %s\n", argv[1]);
+        return 2;
+    }
+
+    printf("  %ld pairings, %d checks, %d failed\n", records, checks, fails);
     return fails ? 1 : 0;
 }
