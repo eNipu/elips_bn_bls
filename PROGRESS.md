@@ -904,3 +904,86 @@ All three met, with G2 now constant time on the fast path.
 Caveat that stays true: RELIC is on its portable GMP backend because its x86-64
 assembly cannot run on this AArch64 machine. This is portable C against portable
 C. Phase 6 is what addresses the rest.
+
+---
+
+# HAND-OFF — next session starts at Phase 5
+
+**Phases 0 to 4 are complete and their gates are met.** Phase 5 (issue #6,
+constant-time completion and API hardening) is the next thing to start.
+
+## Where things stand
+
+Branch `claude/pairing-crypto-modernize-2faff2`, 29 commits.
+20 CTest targets green on both Release and Asan builds, zero warnings.
+
+| Curve | pairing | vs legacy | value returned |
+|---|---|---|---|
+| BLS12-381 | 1175 us | legacy never supported it | `e^3` |
+| BLS12-461 | 2112 us | 3.7x | `e^3` |
+| BN-462 | 2495 us | 3.4x | `e` exact |
+
+Against RELIC on BLS12-381, portable arithmetic both sides:
+
+| | RELIC | ELiPS | ratio | gate |
+|---|---|---|---|---|
+| pairing | 955.5 us | 1175.1 us | 1.23x | <= 1.25x |
+| G1 scalar mult | 128.1 us | 176.2 us | 1.38x | <= 1.5x |
+| G2 scalar mult | 204.5 us | 287.9 us | 1.41x | <= 1.5x |
+
+## What Phase 5 inherits, and what it does not
+
+Phase 5's scope in the plan was written before Phases 3 and 4 happened. Several
+items are already done:
+
+| Phase 5 item | Status |
+|---|---|
+| Constant-time field arithmetic | **done** in Phase 3 |
+| Constant-time scalar multiplication | **done** in Phase 4, GLV included |
+| Constant-time inversion | **done** — `mpn_sec_invert`, with `fp_inv_vartime` for public values |
+| Subgroup membership checks | **done** in Phase 3 — `ep_in_subgroup`, `ep2_in_subgroup` |
+| Input validation at the API boundary | **partly** — `elips_pairing` rejects identity and off-subgroup points |
+| A real CSPRNG | **not started** — the legacy layer still seeds from `time(NULL)` |
+| `dudect` timing-leakage tests in CI | **not started** |
+| Serialization in compressed point formats | **not started** — needed for BLS12-381 interoperability |
+
+So Phase 5 is realistically: **CSPRNG, dudect in CI, and serialization.**
+
+## Three open issues worth reading first
+
+- **#17 retire the legacy mpz layer.** The new layer stands alone now
+  (`standalone_test.c` links no legacy code), so this is unblocked. It is what
+  finally deletes defects A3 and A4. Note the planned "curve context struct"
+  turned out unnecessary: the new layer's constants are compile-time.
+- **#16 final exponentiation exponent.** Resolved on the new layer. BLS12's
+  factor of 3 is inherent to the standard chain; BN's `12*X^3` is a genuine
+  defect. Both only affect the legacy layer now, so #16 closes when #17 lands.
+- **#15 baseline measurements.** Low priority, superseded in practice by the
+  RELIC comparison.
+
+## Things a fresh session should not re-derive
+
+- The tower collapses to `Fp[w]/(w^12 - 2w^6 + 2)`, irreducible over all three
+  primes. That is what makes Sage a directly comparable oracle.
+- `psi` acts on G2 as multiplication by `p mod r`: that is `x` on BLS12 (short,
+  hence 4-dimensional GLV) and `6x^2` on BN (only 2-dimensional). **BN has no
+  GLV implemented.**
+- `3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3` on BLS12 — why the fast chain
+  returns `e^3`. BN's decomposition is exact and returns `e`.
+- RCB gives cheaper addition and dearer doubling than Jacobian. Addition-heavy
+  code wins, doubling-heavy code loses. Do not "fix" the pairing regression by
+  reverting; it was a deliberate trade.
+- Five suspected bugs were investigated and **disproved**: the Miller loop
+  bounds on both curves, `Fp2_set_ui`'s broadcast, the `char str[5]` buffer, and
+  the global mutation in `bls12_finalexp_optimal`. Do not "fix" them.
+
+## Known limitations, stated plainly
+
+- BN has no GLV and no compressed squaring.
+- The plain (non-GLV) G2 window ladder regressed 20% under RCB. It is only used
+  for points not known to be in G2.
+- RELIC comparison is portable-C to portable-C; its x86-64 assembly cannot run
+  on this AArch64 machine. Phase 6 is where that gap gets addressed.
+- `docs/` is still tracked, 1280 files, because GitHub Pages serves from
+  `master:/docs`. A workflow to publish from `gh-pages` exists; once Pages is
+  repointed, `git rm -r --cached docs` drops the repo to ~126 tracked files.
