@@ -32,7 +32,9 @@ void pairing_final_exp_plain(fp12_t r, const fp12_t f);
  * but raw values will not match an implementation that outputs e.
  *
  * See issue #16. Use pairing_final_exp_plain when the exact value is required. */
+#ifdef ELIPS_FAMILY_BLS12
 void pairing_final_exp_fast(fp12_t r, const fp12_t f);
+#endif
 
 /* f^x with x the curve's mother parameter, for f in the cyclotomic subgroup
  * (where conjugation is inversion). */

@@ -84,6 +84,63 @@ typedef mp_limb_t limb_t;
         UINT64_C(0xc0bd38c3195c899e),
         UINT64_C(0x000f686b3d807d01)
   };
+  /* Skew Frobenius on the twist: psi and psi^2 multipliers. */
+  static const limb_t PSI_X[2][6] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0x890dc9e4867545c3),
+        UINT64_C(0x2af322533285a5d5),
+        UINT64_C(0x50880866309b7e2c),
+        UINT64_C(0xa20d1b8c7e881024),
+        UINT64_C(0x14e4f04fe2db9068),
+        UINT64_C(0x14e56d3f1564853a) }
+  };
+  static const limb_t PSI_Y[2][6] = {
+    { UINT64_C(0x3e2f585da55c9ad1),
+        UINT64_C(0x4294213d86c18183),
+        UINT64_C(0x382844c88b623732),
+        UINT64_C(0x92ad2afd19103e18),
+        UINT64_C(0x1d794e4fac7cf0b9),
+        UINT64_C(0x0bd592fc7d825ec8) },
+    { UINT64_C(0x7bcfa7a25aa30fda),
+        UINT64_C(0xdc17dec12a927e7c),
+        UINT64_C(0x2f088dd86b4ebef1),
+        UINT64_C(0xd1ca2087da74d4a7),
+        UINT64_C(0x2da2596696cebc1d),
+        UINT64_C(0x0e2b7eedbbfd87d2) }
+  };
+  static const limb_t PSI2_X[2][6] = {
+    { UINT64_C(0xcd03c9e48671f071),
+        UINT64_C(0x5dab22461fcda5d2),
+        UINT64_C(0x587042afd3851b95),
+        UINT64_C(0x8eb60ebe01bacb9e),
+        UINT64_C(0x03f97d6e83d050d2),
+        UINT64_C(0x18f0206554638741) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t PSI2_Y[2][6] = {
+    { UINT64_C(0x43f5fffffffcaaae),
+        UINT64_C(0x32b7fff2ed47fffd),
+        UINT64_C(0x07e83a49a2e99d69),
+        UINT64_C(0xeca8f3318332bb7a),
+        UINT64_C(0xef148d1ea0f4c069),
+        UINT64_C(0x040ab3263eff0206) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][6] = {
     { UINT64_C(0x07089552b319d465),
@@ -368,6 +425,79 @@ typedef mp_limb_t limb_t;
         UINT64_C(0xa24fe567d9bf5fc1),
         UINT64_C(0x6ca5acc5d7ee55a3),
         UINT64_C(0x3291617b422030fd)
+  };
+  /* Skew Frobenius on the twist: psi and psi^2 multipliers. */
+  static const limb_t PSI_X[2][8] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0x36c8463871e35b24),
+        UINT64_C(0x5491b5d2a7570d99),
+        UINT64_C(0x5989e117b61d8847),
+        UINT64_C(0x851b25f2c98585ae),
+        UINT64_C(0x8e6037cd502a0352),
+        UINT64_C(0x50533ce4e82071a7),
+        UINT64_C(0x39cc62be03b2af65),
+        UINT64_C(0x000000000000028b) }
+  };
+  static const limb_t PSI_Y[2][8] = {
+    { UINT64_C(0xe3041ed8c35c8ae6),
+        UINT64_C(0x24fae40195ac51d0),
+        UINT64_C(0x6355355eb2180f77),
+        UINT64_C(0xb483db73e9748239),
+        UINT64_C(0x8a32ff4b715f6bc6),
+        UINT64_C(0xe00ebd21ba62e546),
+        UINT64_C(0xd1beeb0331cc4b01),
+        UINT64_C(0x0000000000001536) },
+    { UINT64_C(0xc7a7e127e74e1fc5),
+        UINT64_C(0xdb251c03bfa8f8d9),
+        UINT64_C(0xabd17532a366f0c8),
+        UINT64_C(0xd6becd6c10e79a86),
+        UINT64_C(0xa8a5bb81331ba8bd),
+        UINT64_C(0xf6855771a55a89d7),
+        UINT64_C(0x83866a4a28890f53),
+        UINT64_C(0x000000000000001e) }
+  };
+  static const limb_t PSI2_X[2][8] = {
+    { UINT64_C(0xed7c493b1f8e0750),
+        UINT64_C(0x9511cd97fc844443),
+        UINT64_C(0xe32591e007dbc947),
+        UINT64_C(0x96ebac2c10cfb6e5),
+        UINT64_C(0x510a96bc9f57be18),
+        UINT64_C(0xa8c831720ceb8a5b),
+        UINT64_C(0x3b14a327e8924c9c),
+        UINT64_C(0x00000000000003e0) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t PSI2_Y[2][8] = {
+    { UINT64_C(0xb6b40302adaaac2c),
+        UINT64_C(0x408017c5552d36aa),
+        UINT64_C(0x899bb0c851be4100),
+        UINT64_C(0x11d08639474a3137),
+        UINT64_C(0xc2aa5eef4f2dbac6),
+        UINT64_C(0x5874f48d24cb18b3),
+        UINT64_C(0x01484069e4df9d37),
+        UINT64_C(0x0000000000000155) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
   };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {
@@ -711,6 +841,79 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x8a068e8f6ac5a85e),
         UINT64_C(0x540775f547827b97),
         UINT64_C(0x000000b68463c059)
+  };
+  /* Skew Frobenius on the twist: psi and psi^2 multipliers. */
+  static const limb_t PSI_X[2][8] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0x52235fc114f07370),
+        UINT64_C(0x95d0dcf78df4f4a7),
+        UINT64_C(0x93d3ecafc85764d5),
+        UINT64_C(0x1b6c2af43f17f471),
+        UINT64_C(0x7cc698cb2452332e),
+        UINT64_C(0x0037f9e0957778bd),
+        UINT64_C(0x2f74b5bc9400dff9),
+        UINT64_C(0x000000000000105e) }
+  };
+  static const limb_t PSI_Y[2][8] = {
+    { UINT64_C(0xe2cc73b8a1394ec9),
+        UINT64_C(0xf5deed176152a874),
+        UINT64_C(0xe2655b087d283392),
+        UINT64_C(0x40f08daa072b8a44),
+        UINT64_C(0xd34d5401d16a87fe),
+        UINT64_C(0x25f882ed54df6e49),
+        UINT64_C(0x1eb2056038dd6512),
+        UINT64_C(0x00000000000003c0) },
+    { UINT64_C(0x41353c4f9eda314a),
+        UINT64_C(0x00a909289ead578b),
+        UINT64_C(0x1d9aa4ee823ec8dd),
+        UINT64_C(0xd1a00197c0d685bb),
+        UINT64_C(0xec7cabfe2e9578d9),
+        UINT64_C(0xda077411b817498f),
+        UINT64_C(0x6183fbbfc9629aed),
+        UINT64_C(0x0000000000002044) }
+  };
+  static const limb_t PSI2_X[2][8] = {
+    { UINT64_C(0x1411710cf60202c8),
+        UINT64_C(0x66e69ee38f2f8e88),
+        UINT64_C(0x6280de9a92a4e382),
+        UINT64_C(0xb29d7462344c7831),
+        UINT64_C(0x7f965ccd9ee433ba),
+        UINT64_C(0x0087fb5a1511f6b7),
+        UINT64_C(0x318cc43c76021fef),
+        UINT64_C(0x0000000000000078) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t PSI2_Y[2][8] = {
+    { UINT64_C(0xe5efc15421250f6b),
+        UINT64_C(0xc79db82c013a99e0),
+        UINT64_C(0xceacf1e1c9b47b1c),
+        UINT64_C(0xa9c1d8afbd3693bf),
+        UINT64_C(0xc299c4027a920164),
+        UINT64_C(0x004ff8788c9135d3),
+        UINT64_C(0x824e0f9fe4413ff6),
+        UINT64_C(0x000000000000141e) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
   };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {

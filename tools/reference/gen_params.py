@@ -98,6 +98,30 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
                 "  static const limb_t ELIPS_HARD_EXP[%d] = {\n        %s\n  };\n"
                 % (hn, limb_list(hard, hn)))
 
+    # Skew Frobenius (psi) on the twist, needed by the BN correction lines.
+    #
+    # Untwisting sends (x',y') to (x'/w^2, y'/w^3); applying the p-power map
+    # there and twisting back gives
+    #     psi(x',y') = (conj(x') * gamma^-2, conj(y') * gamma^-3)
+    # with gamma = w^(p-1) = xi^((p-1)/6). Applying psi twice leaves
+    #     psi^2(x,y) = (x * N(gamma^-2), y * N(gamma^-3))
+    # where N is the Fp2 norm, so the psi^2 multipliers lie in Fp.
+    def fp2_inv_(a):
+        n = pow((a[0]*a[0] + a[1]*a[1]) % p, p - 2, p)
+        return ((a[0]*n) % p, (-a[1]*n) % p)
+    def fp2_mul_(a, b):
+        return ((a[0]*b[0] - a[1]*b[1]) % p, (a[0]*b[1] + a[1]*b[0]) % p)
+    g1 = fp2_pow(xi, (p - 1) // 6)
+    u2 = fp2_inv_(fp2_mul_(g1, g1))
+    u3 = fp2_inv_(fp2_mul_(fp2_mul_(g1, g1), g1))
+    w2 = fp2_mul_(u2, (u2[0], (-u2[1]) % p))
+    w3 = fp2_mul_(u3, (u3[0], (-u3[1]) % p))
+    def fp2_const(nm, v):
+        return ("  static const limb_t %s[2][%d] = {\n    { %s },\n    { %s }\n  };\n"
+                % (nm, n, limb_list((v[0]*R) % p, n), limb_list((v[1]*R) % p, n)))
+    psi_txt = (fp2_const("PSI_X", u2) + fp2_const("PSI_Y", u3) +
+               fp2_const("PSI2_X", w2) + fp2_const("PSI2_Y", w3))
+
     frob_txt = ""
     for k in (1, 2, 3):
         for i, (a, b) in enumerate(frob[k], start=1):
@@ -120,6 +144,7 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
         "  static const limb_t FP_ONE[%d] = {\n        %s\n  };\n" % (n, limb_list(one, n)) +
         "  /* Miller loop parameter, signed digits. */\n" + loop_txt +
         "  /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */\n" + hard_txt +
+        "  /* Skew Frobenius on the twist: psi and psi^2 multipliers. */\n" + psi_txt +
         "  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */\n" +
         frob_txt +
         "#endif\n")

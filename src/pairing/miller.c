@@ -196,7 +196,26 @@ void pairing_miller(fp12_t f, const fp2_t qx, const fp2_t qy,
         else if (ELIPS_LOOP[i] < 0) add_step(f, &T, qx, nqy, px, py);
     }
 #ifdef ELIPS_FAMILY_BN
-#  error "BN needs the two post-loop correction lines; not implemented yet."
+    /* BN's optimal ate needs two correction lines after the loop:
+     *
+     *     f *= l_{T, psi(Q)}(P),        T += psi(Q)
+     *     f *= l_{T, -psi^2(Q)}(P),     T -= psi^2(Q)
+     *
+     * psi is the Frobenius carried through the untwisting map, so on affine
+     * twist coordinates it is
+     *     psi(x, y) = (conj(x) * gamma^-2, conj(y) * gamma^-3)
+     * and psi^2 multiplies by the Fp2 norms of those, which are in Fp -- the
+     * generator asserts their imaginary parts are zero. */
+    {
+        fp2_t q1x, q1y, q2x, q2y;
+        fp2_conj(q1x, qx); fp2_mul(q1x, q1x, PSI_X);
+        fp2_conj(q1y, qy); fp2_mul(q1y, q1y, PSI_Y);
+        fp2_mul(q2x, qx, PSI2_X);
+        fp2_mul(q2y, qy, PSI2_Y);
+        fp2_neg(q2y, q2y);                 /* -psi^2(Q) */
+        add_step(f, &T, q1x, q1y, px, py);
+        add_step(f, &T, q2x, q2y, px, py);
+    }
 #endif
 }
 
@@ -237,6 +256,7 @@ void fp12_exp_param(fp12_t r, const fp12_t f)
     fp12_copy(r, acc);
 }
 
+#ifdef ELIPS_FAMILY_BLS12
 void pairing_final_exp_fast(fp12_t r, const fp12_t f)
 {
     /* easy part: f^(p^6-1)(p^2+1), which lands in the cyclotomic subgroup */
@@ -275,3 +295,18 @@ void pairing_final_exp_fast(fp12_t r, const fp12_t f)
     fp12_mul(e, e, m);             /* m^3            */
     fp12_mul(r, d, e);
 }
+#else
+/* No fast chain for BN yet.
+ *
+ * The identity the BLS12 chain rests on,
+ *     3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3,
+ * is specific to that family; applying it to BN gives a wrong exponent, which
+ * the test suite catches. BN has its own standard chain (Devegili, Scott and
+ * Dahab) and it is simply not written yet.
+ *
+ * Declining to provide one is deliberate. The legacy library ships a BN
+ * "optimal" final exponentiation that raises to roughly 12*X^3 times the
+ * correct exponent (issue #16) and nothing noticed for years, because the
+ * result is still bilinear. A missing function is a better failure mode than a
+ * plausible wrong one, so BN callers get the exact path or nothing. */
+#endif

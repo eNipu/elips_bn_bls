@@ -8,12 +8,35 @@
 #include <string.h>
 #include <gmp.h>
 #include "elips/pairing.h"
-#include <ELiPS_bn_bls/bls12_inits.h>
-#include <ELiPS_bn_bls/bls12_generate_points.h>
-#include <ELiPS_bn_bls/bls12_twist.h>
-#include <ELiPS_bn_bls/bls12_miller_optate.h>
-#include <ELiPS_bn_bls/bls12_finalexp.h>
 #include <ELiPS_bn_bls/curve_settings.h>
+#ifdef ELIPS_FAMILY_BN
+#  include <ELiPS_bn_bls/bn_inits.h>
+#  include <ELiPS_bn_bls/bn_generate_points.h>
+#  include <ELiPS_bn_bls/bn_twist.h>
+#  include <ELiPS_bn_bls/bn_miller_optate.h>
+#  include <ELiPS_bn_bls/bn_final_exp.h>
+#  define CURVE_INIT()        init_bn()
+#  define GEN_G1(P)           bn12_generate_G1_point(P)
+#  define GEN_G2(Q)           bn12_generate_G2_point(Q)
+#  define TO_EFP(o, P)        do { Fp_set(&(o).x,&(P).x.x0.x0.x0); \
+                                   Fp_set(&(o).y,&(P).y.x0.x0.x0); } while (0)
+#  define TO_EFP2(o, Q)       EFp12_to_EFp2(&(o), &(Q))
+#  define REF_MILLER(f,P,Q)   Miller_algo_for_opt_ate(f,P,Q)
+#  define REF_FINALEXP(f)     bn_final_exp_plain(f,f)
+#else
+#  include <ELiPS_bn_bls/bls12_inits.h>
+#  include <ELiPS_bn_bls/bls12_generate_points.h>
+#  include <ELiPS_bn_bls/bls12_twist.h>
+#  include <ELiPS_bn_bls/bls12_miller_optate.h>
+#  include <ELiPS_bn_bls/bls12_finalexp.h>
+#  define CURVE_INIT()        bls12_inits()
+#  define GEN_G1(P)           bls12_generate_G1_point(P)
+#  define GEN_G2(Q)           bls12_generate_G2_point(Q)
+#  define TO_EFP(o, P)        bls12_EFp12_to_EFp(&(o), &(P))
+#  define TO_EFP2(o, Q)       bls12_EFp12_to_EFp2(&(o), &(Q))
+#  define REF_MILLER(f,P,Q)   bls12_Miller_algo_for_opt_ate(f,P,Q)
+#  define REF_FINALEXP(f)     bls12_finalexp_plain(f,f)
+#endif
 
 static void ld(fp_t r, const mpz_t v)
 { limb_t l[FP_LIMBS]; memset(l,0,sizeof l);
@@ -23,14 +46,15 @@ static void st(mpz_t o, const fp_t a)
 
 int main(void)
 {
-    bls12_inits();
+    CURVE_INIT();
+    printf("pairing test [%s]\n", ELIPS_CURVE_NAME);
     EFp12 P12, Q12; EFp12_init(&P12); EFp12_init(&Q12);
-    bls12_generate_G1_point(&P12);
-    bls12_generate_G2_point(&Q12);
+    GEN_G1(&P12);
+    GEN_G2(&Q12);
 
     EFp mp; EFp2 mq; EFp_init(&mp); EFp2_init(&mq);
-    bls12_EFp12_to_EFp(&mp, &P12);
-    bls12_EFp12_to_EFp2(&mq, &Q12);
+    TO_EFP(mp, P12);
+    TO_EFP2(mq, Q12);
 
     /* new layer */
     fp_t px, py; fp2_t qx, qy;
@@ -43,8 +67,8 @@ int main(void)
 
     /* legacy reference (Miller + the plain, provably correct final exp) */
     Fp12 lf; Fp12_init(&lf);
-    bls12_Miller_algo_for_opt_ate(&lf, &P12, &Q12);
-    bls12_finalexp_plain(&lf, &lf);
+    REF_MILLER(&lf, &P12, &Q12);
+    REF_FINALEXP(&lf);
 
     mpz_t a, b; mpz_inits(a, b, NULL);
     int diff = 0;
@@ -85,6 +109,7 @@ int main(void)
         else printf("  [PASS] e(P,Q)^r == 1\n");
     }
 
+#ifdef ELIPS_FAMILY_BLS12
     {   /* The fast chain must equal the exact value cubed. It computes e^3 by
          * design, because 3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3 has a short
          * evaluation and lambda alone does not. See issue #16. */
@@ -94,6 +119,9 @@ int main(void)
         if (!fp12_eq(fast, cube)) { printf("  [FAIL] fast chain != exact^3\n"); fails++; }
         else printf("  [PASS] fast final exponentiation == exact^3\n");
     }
+#else
+    printf("  [SKIP] no fast final exponentiation chain for BN yet\n");
+#endif
 
     printf("%s\n", fails ? "FAILED" : "OK");
     mpz_clears(a, b, NULL);
