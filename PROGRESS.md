@@ -344,15 +344,87 @@ reachable but is not comfortable, and it depends on lazy reduction actually
 delivering. This is exactly the situation the gate was written for: do not
 assume, measure, and stop if it comes in under.
 
+### Ordering decision
+
+Resolved: projective coordinates were pulled into Phase 3. See below.
+
+
+---
+
+## Phase 3, part 2 — tower and Jacobian curve arithmetic
+
+**Status: field tower and curve layer complete and verified. Miller loop and
+final exponentiation remain, so the >= 3x pairing gate is still not evaluated.**
+
+### What exists now
+
+| Artifact | Purpose |
+|---|---|
+| `src/arith/fpx.c` | fp2/fp6/fp12 on fixed-width Montgomery `fp_t` |
+| `src/arith/ec.c`, `src/arith/ec_tmpl.h` | Jacobian group law, one template, two instantiations |
+| `test/kat_runner_new.c` | Drives the NEW layer through the Phase 0 vectors |
+| `test/ec_test.c` | Group-law properties and the subgroup check |
+
+The curve template is deliberate. The original library kept two hand-copied
+versions of every curve routine and they had already drifted apart; generating
+`ep` and `ep2` from one text removes that failure mode.
+
+### Verification
+
+- 857 vectors pass on all three curves **against the new layer**, using the same
+  files that validated the legacy one. Both implementations are therefore
+  checked against the independent oracle, not against each other.
+- 12 group-law properties pass, including `[r]P == O` for a real G2 generator.
+- ASan and UBSan clean. 15 CTest targets green.
+
+### Measured, BLS12-461
+
+| Operation | legacy | new | change |
+|---|---|---|---|
+| Fp12 multiply | 20.03 us | 5.62 us | **3.56x** |
+| Fp12 square | 14.24 us | 5.63 us | 2.55x |
+| Fp12 inverse | 52.81 us | 37.61 us | 1.41x |
+| EC double | 6.14 us | 1.55 us | **4.00x** |
+| EC add, complete | 5.39 us | 5.53 us | 0.98x |
+| EC add, generic | 5.39 us | 3.91 us | 1.38x |
+
+Fp12 multiply beat the 2.8x projection because eliminating allocation helps more
+than the arithmetic alone predicted.
+
+### Two things measurement changed
+
+**Complete addition is not worth its cost in the Miller loop.** To resolve the
+coincident-point case without branching it computes a full doubling on every
+call and selects, which gives back everything Jacobian coordinates gained: 0.98x
+against the affine code it replaces. `ep_add_generic` drops the fixup. It is
+still branch-free and therefore still constant time, but it is wrong for
+coincident or opposite points, so it is documented for the Miller loop only,
+where the operands are distinct by construction. The EC test initially failed
+against it, correctly, because the test itself violated that precondition.
+
+**Squaring needs its own formula.** `fp12_sqr` currently calls `fp12_mul`, so it
+measures 2.55x against a legacy layer that has a dedicated squaring. Worth
+writing before the final measurement, since the Miller loop squares once per
+iteration.
+
+### Another latent defect found in the legacy layer
+
+`EFp2_rational_point` generates points on `y^2 = x^3 - b` over Fp2, not on the
+sextic twist `y^2 = x^3 + b*xi` that actually carries G2. Measured residual is
+`p-4`, where a real G2 point gives `4+4u`. Nothing broke, because the group law
+never references `b` and the function is only used by tests. Same class of
+latent error as the rest of the audit; recorded rather than fixed, since Phase 3
+replaces the routine.
+
 ### Remaining in Phase 3
 
-- [ ] Fp2, Fp6, Fp12 on `fp_t`, with lazy reduction
-- [ ] Curve parameters into a context struct; deletes globals and with them A3, A4
-- [ ] Merge the BN and BLS12 Miller loops into one parameterised implementation
+- [ ] Dedicated `fp12_sqr`, and cyclotomic squaring for the final exponentiation
+- [ ] Line functions in Jacobian coordinates, and sparse fp12 multiplication
+- [ ] Frobenius constants for the new tower
+- [ ] One parameterised Miller loop for both families
+- [ ] Final exponentiation (and the issue #16 decision feeds in here)
+- [ ] Curve context struct, deleting the globals and with them A3 and A4
 - [ ] Re-measure the full pairing against the >= 3x gate
 
-### Next
-
-Decide the ordering question above before continuing. Building Fp2/Fp6/Fp12 is
-mechanical once that is settled; building them and only then discovering the
-inversion problem would waste the work.
+All the primitives the Miller loop needs now exist and are measured, so the
+remaining work is assembly of known parts rather than exploration.
