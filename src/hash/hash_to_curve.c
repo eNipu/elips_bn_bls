@@ -36,6 +36,8 @@ int elips_expand_message_xmd(uint8_t *out, size_t len,
                              const uint8_t *msg, size_t msg_len,
                              const uint8_t *dst, size_t dst_len)
 {
+    if (dst_len == 0) return -1;              /* RFC 9380 3.1 */
+
     uint8_t dst_buf[ELIPS_SHA256_DIGEST];
     dst_len = normalise_dst(dst_buf, &dst, dst_len);
 
@@ -122,8 +124,11 @@ void elips_hash_to_field_fp(fp_t *out, int count,
                             const uint8_t *dst, size_t dst_len)
 {
     uint8_t buf[2 * ELIPS_H2C_L];
-    elips_expand_message_xmd(buf, (size_t)count * ELIPS_H2C_L,
-                             msg, msg_len, dst, dst_len);
+    if (elips_expand_message_xmd(buf, (size_t)count * ELIPS_H2C_L,
+                                 msg, msg_len, dst, dst_len) != 0) {
+        for (int i = 0; i < count; i++) fp_set_zero(out[i]);
+        return;
+    }
     for (int i = 0; i < count; i++)
         reduce_to_fp(out[i], buf + (size_t)i * ELIPS_H2C_L);
 }
@@ -133,8 +138,11 @@ void elips_hash_to_field_fp2(fp2_t *out, int count,
                              const uint8_t *dst, size_t dst_len)
 {
     uint8_t buf[4 * ELIPS_H2C_L];
-    elips_expand_message_xmd(buf, (size_t)count * 2 * ELIPS_H2C_L,
-                             msg, msg_len, dst, dst_len);
+    if (elips_expand_message_xmd(buf, (size_t)count * 2 * ELIPS_H2C_L,
+                                 msg, msg_len, dst, dst_len) != 0) {
+        for (int i = 0; i < count; i++) fp2_set_zero(out[i]);
+        return;
+    }
     for (int i = 0; i < count; i++) {
         reduce_to_fp(out[i][0], buf + (size_t)(2 * i)     * ELIPS_H2C_L);
         reduce_to_fp(out[i][1], buf + (size_t)(2 * i + 1) * ELIPS_H2C_L);
@@ -171,26 +179,32 @@ void elips_hash_to_field_fp2(fp2_t *out, int count,
 
 /* -------------------------------------------------------- the entry points */
 
-void elips_hash_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
-                      const uint8_t *dst, size_t dst_len)
+int elips_hash_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
+                     const uint8_t *dst, size_t dst_len)
 {
     fp_t u[2];
     ep_t q0, q1;
+    ep_set_infinity(out);
+    if (dst_len == 0) return -1;
     elips_hash_to_field_fp(u, 2, msg, msg_len, dst, dst_len);
     ep_h2c_map_to_curve(&q0, u[0]);
     ep_h2c_map_to_curve(&q1, u[1]);
     ep_add(&q0, &q0, &q1);
     ep_mul(out, &q0, H2C_HEFF_G1, H2C_HEFF_G1_BITS);
+    return 0;
 }
 
-void elips_encode_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
-                        const uint8_t *dst, size_t dst_len)
+int elips_encode_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
+                       const uint8_t *dst, size_t dst_len)
 {
     fp_t u[1];
     ep_t q;
+    ep_set_infinity(out);
+    if (dst_len == 0) return -1;
     elips_hash_to_field_fp(u, 1, msg, msg_len, dst, dst_len);
     ep_h2c_map_to_curve(&q, u[0]);
     ep_mul(out, &q, H2C_HEFF_G1, H2C_HEFF_G1_BITS);
+    return 0;
 }
 
 /* clear_cofactor on G2.
@@ -238,26 +252,32 @@ static void clear_cofactor_g2(ep2_t *r, const ep2_t *q)
 #endif
 }
 
-void elips_hash_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
-                      const uint8_t *dst, size_t dst_len)
+int elips_hash_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
+                     const uint8_t *dst, size_t dst_len)
 {
     fp2_t u[2];
     ep2_t q0, q1;
+    ep2_set_infinity(out);
+    if (dst_len == 0) return -1;
     elips_hash_to_field_fp2(u, 2, msg, msg_len, dst, dst_len);
     ep2_h2c_map_to_curve(&q0, u[0]);
     ep2_h2c_map_to_curve(&q1, u[1]);
     ep2_add(&q0, &q0, &q1);
     clear_cofactor_g2(out, &q0);
+    return 0;
 }
 
-void elips_encode_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
-                        const uint8_t *dst, size_t dst_len)
+int elips_encode_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
+                       const uint8_t *dst, size_t dst_len)
 {
     fp2_t u[1];
     ep2_t q;
+    ep2_set_infinity(out);
+    if (dst_len == 0) return -1;
     elips_hash_to_field_fp2(u, 1, msg, msg_len, dst, dst_len);
     ep2_h2c_map_to_curve(&q, u[0]);
     clear_cofactor_g2(out, &q);
+    return 0;
 }
 
 const char *elips_h2c_suite_g1(void) { return ELIPS_H2C_SUITE_G1; }

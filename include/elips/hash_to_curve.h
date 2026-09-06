@@ -48,23 +48,33 @@
  */
 #include "elips/h2c_params.h"
 
+/* All four return 0 on success, and -1 only when dst_len is zero.
+ *
+ * An empty tag is the one input that cannot be served: RFC 9380 requires a
+ * non-empty DST, and hashing without one silently removes the domain
+ * separation that the argument exists to provide. It is also an easy mistake to
+ * make -- an uninitialised length, or sizeof on a pointer -- so it is rejected
+ * rather than obeyed. On failure the output is set to the identity, so a caller
+ * who ignores the return value gets a useless point rather than an
+ * undomain-separated one. Nothing else here can fail. */
+
 /* The random-oracle variants. Two field elements, two maps, one addition, then
  * cofactor clearing. Indifferentiable from a random oracle, which is what
- * signature security proofs assume. Always succeeds. */
-void elips_hash_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
-                      const uint8_t *dst, size_t dst_len);
-void elips_hash_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
-                      const uint8_t *dst, size_t dst_len);
+ * signature security proofs assume. */
+int elips_hash_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
+                     const uint8_t *dst, size_t dst_len);
+int elips_hash_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
+                     const uint8_t *dst, size_t dst_len);
 
 /* The non-uniform variants. One field element instead of two, so roughly half
  * the cost -- and NOT a random oracle: the image is a proper subset of the
  * group and its distribution is not uniform. Safe only where the surrounding
  * proof does not need indifferentiability. When in doubt use the hash_to
  * versions; the saving is one map, not one order of magnitude. */
-void elips_encode_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
-                        const uint8_t *dst, size_t dst_len);
-void elips_encode_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
-                        const uint8_t *dst, size_t dst_len);
+int elips_encode_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
+                       const uint8_t *dst, size_t dst_len);
+int elips_encode_to_g2(ep2_t *out, const uint8_t *msg, size_t msg_len,
+                       const uint8_t *dst, size_t dst_len);
 
 /* The suite identifiers, e.g. "BLS12381G1_XMD:SHA-256_SSWU_RO_". RFC 9380
  * requires these to appear in the domain separation tag. */
@@ -76,7 +86,7 @@ const char *elips_h2c_suite_g2(void);
  * same symptom -- a wrong point -- so the suite tests both directly. */
 
 /* RFC 9380 5.3.1, with SHA-256. len must be at most 255*32 bytes. Returns 0 on
- * success and -1 if len is out of range. */
+ * success and -1 if len is out of range or dst_len is zero. */
 int elips_expand_message_xmd(uint8_t *out, size_t len,
                              const uint8_t *msg, size_t msg_len,
                              const uint8_t *dst, size_t dst_len);

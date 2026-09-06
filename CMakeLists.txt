@@ -114,6 +114,9 @@ foreach(_cv IN LISTS ELIPS_CURVES)
   target_compile_definitions(elips_arith_${_cv} PUBLIC ELIPS_CURVE_${_cv})
   target_link_libraries(elips_arith_${_cv} PUBLIC GMP::GMP)
   target_compile_options(elips_arith_${_cv} PRIVATE -Wall -Wextra)
+  if(ELIPS_WERROR)
+    target_compile_options(elips_arith_${_cv} PRIVATE -Werror)
+  endif()
   set_target_properties(elips_arith_${_cv} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endforeach()
 
@@ -127,11 +130,21 @@ message(STATUS "ELiPS curve for the installed library: ${ELIPS_CURVE}")
 if(ELIPS_BUILD_TESTS)
   enable_testing()
 
+  # Every test target gets the same warning treatment as the library. Without
+  # this, "zero warnings" would describe half the code.
+  function(elips_test_warnings tgt)
+    target_compile_options(${tgt} PRIVATE -Wall -Wextra)
+    if(ELIPS_WERROR)
+      target_compile_options(${tgt} PRIVATE -Werror)
+    endif()
+  endfunction()
+
   # Known-answer vectors. One process per curve: the library keeps its curve
   # parameters in globals, so init_bn() and bls12_inits() overwrite each other.
   # That constraint goes away in Phase 3.
   add_executable(kat_runner test/kat_runner.c)
   target_link_libraries(kat_runner PRIVATE elips)
+  elips_test_warnings(kat_runner)
 
   foreach(_curve bn_462 bls12_461 bls12_381)
     add_test(NAME kat.${_curve}
@@ -148,6 +161,7 @@ if(ELIPS_BUILD_TESTS)
 
   add_executable(property_tests test/property_tests.c)
   target_link_libraries(property_tests PRIVATE elips)
+  elips_test_warnings(property_tests)
   foreach(_c bn bls12)
     add_test(NAME property.${_c} COMMAND property_tests ${_c})
   endforeach()
@@ -157,6 +171,7 @@ if(ELIPS_BUILD_TESTS)
   # blocking the gate. Remove WILL_FAIL when issue #16 is fixed.
   add_executable(finalexp_agreement test/finalexp_agreement.c)
   target_link_libraries(finalexp_agreement PRIVATE elips)
+  elips_test_warnings(finalexp_agreement)
   foreach(_c bn bls12)
     add_test(NAME finalexp.agreement.${_c} COMMAND finalexp_agreement ${_c})
     set_tests_properties(finalexp.agreement.${_c} PROPERTIES WILL_FAIL TRUE)
@@ -167,6 +182,7 @@ if(ELIPS_BUILD_TESTS)
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(fp_difftest_${_cv} test/fp_difftest.c)
     target_link_libraries(fp_difftest_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(fp_difftest_${_cv})
     add_test(NAME fp.diff.${_cv} COMMAND fp_difftest_${_cv} 20000)
     set_tests_properties(fp.diff.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
@@ -180,6 +196,7 @@ if(ELIPS_BUILD_TESTS)
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(kat_new_${_cv} test/kat_runner_new.c)
     target_link_libraries(kat_new_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(kat_new_${_cv})
     add_test(NAME kat.new.${_cv}
              COMMAND kat_new_${_cv}
                      "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/${_vec_${_cv}}.vec")
@@ -194,6 +211,7 @@ if(ELIPS_BUILD_TESTS)
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(standalone_${_cv} test/standalone_test.c)
     target_link_libraries(standalone_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(standalone_${_cv})
     add_test(NAME standalone.${_cv} COMMAND standalone_${_cv})
     set_tests_properties(standalone.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
@@ -203,6 +221,7 @@ if(ELIPS_BUILD_TESTS)
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(serialize_test_${_cv} test/serialize_test.c)
     target_link_libraries(serialize_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(serialize_test_${_cv})
     add_test(NAME serialize.${_cv} COMMAND serialize_test_${_cv})
     set_tests_properties(serialize.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
@@ -214,6 +233,7 @@ if(ELIPS_BUILD_TESTS)
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(h2c_test_${_cv} test/h2c_test.c)
     target_link_libraries(h2c_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(h2c_test_${_cv})
     add_test(NAME h2c.${_cv}
              COMMAND h2c_test_${_cv}
                      "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/h2c_${_vec_${_cv}}.vec")
@@ -229,6 +249,18 @@ if(ELIPS_BUILD_TESTS)
                    -DPATTERN=h2c_g1
                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
 
+  # Edge cases and API contracts: boundaries, the identity, degenerate group-law
+  # inputs, and aliasing. Aliasing has its own section because two of the
+  # original audit's defects were exactly that, and no vector file would catch
+  # one -- vectors never alias their inputs and outputs.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(edge_test_${_cv} test/edge_test.c)
+    target_link_libraries(edge_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(edge_test_${_cv})
+    add_test(NAME edge.${_cv} COMMAND edge_test_${_cv})
+    set_tests_properties(edge.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
+
   # Timing-leakage tests. Statistical, so they are noisy by nature and their
   # sample sizes are kept small enough to run on every CI build; a developer
   # investigating a specific routine runs the binary directly with a larger n.
@@ -237,6 +269,7 @@ if(ELIPS_BUILD_TESTS)
   # times the information.
   add_executable(dudect_test test/dudect_test.c)
   target_link_libraries(dudect_test PRIVATE elips_arith_BLS12_381 GMP::GMP m)
+  elips_test_warnings(dudect_test)
 
   # Built in every configuration so the harness itself is sanitized, but only
   # RUN in un-instrumented builds. Under Asan or Ubsan the measurement is of the
@@ -264,6 +297,7 @@ if(ELIPS_BUILD_TESTS)
   foreach(_cv BLS12_461 BN_462)
     add_executable(pairing_test_${_cv} test/pairing_test.c)
     target_link_libraries(pairing_test_${_cv} PRIVATE elips_arith_${_cv} elips GMP::GMP)
+    elips_test_warnings(pairing_test_${_cv})
     add_test(NAME pairing.matches_reference.${_cv} COMMAND pairing_test_${_cv})
     set_tests_properties(pairing.matches_reference.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
@@ -272,12 +306,40 @@ if(ELIPS_BUILD_TESTS)
   # G2 point from the legacy layer, which initialises that curve at runtime.
   add_executable(ec_test test/ec_test.c)
   target_link_libraries(ec_test PRIVATE elips_arith_BLS12_461 elips GMP::GMP)
+  elips_test_warnings(ec_test)
   add_test(NAME ec.properties COMMAND ec_test)
   set_tests_properties(ec.properties PROPERTIES TIMEOUT 900)
 
   set_tests_properties(kat.bn_462 kat.bls12_461 kat.bls12_381
                        property.bn property.bls12
                        PROPERTIES TIMEOUT 600)
+endif()
+
+# ------------------------------------------------------------------ examples
+# Runnable demonstrations of the consumer-facing API, built for the selected
+# curve. They are also tests: CI runs each one and requires exit 0, so an API
+# change that breaks a caller breaks the build rather than rotting quietly in a
+# README.
+option(ELIPS_BUILD_EXAMPLES "Build the example programs" ON)
+if(ELIPS_BUILD_EXAMPLES)
+  set(ELIPS_EXAMPLES pairing hash bls)
+  set(_ex_pairing 01_pairing.c)
+  set(_ex_hash    02_hash_and_serialize.c)
+  set(_ex_bls     03_bls_signature.c)
+  foreach(_ex IN LISTS ELIPS_EXAMPLES)
+    add_executable(elips_example_${_ex} examples/${_ex_${_ex}})
+    target_link_libraries(elips_example_${_ex} PRIVATE elips_arith_${ELIPS_CURVE})
+    target_compile_options(elips_example_${_ex} PRIVATE -Wall -Wextra)
+    if(ELIPS_WERROR)
+      target_compile_options(elips_example_${_ex} PRIVATE -Werror)
+    endif()
+    set_target_properties(elips_example_${_ex} PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/examples")
+    if(ELIPS_BUILD_TESTS)
+      add_test(NAME example.${_ex} COMMAND elips_example_${_ex})
+      set_tests_properties(example.${_ex} PROPERTIES TIMEOUT 900)
+    endif()
+  endforeach()
 endif()
 
 # ------------------------------------------------------------------- install

@@ -388,12 +388,20 @@ int fp2_sqrt(fp2_t r, const fp2_t a)
     fp2_mul(cand_b, b, x0);                   /* the ordinary branch */
 
     limb_t mask = (limb_t)0 - (limb_t)fp2_eq(alpha, negone);
-    fp2_cselect(r, cand_i, cand_b, mask);
+    fp2_t root;
+    fp2_cselect(root, cand_i, cand_b, mask);
 
-    fp2_sqr(chk, r);
+    /* Everything above accumulates into locals, and r is written only once, at
+     * the end. Writing r earlier and then verifying against a would be correct
+     * only while the two do not alias -- and every routine in this header
+     * promises they may. The earlier version did exactly that: it selected into
+     * r, then compared r^2 against a, which by then was the same storage. No
+     * caller in the library aliases these, which is why nothing caught it until
+     * the aliasing cases in test/edge_test.c went looking. */
+    fp2_sqr(chk, root);
     int ok = fp2_eq(chk, a);
     fp2_set_zero(zero);
-    fp2_cselect(r, r, zero, (limb_t)0 - (limb_t)ok);
+    fp2_cselect(r, root, zero, (limb_t)0 - (limb_t)ok);
     return ok;
 }
 

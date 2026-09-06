@@ -1317,6 +1317,115 @@ Not new defects, but worth recording that both surfaced only off macOS:
 
 ---
 
+## Phase 5c — edge cases, examples, and a real warning gate
+
+**Status: complete. One latent bug found and fixed; CI now gates what it only
+claimed before.**
+
+### The CI pipeline was already green
+
+Worth stating plainly, since it was the starting question: the last two runs on
+this branch passed all 8 jobs, both architectures, all three build types. The
+one failing run is `206b08a`, the commit before Phase 5 — which is the run that
+was broken by the `getline`/`ssize_t` portability defect Phase 5 fixed.
+
+What was wrong was not that CI failed, but what it did **not** check:
+
+| Gap | Fix |
+|---|---|
+| `ELIPS_WERROR` existed but no job set it, so "zero warnings" was a claim | CI configures with `-DELIPS_WERROR=ON`, and the option now reaches the per-curve libraries and every test target, not just the legacy library |
+| The downstream consumer returned 0/1 with no output, so a regression that still exited 0 passed silently | It now asserts thirteen things and prints each: hash-to-curve, both subgroup checks, bilinearity through the installed package, a serialization round trip, and a corrupted encoding being refused |
+| The matrix only ever exercised the default curve | The curve-selection job builds, installs and runs the examples for all three |
+| `actions/checkout@v4` was being force-upgraded to Node 24 with a deprecation warning | bumped to `@v5` in both workflows |
+
+### One real bug, found by looking for it
+
+`fp2_sqrt` did not tolerate its output aliasing its input:
+
+```c
+fp2_cselect(r, cand_i, cand_b, mask);   /* writes r */
+fp2_sqr(chk, r);
+int ok = fp2_eq(chk, a);                /* reads a -- the same storage */
+```
+
+With `r == a` the verification compared the root against itself squared, decided
+the input was not a residue, and returned zero. `fp_sqrt` has the same shape but
+reads `a` before writing `r`, so it was fine; `fp2_sqrt` was not.
+
+Nothing in the library aliases these, which is why every existing suite passed.
+The header promises aliasing is tolerated, so it was a contract violation and a
+trap for the next caller. It now accumulates into a local and writes `r` once,
+at the end.
+
+It first appeared on BLS12-461 only, because whether it shows depends on the
+random draw — which is a good argument for the test using real randomness rather
+than a fixed seed.
+
+### test/edge_test.c
+
+84 checks per curve, on all three, in the places implementations actually break:
+
+- **Aliasing.** Every binary and unary routine in fp, fp2, fp12, and the curve
+  and scalar-multiplication layers, with the output aliasing each input in turn.
+  This section exists because two of the original audit's confirmed defects were
+  exactly aliasing bugs, and no vector file would catch one: vectors never alias.
+- **SHA-256 padding**, at sixteen lengths around the block boundaries, each also
+  fed one byte at a time to exercise the buffered update.
+- **expand_message_xmd limits**: zero bytes, one byte, exactly one block, the
+  255-block maximum, one past it, and a tag of 255 against 256 bytes — the
+  latter two must differ, since the oversize tag is hashed down rather than
+  truncated.
+- **Degenerate group law**: `P + (-P)`, `P + O`, `O + O`, `2O`, and `P + P`
+  against `2P`.
+- **Scalars at the ends**: 0, 1, `r-1`, `r`, and GLV against the plain ladder at
+  each.
+- **The trust boundary**: the identity refused by the pairing, every one of the
+  eight flag combinations on a compressed encoding (exactly two may decode), an
+  all-zero buffer, a point off the curve.
+
+Everything except the `fp2_sqrt` aliasing case passed on the first run.
+
+### The domain separation tag is no longer optional
+
+`elips_hash_to_g1`, `hash_to_g2`, `encode_to_g1` and `encode_to_g2` now return
+`int` and refuse `dst_len == 0`, leaving the identity behind.
+
+RFC 9380 requires a non-empty tag, and hashing without one silently removes the
+domain separation the argument exists to provide. It is also an easy mistake —
+an uninitialised length, `sizeof` on a pointer — and the library already returns
+a status everywhere else that a caller can get it wrong. Consistency, and one
+line at each call site.
+
+### examples/
+
+Three programs, built for the selected curve, run by CTest and by CI on all
+three curves so they cannot drift away from the API:
+
+| Example | Shows |
+|---|---|
+| `01_pairing.c` | bilinearity, non-degeneracy, mu_r membership, input validation, and where the time goes |
+| `02_hash_and_serialize.c` | hash-to-curve, both encodings, domain separation demonstrated rather than asserted, and each thing the deserializer refuses with the message it gives |
+| `03_bls_signature.c` | keygen, sign, verify, tamper detection, wrong key, the identity offered as a signature, and aggregation |
+
+The BLS one is the flagship and is explicit about what it is not: it uses its
+own tag rather than the IETF ciphersuite, and it has **no proof of possession**,
+so its aggregation section names the rogue-key attack rather than leaving a
+reader to copy an insecure pattern. It also makes the §10.6 multi-pairing case
+concrete — verification computes two pairings and so runs the final
+exponentiation twice.
+
+The pairing example prints the cost of the subgroup checks directly: 1256 µs of
+Miller loop plus 1639 µs of final exponentiation against 4410 µs for
+`elips_pairing`, so the validation is more than a third of the call. That is the
+§10.3 argument, visible without reading the plan.
+
+### Where the suite stands
+
+43 CTest targets on Release (40 tests plus the 3 examples), 27 under each
+sanitizer, zero warnings with `-Werror` on gcc and clang, all three curves.
+
+---
+
 # HAND-OFF — next session starts at Phase 6
 
 **Phases 0 to 5b are complete.** Phase 6 (assembly) is next, and §10.10 of the
@@ -1325,8 +1434,10 @@ plan changed its target: read that before starting.
 ## Where things stand
 
 Branch `claude/pairing-crypto-modernize-2faff2`.
-37 CTest targets green on Release, 27 on Asan and Ubsan (dudect is not
-registered under sanitizers), zero warnings on gcc and clang.
+43 CTest targets green on Release (including the three examples), 27 on Asan and
+Ubsan (dudect is not registered under sanitizers), zero warnings under
+`-Werror` on gcc and clang. CI sets `-DELIPS_WERROR=ON`, so that is a gate
+rather than a claim.
 
 | Curve | pairing value | serialized G1/G2 | hash-to-curve | GLV |
 |---|---|---|---|---|
@@ -1385,6 +1496,12 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 - dudect must prepare every input before it times anything.
 - A whole-`fp6` or whole-`fp2` access to an element of a nested array parameter
   trips GCC's `-Wstringop-overflow`. Pass the halves, or take an element macro.
+- Every routine in `fp.h`, `fpx.h` and `ec.h` must tolerate its output aliasing
+  its inputs, and `test/edge_test.c` checks it. Write the result into a local
+  and store it once at the end; `fp2_sqrt` was written the other way and was
+  wrong for `r == a` until the aliasing cases went looking.
+- The four hash-to-curve entry points return `int` and refuse an empty domain
+  separation tag. That is deliberate, not an oversight to simplify away.
 
 ## Known limitations, stated plainly
 

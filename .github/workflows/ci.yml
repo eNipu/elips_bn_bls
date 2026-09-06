@@ -18,7 +18,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         build_type: [Release, Asan, Ubsan]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Install GMP (Linux)
         if: runner.os == 'Linux'
@@ -28,8 +28,11 @@ jobs:
         if: runner.os == 'macOS'
         run: brew list gmp >/dev/null 2>&1 || brew install gmp
 
+      # -Werror is on in CI and off by default, so a contributor is not blocked
+      # by a warning their compiler happens to emit, but one cannot reach the
+      # branch either. "Zero warnings" was a claim until this line existed.
       - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DELIPS_WERROR=ON
 
       - name: Build
         run: cmake --build build -j
@@ -48,7 +51,7 @@ jobs:
     name: reference self-test and vector reproducibility
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
       - name: Field axioms and tower relations
@@ -88,7 +91,7 @@ jobs:
     name: install and consume via find_package
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: sudo apt-get update && sudo apt-get install -y libgmp-dev
       - name: Build and install
         run: |
@@ -108,34 +111,81 @@ jobs:
           target_compile_options(consumer PRIVATE -Wall -Wextra -Werror)
           EOC
           cat > main.c <<'EOC'
+          /* A downstream caller, exercising the whole public surface against
+           * the INSTALLED package: hash-to-curve, both subgroup checks, the
+           * pairing with its bilinearity identity, and a serialization round
+           * trip. Every step asserts, so a regression that still exits 0 is
+           * caught rather than passing quietly. */
+          #include <stdio.h>
           #include <string.h>
           #include "elips/hash_to_curve.h"
           #include "elips/serialize.h"
           #include "elips/pairing.h"
+          #include "elips/random.h"
           static const char DST[] = "CI-CONSUMER-V01-CS01-" ELIPS_H2C_SUITE_G1;
+          static int fails;
+          static void ok(int c, const char *w) {
+              printf("  [%s] %s\n", c ? "PASS" : "FAIL", w);
+              if (!c) fails++;
+          }
           int main(void) {
-              ep_t P; ep2_t Q; fp12_t z;
-              elips_hash_to_g1(&P, (const uint8_t *)"ci", 2,
-                               (const uint8_t *)DST, sizeof DST - 1);
+              printf("downstream consumer, curve %s\n", ELIPS_CURVE_NAME);
+              ep_t P; ep2_t Q; fp12_t base, lhs, rhs, one;
+              ok(elips_hash_to_g1(&P, (const uint8_t *)"ci", 2,
+                                  (const uint8_t *)DST, sizeof DST - 1) == 0,
+                 "hash_to_g1 accepted the tag");
+              ok(elips_hash_to_g1(&P, (const uint8_t *)"ci", 2,
+                                  (const uint8_t *)DST, 0) == -1,
+                 "hash_to_g1 refused an empty tag");
+              ok(elips_hash_to_g1(&P, (const uint8_t *)"ci", 2,
+                                  (const uint8_t *)DST, sizeof DST - 1) == 0,
+                 "hash_to_g1 again");
+              ok(ep_in_subgroup(&P), "the hashed point is in G1");
               ep2_generator(&Q);
-              if (!ep_in_subgroup(&P)) return 1;
-              if (!elips_pairing(z, &P, &Q)) return 1;
+              ok(ep2_in_subgroup(&Q), "the G2 generator is in G2");
+              ok(elips_pairing(base, &P, &Q) == 1, "the pairing accepted both");
+              fp12_set_one(one);
+              ok(!fp12_eq(base, one), "the pairing is non-degenerate");
+              limb_t k[ELIPS_ORDER_LIMBS];
+              ok(elips_random_scalar(k) == 0, "sampled a scalar from the CSPRNG");
+              ep_t kP; ep_mul(&kP, &P, k, ELIPS_ORDER_BITS);
+              ok(elips_pairing(lhs, &kP, &Q) == 1, "e([k]P, Q) computed");
+              fp12_exp(rhs, base, k, ELIPS_ORDER_BITS);
+              ok(fp12_eq(lhs, rhs), "e([k]P, Q) == e(P, Q)^k");
               uint8_t enc[EP_SER_COMPRESSED_BYTES];
               ep_write_compressed(enc, &P);
               ep_t back;
-              return ep_read_compressed(&back, enc) == ELIPS_SER_OK ? 0 : 1;
+              ok(ep_read_compressed(&back, enc) == ELIPS_SER_OK,
+                 "the compressed encoding round trips");
+              fp_t x1, y1, x2, y2;
+              ep_to_affine(x1, y1, &P); ep_to_affine(x2, y2, &back);
+              ok(fp_eq(x1, x2) && fp_eq(y1, y2), "...to the same point");
+              enc[sizeof enc - 1] ^= 1u;
+              ok(ep_read_compressed(&back, enc) != ELIPS_SER_OK,
+                 "a corrupted encoding is refused");
+              printf("%s\n", fails ? "FAILED" : "all consumer checks passed");
+              return fails ? 1 : 0;
           }
           EOC
           cmake -B b -DCMAKE_PREFIX_PATH=/tmp/prefix && cmake --build b
           ./b/consumer
 
-      - name: Every curve selection configures and installs
+      # Every curve must configure, build, install, and run its examples. The
+      # matrix above only ever exercises the default curve.
+      - name: Every curve selection configures, installs and runs its examples
         run: |
           for cv in BLS12_381 BLS12_461 BN_462; do
+            echo "::group::$cv"
             cmake -B "/tmp/b-$cv" -DCMAKE_BUILD_TYPE=Release -DELIPS_BUILD_TESTS=OFF \
-                  -DELIPS_CURVE="$cv" -DCMAKE_INSTALL_PREFIX="/tmp/p-$cv"
+                  -DELIPS_WERROR=ON -DELIPS_CURVE="$cv" \
+                  -DCMAKE_INSTALL_PREFIX="/tmp/p-$cv"
             cmake --build "/tmp/b-$cv" -j
             cmake --install "/tmp/b-$cv"
+            for ex in pairing hash bls; do
+              "/tmp/b-$cv/examples/elips_example_$ex" > /dev/null \
+                || { echo "::error::example $ex failed on $cv"; exit 1; }
+            done
+            echo "::endgroup::"
           done
 
 # Deliberately not running MemorySanitizer. MSan reports false positives unless

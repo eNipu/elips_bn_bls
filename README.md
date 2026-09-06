@@ -52,9 +52,15 @@ outputs match other implementations byte for byte.
 ctest --test-dir build --output-on-failure
 ```
 
-The suite runs known-answer vectors for BN-462, BLS12-461 and BLS12-381,
-property tests including subgroup order checks, and a negative control that
-confirms the vector runner actually detects corrupted input.
+The suite runs known-answer vectors for BN-462, BLS12-461 and BLS12-381
+(field, curve, pairing and RFC 9380 hash-to-curve), property tests including
+subgroup order checks, edge cases and aliasing contracts, timing-leakage tests
+with a negative control, the three examples, and negative controls that confirm
+the vector runners actually detect corrupted input.
+
+`-DELIPS_WERROR=ON` turns warnings into errors. CI sets it, so a warning cannot
+reach the branch; it is off by default so a contributor is not blocked by
+whatever their compiler happens to emit.
 
 ## Install
 
@@ -86,6 +92,24 @@ ep_write_compressed(enc, &P);
 ```
 
 `ELiPS::elips` still exists and links the legacy runtime-curve layer.
+
+## Examples
+
+Three runnable programs under `examples/`, built for the selected curve and run
+by CTest so they cannot rot:
+
+```bash
+./build/examples/elips_example_pairing   # bilinearity, validation, timing
+./build/examples/elips_example_hash      # hash-to-curve, encodings, what the
+                                         # deserializer refuses and why
+./build/examples/elips_example_bls       # a BLS signature end to end, with
+                                         # aggregation and its rogue-key caveat
+```
+
+The BLS one is a demonstration of this API, not a signature implementation to
+deploy: it uses its own domain separation tag rather than the IETF ciphersuite,
+and it has no proof of possession, which aggregation needs. The file says so at
+the top and explains what a real one would add.
 
 ## Sanitizer builds
 
