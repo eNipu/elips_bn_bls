@@ -86,6 +86,58 @@ typedef mp_limb_t limb_t;
         UINT64_C(0xc0bd38c3195c899e),
         UINT64_C(0x000f686b3d807d01)
   };
+  /* Group generators, verified on-curve and of order exactly r. */
+  static const limb_t EP_GEN_X[6] = {
+        UINT64_C(0x5cb38790fd530c16),
+        UINT64_C(0x7817fc679976fff5),
+        UINT64_C(0x154f95c7143ba1c1),
+        UINT64_C(0xf0ae6acdf3d0e747),
+        UINT64_C(0xedce6ecc21dbf440),
+        UINT64_C(0x120177419e0bfb75)
+  };
+  static const limb_t EP_GEN_Y[6] = {
+        UINT64_C(0xbaac93d50ce72271),
+        UINT64_C(0x8c22631a7918fd8e),
+        UINT64_C(0xdd595f13570725ce),
+        UINT64_C(0x51ac582950405194),
+        UINT64_C(0x0e1c8c3fad0059c0),
+        UINT64_C(0x0bbc3efc5008a26a)
+  };
+  static const limb_t EP2_GEN_X[2][6] = {
+    { UINT64_C(0x3e53a5f8c8ffaef8),
+        UINT64_C(0xb99c06aaf3b276c3),
+        UINT64_C(0xfb79858ebcad992d),
+        UINT64_C(0xe9df675fc458d908),
+        UINT64_C(0xe673bab9a7b788b7),
+        UINT64_C(0x055f75de1e08db1d) },
+    { UINT64_C(0x4d1c8a6a79bafb7d),
+        UINT64_C(0x2a2ed51ab0816bc7),
+        UINT64_C(0x3860876a6dda17c6),
+        UINT64_C(0x713b9c28071a239a),
+        UINT64_C(0xa9c18852c003bc5a),
+        UINT64_C(0x12c09cd114b7fa69) }
+  };
+  static const limb_t EP2_GEN_Y[2][6] = {
+    { UINT64_C(0xb589385988a1a4fc),
+        UINT64_C(0x6225b2f878bce232),
+        UINT64_C(0xca23289fcfe62047),
+        UINT64_C(0x9dafb522eee3e2b3),
+        UINT64_C(0x691238cd99b4ec9f),
+        UINT64_C(0x14fc893c21245d2c) },
+    { UINT64_C(0x8b2f4b2f9c4921de),
+        UINT64_C(0x827df6c6a087b5fb),
+        UINT64_C(0x5f3663668b7caf52),
+        UINT64_C(0xc637447e65d03e6d),
+        UINT64_C(0x7dab1e1fb38756d0),
+        UINT64_C(0x0da1940f68192943) }
+  };
+  #define ELIPS_ORDER_BITS   255
+  static const limb_t ELIPS_ORDER[4] = {
+        UINT64_C(0xffffffff00000001),
+        UINT64_C(0x53bda402fffe5bfe),
+        UINT64_C(0x3339d80809a1d805),
+        UINT64_C(0x73eda753299d7d48)
+  };
   /* Skew Frobenius on the twist: psi and psi^2 multipliers. */
   static const limb_t PSI_X[2][6] = {
     { UINT64_C(0x0000000000000000),
@@ -429,6 +481,71 @@ typedef mp_limb_t limb_t;
         UINT64_C(0xa24fe567d9bf5fc1),
         UINT64_C(0x6ca5acc5d7ee55a3),
         UINT64_C(0x3291617b422030fd)
+  };
+  /* Group generators, verified on-curve and of order exactly r. */
+  static const limb_t EP_GEN_X[8] = {
+        UINT64_C(0x97a5db32331c2be4),
+        UINT64_C(0x36c04af7dbbefe78),
+        UINT64_C(0x1b8b0cca9ce8c0ca),
+        UINT64_C(0x4d0393656da22a62),
+        UINT64_C(0xc08fab50ecbbfd6d),
+        UINT64_C(0x14d8ba84b3d406b9),
+        UINT64_C(0xe9af7cbd7ba46b14),
+        UINT64_C(0x0000000000000246)
+  };
+  static const limb_t EP_GEN_Y[8] = {
+        UINT64_C(0x8fec5e124ca11977),
+        UINT64_C(0x7589936d0f6b71d7),
+        UINT64_C(0xf43d7b34a8ad7e8a),
+        UINT64_C(0xf032cad2baeefa16),
+        UINT64_C(0x4c96385e3dc911cd),
+        UINT64_C(0x9ffb361a15ebff1a),
+        UINT64_C(0x631117d75b90c35e),
+        UINT64_C(0x00000000000005c0)
+  };
+  static const limb_t EP2_GEN_X[2][8] = {
+    { UINT64_C(0x8ab68201634ece6a),
+        UINT64_C(0x107f4cd914ad44cb),
+        UINT64_C(0xbcc5d11a69cc35c7),
+        UINT64_C(0x6af1c1b6e66f4350),
+        UINT64_C(0x43e3180ab04477ea),
+        UINT64_C(0xd4d78a6243fbcdd4),
+        UINT64_C(0x5eda1c7a8cd4ded4),
+        UINT64_C(0x0000000000000dd2) },
+    { UINT64_C(0x94ee3b10a25176ce),
+        UINT64_C(0x456d8e09cd09a0a9),
+        UINT64_C(0xb45a4494944d4f4c),
+        UINT64_C(0xe4b7343171c834cd),
+        UINT64_C(0x84d787cfb9afafb4),
+        UINT64_C(0xc07aa68f6bd4eeb8),
+        UINT64_C(0x8728da74bd08d8ac),
+        UINT64_C(0x00000000000003e2) }
+  };
+  static const limb_t EP2_GEN_Y[2][8] = {
+    { UINT64_C(0x49f7f7113c3f30e2),
+        UINT64_C(0x4d77d75e10c2a16d),
+        UINT64_C(0xdbf20a242c0ce2fe),
+        UINT64_C(0x708b001c970f742d),
+        UINT64_C(0xa5b102f11c106db9),
+        UINT64_C(0x83cc43e49235eb4f),
+        UINT64_C(0xf9567d1cbedef5e6),
+        UINT64_C(0x0000000000000b03) },
+    { UINT64_C(0x15d3280c19c4d5f4),
+        UINT64_C(0x585c61b8aeb3f299),
+        UINT64_C(0x278dc2018380bbbf),
+        UINT64_C(0x96c113e7f9eb90fc),
+        UINT64_C(0x54614ecdbf5397b9),
+        UINT64_C(0x3c818d8e5f275176),
+        UINT64_C(0xe4a0b3e2b725301f),
+        UINT64_C(0x0000000000000881) }
+  };
+  #define ELIPS_ORDER_BITS   308
+  static const limb_t ELIPS_ORDER[5] = {
+        UINT64_C(0x0000000000000001),
+        UINT64_C(0x00007fefffeffffc),
+        UINT64_C(0x01fc017ffc800011),
+        UINT64_C(0x80017fe05fd000e8),
+        UINT64_C(0x000ffffff7fffc01)
   };
   /* Skew Frobenius on the twist: psi and psi^2 multipliers. */
   static const limb_t PSI_X[2][8] = {
@@ -847,6 +964,74 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x8a068e8f6ac5a85e),
         UINT64_C(0x540775f547827b97),
         UINT64_C(0x000000b68463c059)
+  };
+  /* Group generators, verified on-curve and of order exactly r. */
+  static const limb_t EP_GEN_X[8] = {
+        UINT64_C(0x3e11eeb41eee70a8),
+        UINT64_C(0x2eea3e13fec5661f),
+        UINT64_C(0x31530e1535b28153),
+        UINT64_C(0x68ceb6920acb7c40),
+        UINT64_C(0xfd303bfd856dff73),
+        UINT64_C(0xffaffe8680658205),
+        UINT64_C(0xfde7f1801dfec009),
+        UINT64_C(0x0000000000000fe5)
+  };
+  static const limb_t EP_GEN_Y[8] = {
+        UINT64_C(0xbdccdf3a352109db),
+        UINT64_C(0xf9d07a64e2db7cd0),
+        UINT64_C(0x09ab34aca46ab417),
+        UINT64_C(0x4486efeb549da35d),
+        UINT64_C(0xc36d0a673cc999ef),
+        UINT64_C(0xff4001c4626d4864),
+        UINT64_C(0x1f348726f83d0017),
+        UINT64_C(0x000000000000132e)
+  };
+  static const limb_t EP2_GEN_X[2][8] = {
+    { UINT64_C(0xb3f555cec055d866),
+        UINT64_C(0x980610bafeff7121),
+        UINT64_C(0xb228b90d83070d05),
+        UINT64_C(0xc9ec70a26cbc2ed9),
+        UINT64_C(0x8bee1879078e7757),
+        UINT64_C(0xd8ce82582d0e1fe5),
+        UINT64_C(0xa3424f810248071c),
+        UINT64_C(0x000000000000095c) },
+    { UINT64_C(0x0ceaa90784c68196),
+        UINT64_C(0xeacbaa7963c5ac4b),
+        UINT64_C(0x40230ec058a4c7c9),
+        UINT64_C(0xa816deeb87f94d21),
+        UINT64_C(0x49d23e05d4884687),
+        UINT64_C(0x5faddbd32fa2cf34),
+        UINT64_C(0x771fc4a99cc01975),
+        UINT64_C(0x0000000000001056) }
+  };
+  static const limb_t EP2_GEN_Y[2][8] = {
+    { UINT64_C(0xf5f027ee56c354fd),
+        UINT64_C(0xee6e5525e26e5300),
+        UINT64_C(0x173c23dc7626369a),
+        UINT64_C(0x7bb77db82284e9c6),
+        UINT64_C(0xf9c76f58aa059402),
+        UINT64_C(0xfc314df8051a2da0),
+        UINT64_C(0xc202cac38f3e14f0),
+        UINT64_C(0x000000000000176b) },
+    { UINT64_C(0x8fa91af998ac5efd),
+        UINT64_C(0x3de62888f6f55d4c),
+        UINT64_C(0x744325da62bf6421),
+        UINT64_C(0xf93024bfa64ebf1f),
+        UINT64_C(0xc1a2a6ab69686b94),
+        UINT64_C(0x6692912eb83656b5),
+        UINT64_C(0x399139689f131e39),
+        UINT64_C(0x0000000000000b1f) }
+  };
+  #define ELIPS_ORDER_BITS   462
+  static const limb_t ELIPS_ORDER[8] = {
+        UINT64_C(0x2401b007e010800d),
+        UINT64_C(0xf717f7c000000000),
+        UINT64_C(0xfffffff6ff66fc7b),
+        UINT64_C(0x12908ee1c201f7ff),
+        UINT64_C(0xbfca0000000000d8),
+        UINT64_C(0xfffff6ff0cf6b7d9),
+        UINT64_C(0x80360120023fffff),
+        UINT64_C(0x0000000000002404)
   };
   /* Skew Frobenius on the twist: psi and psi^2 multipliers. */
   static const limb_t PSI_X[2][8] = {

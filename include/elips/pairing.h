@@ -40,4 +40,30 @@ void pairing_final_exp_fast(fp12_t r, const fp12_t f);
  * (where conjugation is inversion). */
 void fp12_exp_param(fp12_t r, const fp12_t f);
 
+/* --- public entry points --------------------------------------------------
+ * These make the new layer usable on its own. Until they existed the tests had
+ * to borrow points from the legacy library, which is the last thing keeping
+ * that layer alive. */
+
+/* The standard generators, verified at generation time to be on their curves
+ * and of order exactly r. */
+void ep_generator(ep_t *g);
+void ep2_generator(ep2_t *g);
+
+/* Subgroup membership: is [r]P the identity? A point can sit on the curve and
+ * still be outside the order-r subgroup, which is what small-subgroup attacks
+ * exploit. Nothing in the legacy library ever checked this. */
+int ep_in_subgroup(const ep_t *p);
+int ep2_in_subgroup(const ep2_t *q);
+
+/* The full pairing: Miller loop then the fast final exponentiation.
+ *
+ * Returns 0 and leaves the result at one if either input is the identity or
+ * fails its subgroup check, so a caller that ignores the return value gets a
+ * useless answer rather than a subtly wrong one.
+ *
+ * On BLS12 the value is e^3 (see the note on pairing_final_exp_fast); on BN it
+ * is e exactly. */
+int elips_pairing(fp12_t out, const ep_t *P, const ep2_t *Q);
+
 #endif /* ELIPS_PAIRING_H */

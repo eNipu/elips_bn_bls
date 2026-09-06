@@ -159,6 +159,15 @@ if(ELIPS_BUILD_TESTS)
   # The new pairing against the value Phase 0 established as correct, plus
   # non-degeneracy and mu_r membership. BLS12-461 only: the reference side is
   # the legacy library, which initialises that curve at runtime.
+  # The new layer on its own, no legacy library linked. All three curves,
+  # including BLS12-381, which the legacy layer never supported at all.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(standalone_${_cv} test/standalone_test.c)
+    target_link_libraries(standalone_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    add_test(NAME standalone.${_cv} COMMAND standalone_${_cv})
+    set_tests_properties(standalone.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
+
   # BLS12-461 and BN-462: the reference side is the legacy library, which picks
   # its curve at runtime, so only the curves it can actually initialise. The
   # BLS12-381 field and curve layers are covered by the vector tests instead.

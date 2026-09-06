@@ -5,7 +5,9 @@ arithmetic that is wrong in a way no amount of staring detects.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from elips_ref import CURVES, _naf as _naf_digits
+from elips_ref import CURVES, EFp, EFp2, Fp2, _naf as _naf_digits
+from selftest import fp2_sqrt
+import math
 
 W = 64
 MASK = (1 << W) - 1
@@ -128,11 +130,75 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
     u3 = fp2_inv_(fp2_mul_(fp2_mul_(g1, g1), g1))
     w2 = fp2_mul_(u2, (u2[0], (-u2[1]) % p))
     w3 = fp2_mul_(u3, (u3[0], (-u3[1]) % p))
+    def fp2_const_pair(nm, a):
+        return ("  static const limb_t %s[2][%d] = {\n    { %s },\n    { %s }\n  };\n"
+                % (nm, n, limb_list((a.a * R) % p, n), limb_list((a.b * R) % p, n)))
+
     def fp2_const(nm, v):
         return ("  static const limb_t %s[2][%d] = {\n    { %s },\n    { %s }\n  };\n"
                 % (nm, n, limb_list((v[0]*R) % p, n), limb_list((v[1]*R) % p, n)))
     psi_txt = (fp2_const("PSI_X", u2) + fp2_const("PSI_Y", u3) +
                fp2_const("PSI2_X", w2) + fp2_const("PSI2_Y", w3))
+
+    # Group generators.
+    #
+    # G1: smallest x making x^3 + b a square, lifted and multiplied by the
+    # cofactor. G2: the same on the sextic twist. Both are asserted to be
+    # on-curve, non-trivial and of order exactly r before being emitted, so a
+    # generator that silently landed in the wrong subgroup cannot ship.
+    tr = (cv.X + 1) if cv.family == "bls12" else (6 * cv.X**2 + 1)
+    n1 = p + 1 - tr
+    assert n1 % ordr == 0
+    h1 = n1 // ordr
+    g1 = None
+    for xx in range(1, 4000):
+        rhs = (xx**3 + cv.b_signed) % p
+        if pow(rhs, (p - 1) // 2, p) != 1:
+            continue
+        cand = EFp(cv, xx, pow(rhs, (p + 1) // 4, p)).mul(h1)
+        if not cand.inf and cand.mul(ordr).inf:
+            g1 = cand; break
+    assert g1 is not None and g1.is_on_curve(), "no G1 generator found"
+
+    t2_ = tr*tr - 2*p
+    f2_ = math.isqrt((4*p*p - t2_*t2_) // 3)
+    assert 3*f2_*f2_ == 4*p*p - t2_*t2_
+    n2 = None
+    bt = EFp2.b_twist(cv)
+    probe = None
+    for k in range(1, 4000):
+        xx = Fp2(p, k, 1)
+        yy = fp2_sqrt(xx.sqr()*xx + bt, p)
+        if yy is not None:
+            probe = EFp2(cv, xx, yy); break
+    for c in {(3*f2_ + t2_)//2, (-3*f2_ + t2_)//2}:
+        cand_n = p*p + 1 - c
+        if cand_n % ordr == 0 and probe.mul(cand_n).inf:
+            n2 = cand_n; break
+    assert n2 is not None, "could not identify the twist order"
+    h2 = n2 // ordr
+    g2 = None
+    for k in range(1, 4000):
+        xx = Fp2(p, k, 1)
+        yy = fp2_sqrt(xx.sqr()*xx + bt, p)
+        if yy is None:
+            continue
+        cand = EFp2(cv, xx, yy).mul(h2)
+        if not cand.inf and cand.mul(ordr).inf:
+            g2 = cand; break
+    assert g2 is not None and g2.is_on_curve(), "no G2 generator found"
+
+    def fp_const(nm, v):
+        return "  static const limb_t %s[%d] = {\n        %s\n  };\n" % (nm, n, limb_list((v * R) % p, n))
+    def fp2_pair_const(nm, a):
+        return ("  static const limb_t %s[2][%d] = {\n    { %s },\n    { %s }\n  };\n"
+                % (nm, n, limb_list((a.a * R) % p, n), limb_list((a.b * R) % p, n)))
+    on = (ordr.bit_length() + W - 1) // W
+    gen_txt = (fp_const("EP_GEN_X", g1.x) + fp_const("EP_GEN_Y", g1.y) +
+               fp2_pair_const("EP2_GEN_X", g2.x) + fp2_pair_const("EP2_GEN_Y", g2.y) +
+               "  #define ELIPS_ORDER_BITS   %d\n" % ordr.bit_length() +
+               "  static const limb_t ELIPS_ORDER[%d] = {\n        %s\n  };\n"
+               % (on, limb_list(ordr, on)))
 
     frob_txt = ""
     for k in (1, 2, 3):
@@ -156,6 +222,7 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
         "  static const limb_t FP_ONE[%d] = {\n        %s\n  };\n" % (n, limb_list(one, n)) +
         "  /* Miller loop parameter, signed digits. */\n" + loop_txt +
         "  /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */\n" + hard_txt +
+        "  /* Group generators, verified on-curve and of order exactly r. */\n" + gen_txt +
         "  /* Skew Frobenius on the twist: psi and psi^2 multipliers. */\n" + psi_txt +
         "  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */\n" +
         frob_txt +

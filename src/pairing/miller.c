@@ -392,3 +392,54 @@ void pairing_final_exp_fast(fp12_t r, const fp12_t f)
  * test suite caught the moment BN was wired in. BN's own decomposition above
  * is exact, so BN returns e while BLS12 returns e^3. */
 #endif
+
+/* ---------------------------------------------------------- public API ---- */
+
+void ep_generator(ep_t *g)
+{
+    fp_copy(g->x, EP_GEN_X);
+    fp_copy(g->y, EP_GEN_Y);
+    fp_set_one(g->z);
+}
+
+void ep2_generator(ep2_t *g)
+{
+    fp2_copy(g->x, EP2_GEN_X);
+    fp2_copy(g->y, EP2_GEN_Y);
+    fp2_set_one(g->z);
+}
+
+int ep_in_subgroup(const ep_t *p)
+{
+    if (ep_is_infinity(p)) return 1;
+    if (!ep_on_curve(p))   return 0;
+    ep_t t;
+    ep_mul(&t, p, ELIPS_ORDER, ELIPS_ORDER_BITS);
+    return ep_is_infinity(&t);
+}
+
+int ep2_in_subgroup(const ep2_t *q)
+{
+    if (ep2_is_infinity(q)) return 1;
+    if (!ep2_on_curve(q))   return 0;
+    ep2_t t;
+    ep2_mul(&t, q, ELIPS_ORDER, ELIPS_ORDER_BITS);
+    return ep2_is_infinity(&t);
+}
+
+int elips_pairing(fp12_t out, const ep_t *P, const ep2_t *Q)
+{
+    fp12_set_one(out);
+    if (ep_is_infinity(P) || ep2_is_infinity(Q)) return 0;
+    if (!ep_in_subgroup(P) || !ep2_in_subgroup(Q)) return 0;
+
+    fp_t px, py;
+    fp2_t qx, qy;
+    if (!ep_to_affine(px, py, P))  return 0;
+    if (!ep2_to_affine(qx, qy, Q)) return 0;
+
+    fp12_t f;
+    pairing_miller(f, qx, qy, px, py);
+    pairing_final_exp_fast(out, f);
+    return 1;
+}
