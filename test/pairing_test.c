@@ -85,6 +85,16 @@ int main(void)
         else printf("  [PASS] e(P,Q)^r == 1\n");
     }
 
+    {   /* The fast chain must equal the exact value cubed. It computes e^3 by
+         * design, because 3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3 has a short
+         * evaluation and lambda alone does not. See issue #16. */
+        fp12_t fast, cube;
+        pairing_final_exp_fast(fast, nf);
+        fp12_sqr(cube, nz); fp12_mul(cube, cube, nz);
+        if (!fp12_eq(fast, cube)) { printf("  [FAIL] fast chain != exact^3\n"); fails++; }
+        else printf("  [PASS] fast final exponentiation == exact^3\n");
+    }
+
     printf("%s\n", fails ? "FAILED" : "OK");
     mpz_clears(a, b, NULL);
     return fails ? 1 : 0;

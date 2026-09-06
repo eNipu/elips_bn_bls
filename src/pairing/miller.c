@@ -215,3 +215,63 @@ void pairing_final_exp_plain(fp12_t r, const fp12_t f)
      * gets validated against. */
     fp12_exp(r, t0, ELIPS_HARD_EXP, ELIPS_HARD_BITS);
 }
+
+/* f^x over the signed digits of the curve parameter.
+ *
+ * Only valid for f in the cyclotomic subgroup, where the conjugate is the
+ * inverse -- which is what makes the negative digits free. Every element the
+ * final exponentiation touches is cyclotomic, because the easy part put it
+ * there. The digit pattern is a public curve constant, so branching on it
+ * leaks nothing. */
+void fp12_exp_param(fp12_t r, const fp12_t f)
+{
+    fp12_t acc, fi;
+    fp12_conj(fi, f);
+    if (ELIPS_LOOP[ELIPS_LOOP_TOP] > 0) fp12_copy(acc, f);
+    else                                fp12_copy(acc, fi);
+    for (int i = ELIPS_LOOP_TOP - 1; i >= 0; i--) {
+        fp12_sqr(acc, acc);
+        if (ELIPS_LOOP[i] > 0)      fp12_mul(acc, acc, f);
+        else if (ELIPS_LOOP[i] < 0) fp12_mul(acc, acc, fi);
+    }
+    fp12_copy(r, acc);
+}
+
+void pairing_final_exp_fast(fp12_t r, const fp12_t f)
+{
+    /* easy part: f^(p^6-1)(p^2+1), which lands in the cyclotomic subgroup */
+    fp12_t m, t0, t1;
+    fp12_conj(t0, f);
+    fp12_inv(t1, f);
+    fp12_mul(t0, t0, t1);          /* f^(p^6-1) */
+    fp12_frobenius(t1, t0, 2);
+    fp12_mul(m, t1, t0);           /* ^(p^2+1) */
+
+    /* hard part, computing 3*lambda via
+     *     3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3
+     * From here on every inverse is a conjugation, since m is cyclotomic. */
+    fp12_t a, b, c, d, e, mi;
+    fp12_conj(mi, m);
+
+    fp12_exp_param(a, m);          /* m^x            */
+    fp12_mul(a, a, mi);            /* m^(x-1)        */
+
+    fp12_exp_param(b, a);          /* a^x            */
+    fp12_conj(t0, a);
+    fp12_mul(b, b, t0);            /* a^(x-1) = m^((x-1)^2) */
+
+    fp12_exp_param(c, b);          /* b^x            */
+    fp12_frobenius(t0, b, 1);
+    fp12_mul(c, c, t0);            /* b^(x+p)        */
+
+    fp12_exp_param(d, c);          /* c^x            */
+    fp12_exp_param(d, d);          /* c^(x^2)        */
+    fp12_frobenius(t0, c, 2);
+    fp12_mul(d, d, t0);            /* * c^(p^2)      */
+    fp12_conj(t0, c);
+    fp12_mul(d, d, t0);            /* * c^-1  => c^(x^2+p^2-1) */
+
+    fp12_sqr(e, m);
+    fp12_mul(e, e, m);             /* m^3            */
+    fp12_mul(r, d, e);
+}
