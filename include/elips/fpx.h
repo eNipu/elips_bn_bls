@@ -63,6 +63,12 @@ void fp12_mul(fp12_t r, const fp12_t a, const fp12_t b);
 void fp12_sqr(fp12_t r, const fp12_t a);
 void fp12_inv(fp12_t r, const fp12_t a);
 void fp12_conj(fp12_t r, const fp12_t a);     /* the p^6 Frobenius */
+/* r = a^(p^k) for k in {1,2,3}. k=6 is fp12_conj. */
+void fp12_frobenius(fp12_t r, const fp12_t a, int k);
+/* r = a^e, e given as little-endian limbs of ebits bits. Not constant time in
+ * the exponent, which is fine: every exponent used here is a public curve
+ * parameter. */
+void fp12_exp(fp12_t r, const fp12_t a, const limb_t *e, int ebits);
 int  fp12_is_zero(const fp12_t a);
 int  fp12_eq(const fp12_t a, const fp12_t b);
 

@@ -55,6 +55,246 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x5c071a97a256ec6d),
         UINT64_C(0x15f65ec3fa80e493)
   };
+  /* Miller loop parameter, signed digits. */
+  #define ELIPS_LOOP_TOP     64
+  #define ELIPS_FAMILY_BLS12   1
+  static const signed char ELIPS_LOOP[65] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, -1 };
+  /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
+  #define ELIPS_HARD_BITS    1268
+  #define ELIPS_HARD_LIMBS   20
+  static const limb_t ELIPS_HARD_EXP[20] = {
+        UINT64_C(0xe516c3f438e3ba79),
+        UINT64_C(0xfa9912aae208ccf1),
+        UINT64_C(0x905ce937335d5b68),
+        UINT64_C(0xc71a2629b0dea236),
+        UINT64_C(0x83774940996754c8),
+        UINT64_C(0x21d160aeb6a1e799),
+        UINT64_C(0x2ed0b283ed237db4),
+        UINT64_C(0x915c97f36c6f1821),
+        UINT64_C(0x67f17fcbde783765),
+        UINT64_C(0x2378b9039096d1b7),
+        UINT64_C(0x7988f8761bdc51dc),
+        UINT64_C(0x2076995003fc77a1),
+        UINT64_C(0x827eca0ba621315b),
+        UINT64_C(0xe5a72bce8d63cb9f),
+        UINT64_C(0xf68f7764c28b6f8a),
+        UINT64_C(0x2f230063cf081517),
+        UINT64_C(0x94506632528d6a9a),
+        UINT64_C(0xd3cde88eeb996ca3),
+        UINT64_C(0xc0bd38c3195c899e),
+        UINT64_C(0x000f686b3d807d01)
+  };
+  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
+  static const limb_t FROB_P1_1[2][6] = {
+    { UINT64_C(0x07089552b319d465),
+        UINT64_C(0xc6695f92b50a8313),
+        UINT64_C(0x97e83cccd117228f),
+        UINT64_C(0xa35baecab2dc29ee),
+        UINT64_C(0x1ce393ea5daace4d),
+        UINT64_C(0x08f2220fb0fb66eb) },
+    { UINT64_C(0xb2f66aad4ce5d646),
+        UINT64_C(0x5842a06bfc497cec),
+        UINT64_C(0xcf4895d42599d394),
+        UINT64_C(0xc11b9cba40a8e8d0),
+        UINT64_C(0x2e3813cbe5a0de89),
+        UINT64_C(0x110eefda88847faf) }
+  };
+  static const limb_t FROB_P1_2[2][6] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0xcd03c9e48671f071),
+        UINT64_C(0x5dab22461fcda5d2),
+        UINT64_C(0x587042afd3851b95),
+        UINT64_C(0x8eb60ebe01bacb9e),
+        UINT64_C(0x03f97d6e83d050d2),
+        UINT64_C(0x18f0206554638741) }
+  };
+  static const limb_t FROB_P1_3[2][6] = {
+    { UINT64_C(0x7bcfa7a25aa30fda),
+        UINT64_C(0xdc17dec12a927e7c),
+        UINT64_C(0x2f088dd86b4ebef1),
+        UINT64_C(0xd1ca2087da74d4a7),
+        UINT64_C(0x2da2596696cebc1d),
+        UINT64_C(0x0e2b7eedbbfd87d2) },
+    { UINT64_C(0x7bcfa7a25aa30fda),
+        UINT64_C(0xdc17dec12a927e7c),
+        UINT64_C(0x2f088dd86b4ebef1),
+        UINT64_C(0xd1ca2087da74d4a7),
+        UINT64_C(0x2da2596696cebc1d),
+        UINT64_C(0x0e2b7eedbbfd87d2) }
+  };
+  static const limb_t FROB_P1_4[2][6] = {
+    { UINT64_C(0x890dc9e4867545c3),
+        UINT64_C(0x2af322533285a5d5),
+        UINT64_C(0x50880866309b7e2c),
+        UINT64_C(0xa20d1b8c7e881024),
+        UINT64_C(0x14e4f04fe2db9068),
+        UINT64_C(0x14e56d3f1564853a) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P1_5[2][6] = {
+    { UINT64_C(0x82d83cf50dbce43f),
+        UINT64_C(0xa2813e53df9d018f),
+        UINT64_C(0xc6f0caa53c65e181),
+        UINT64_C(0x7525cf528d50fe95),
+        UINT64_C(0x4a85ed50f4798a6b),
+        UINT64_C(0x171da0fd6cf8eebd) },
+    { UINT64_C(0x3726c30af242c66c),
+        UINT64_C(0x7c2ac1aad1b6fe70),
+        UINT64_C(0xa04007fbba4b14a2),
+        UINT64_C(0xef517c3266341429),
+        UINT64_C(0x0095ba654ed2226b),
+        UINT64_C(0x02e370eccc86f7dd) }
+  };
+  static const limb_t FROB_P2_1[2][6] = {
+    { UINT64_C(0xecfb361b798dba3a),
+        UINT64_C(0xc100ddb891865a2c),
+        UINT64_C(0x0ec08ff1232bda8e),
+        UINT64_C(0xd5c13cc6f1ca4721),
+        UINT64_C(0x47222a47bf7b5c04),
+        UINT64_C(0x0110f184e51c5f59) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_2[2][6] = {
+    { UINT64_C(0x30f1361b798a64e8),
+        UINT64_C(0xf3b8ddab7ece5a2a),
+        UINT64_C(0x16a8ca3ac61577f7),
+        UINT64_C(0xc26a2ff874fd029b),
+        UINT64_C(0x3636b76660701c6e),
+        UINT64_C(0x051ba4ab241b6160) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_3[2][6] = {
+    { UINT64_C(0x43f5fffffffcaaae),
+        UINT64_C(0x32b7fff2ed47fffd),
+        UINT64_C(0x07e83a49a2e99d69),
+        UINT64_C(0xeca8f3318332bb7a),
+        UINT64_C(0xef148d1ea0f4c069),
+        UINT64_C(0x040ab3263eff0206) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_4[2][6] = {
+    { UINT64_C(0xcd03c9e48671f071),
+        UINT64_C(0x5dab22461fcda5d2),
+        UINT64_C(0x587042afd3851b95),
+        UINT64_C(0x8eb60ebe01bacb9e),
+        UINT64_C(0x03f97d6e83d050d2),
+        UINT64_C(0x18f0206554638741) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_5[2][6] = {
+    { UINT64_C(0x890dc9e4867545c3),
+        UINT64_C(0x2af322533285a5d5),
+        UINT64_C(0x50880866309b7e2c),
+        UINT64_C(0xa20d1b8c7e881024),
+        UINT64_C(0x14e4f04fe2db9068),
+        UINT64_C(0x14e56d3f1564853a) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P3_1[2][6] = {
+    { UINT64_C(0x3e2f585da55c9ad1),
+        UINT64_C(0x4294213d86c18183),
+        UINT64_C(0x382844c88b623732),
+        UINT64_C(0x92ad2afd19103e18),
+        UINT64_C(0x1d794e4fac7cf0b9),
+        UINT64_C(0x0bd592fc7d825ec8) },
+    { UINT64_C(0x7bcfa7a25aa30fda),
+        UINT64_C(0xdc17dec12a927e7c),
+        UINT64_C(0x2f088dd86b4ebef1),
+        UINT64_C(0xd1ca2087da74d4a7),
+        UINT64_C(0x2da2596696cebc1d),
+        UINT64_C(0x0e2b7eedbbfd87d2) }
+  };
+  static const limb_t FROB_P3_2[2][6] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0x760900000002fffd),
+        UINT64_C(0xebf4000bc40c0002),
+        UINT64_C(0x5f48985753c758ba),
+        UINT64_C(0x77ce585370525745),
+        UINT64_C(0x5c071a97a256ec6d),
+        UINT64_C(0x15f65ec3fa80e493) }
+  };
+  static const limb_t FROB_P3_3[2][6] = {
+    { UINT64_C(0x3e2f585da55c9ad1),
+        UINT64_C(0x4294213d86c18183),
+        UINT64_C(0x382844c88b623732),
+        UINT64_C(0x92ad2afd19103e18),
+        UINT64_C(0x1d794e4fac7cf0b9),
+        UINT64_C(0x0bd592fc7d825ec8) },
+    { UINT64_C(0x3e2f585da55c9ad1),
+        UINT64_C(0x4294213d86c18183),
+        UINT64_C(0x382844c88b623732),
+        UINT64_C(0x92ad2afd19103e18),
+        UINT64_C(0x1d794e4fac7cf0b9),
+        UINT64_C(0x0bd592fc7d825ec8) }
+  };
+  static const limb_t FROB_P3_4[2][6] = {
+    { UINT64_C(0x43f5fffffffcaaae),
+        UINT64_C(0x32b7fff2ed47fffd),
+        UINT64_C(0x07e83a49a2e99d69),
+        UINT64_C(0xeca8f3318332bb7a),
+        UINT64_C(0xef148d1ea0f4c069),
+        UINT64_C(0x040ab3263eff0206) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P3_5[2][6] = {
+    { UINT64_C(0x7bcfa7a25aa30fda),
+        UINT64_C(0xdc17dec12a927e7c),
+        UINT64_C(0x2f088dd86b4ebef1),
+        UINT64_C(0xd1ca2087da74d4a7),
+        UINT64_C(0x2da2596696cebc1d),
+        UINT64_C(0x0e2b7eedbbfd87d2) },
+    { UINT64_C(0x3e2f585da55c9ad1),
+        UINT64_C(0x4294213d86c18183),
+        UINT64_C(0x382844c88b623732),
+        UINT64_C(0x92ad2afd19103e18),
+        UINT64_C(0x1d794e4fac7cf0b9),
+        UINT64_C(0x0bd592fc7d825ec8) }
+  };
 #endif
 
 #if defined(ELIPS_CURVE_BLS12_461)
@@ -96,6 +336,310 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x53fd14e37575bd1e),
         UINT64_C(0x0000000000001400)
   };
+  /* Miller loop parameter, signed digits. */
+  #define ELIPS_LOOP_TOP     77
+  #define ELIPS_FAMILY_BLS12   1
+  static const signed char ELIPS_LOOP[78] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 };
+  /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
+  #define ELIPS_HARD_BITS    1534
+  #define ELIPS_HARD_LIMBS   24
+  static const limb_t ELIPS_HARD_EXP[24] = {
+        UINT64_C(0x948a5ed03f35ba79),
+        UINT64_C(0xe6a05bb19498e919),
+        UINT64_C(0x992fc095ca5df001),
+        UINT64_C(0xa96894a4480b13dc),
+        UINT64_C(0x2e1ac177e5b5781d),
+        UINT64_C(0xc4fc7518fb14e7c7),
+        UINT64_C(0x02f52af338164c9d),
+        UINT64_C(0x973335ac292faf99),
+        UINT64_C(0x97535d80479c9146),
+        UINT64_C(0xadb4b9045c40175d),
+        UINT64_C(0x16b30da011cbb1de),
+        UINT64_C(0xec01694eeda83841),
+        UINT64_C(0x2de59130ba7b40e6),
+        UINT64_C(0x66ef8b5bd7e7c3bf),
+        UINT64_C(0x019929b6eca2b2cf),
+        UINT64_C(0x54fe2b221820f578),
+        UINT64_C(0x0f5b33b9728a624c),
+        UINT64_C(0x1eaf2ad216cb8802),
+        UINT64_C(0xe7cccbdc6003174c),
+        UINT64_C(0x3f5c7e57a4dbf73f),
+        UINT64_C(0xc2934007e6dda88e),
+        UINT64_C(0xa24fe567d9bf5fc1),
+        UINT64_C(0x6ca5acc5d7ee55a3),
+        UINT64_C(0x3291617b422030fd)
+  };
+  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
+  static const limb_t FROB_P1_1[2][8] = {
+    { UINT64_C(0x5ffb2514d3d275a9),
+        UINT64_C(0x2baf303fc53f79ea),
+        UINT64_C(0x8cc94daab46f576f),
+        UINT64_C(0x437fc6ea62be8bea),
+        UINT64_C(0xd9909df9285c1491),
+        UINT64_C(0xb1a272261be8b53c),
+        UINT64_C(0xff85964a34868db5),
+        UINT64_C(0x0000000000000fee) },
+    { UINT64_C(0x4ab0daebd6d83502),
+        UINT64_C(0xd470cfc59015d0c0),
+        UINT64_C(0x825d5ce6a10fa8d0),
+        UINT64_C(0x47c2e1f5979d90d5),
+        UINT64_C(0x59481cd37c1efff3),
+        UINT64_C(0x24f1a26d43d4b9e1),
+        UINT64_C(0x55bfbf0325cecca0),
+        UINT64_C(0x0000000000000566) }
+  };
+  static const limb_t FROB_P1_2[2][8] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0xed7c493b1f8e0750),
+        UINT64_C(0x9511cd97fc844443),
+        UINT64_C(0xe32591e007dbc947),
+        UINT64_C(0x96ebac2c10cfb6e5),
+        UINT64_C(0x510a96bc9f57be18),
+        UINT64_C(0xa8c831720ceb8a5b),
+        UINT64_C(0x3b14a327e8924c9c),
+        UINT64_C(0x00000000000003e0) }
+  };
+  static const limb_t FROB_P1_3[2][8] = {
+    { UINT64_C(0xc7a7e127e74e1fc5),
+        UINT64_C(0xdb251c03bfa8f8d9),
+        UINT64_C(0xabd17532a366f0c8),
+        UINT64_C(0xd6becd6c10e79a86),
+        UINT64_C(0xa8a5bb81331ba8bd),
+        UINT64_C(0xf6855771a55a89d7),
+        UINT64_C(0x83866a4a28890f53),
+        UINT64_C(0x000000000000001e) },
+    { UINT64_C(0xc7a7e127e74e1fc5),
+        UINT64_C(0xdb251c03bfa8f8d9),
+        UINT64_C(0xabd17532a366f0c8),
+        UINT64_C(0xd6becd6c10e79a86),
+        UINT64_C(0xa8a5bb81331ba8bd),
+        UINT64_C(0xf6855771a55a89d7),
+        UINT64_C(0x83866a4a28890f53),
+        UINT64_C(0x000000000000001e) }
+  };
+  static const limb_t FROB_P1_4[2][8] = {
+    { UINT64_C(0x36c8463871e35b24),
+        UINT64_C(0x5491b5d2a7570d99),
+        UINT64_C(0x5989e117b61d8847),
+        UINT64_C(0x851b25f2c98585ae),
+        UINT64_C(0x8e6037cd502a0352),
+        UINT64_C(0x50533ce4e82071a7),
+        UINT64_C(0x39cc62be03b2af65),
+        UINT64_C(0x000000000000028b) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P1_5[2][8] = {
+    { UINT64_C(0x27a3063cbb20956e),
+        UINT64_C(0x06d44c4384e872c4),
+        UINT64_C(0x389ac2dd57d64838),
+        UINT64_C(0x1a3e945673a62671),
+        UINT64_C(0x8236597a5b77bd4f),
+        UINT64_C(0xa827c997c1433f14),
+        UINT64_C(0x830c00945d0f9d09),
+        UINT64_C(0x000000000000100d) },
+    { UINT64_C(0x8308f9c3ef8a153d),
+        UINT64_C(0xf94bb3c1d06cd7e6),
+        UINT64_C(0xd68be7b3fda8b807),
+        UINT64_C(0x7104148986b5f64e),
+        UINT64_C(0xb0a2615249035735),
+        UINT64_C(0x2e6c4afb9e7a3009),
+        UINT64_C(0xd23954b8fd45bd4c),
+        UINT64_C(0x0000000000000547) }
+  };
+  static const limb_t FROB_P2_1[2][8] = {
+    { UINT64_C(0xbd2fb6c58b1ca35b),
+        UINT64_C(0x6b0e326d58d10666),
+        UINT64_C(0x2c0118b14da336f8),
+        UINT64_C(0xf456fcb3e98c65da),
+        UINT64_C(0xe1ce24100523566b),
+        UINT64_C(0x2dcbe32152d1e4c2),
+        UINT64_C(0x1a30b22571c30db9),
+        UINT64_C(0x0000000000001175) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_2[2][8] = {
+    { UINT64_C(0x73e3b9c838c74f87),
+        UINT64_C(0xab8e4a32adfe3d11),
+        UINT64_C(0xb59cc9799f6177f8),
+        UINT64_C(0x062782ed30d69711),
+        UINT64_C(0xa47882ff54511132),
+        UINT64_C(0x8640d7ae779cfd76),
+        UINT64_C(0x1b78f28f56a2aaf0),
+        UINT64_C(0x00000000000012ca) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_3[2][8] = {
+    { UINT64_C(0xb6b40302adaaac2c),
+        UINT64_C(0x408017c5552d36aa),
+        UINT64_C(0x899bb0c851be4100),
+        UINT64_C(0x11d08639474a3137),
+        UINT64_C(0xc2aa5eef4f2dbac6),
+        UINT64_C(0x5874f48d24cb18b3),
+        UINT64_C(0x01484069e4df9d37),
+        UINT64_C(0x0000000000000155) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_4[2][8] = {
+    { UINT64_C(0xed7c493b1f8e0750),
+        UINT64_C(0x9511cd97fc844443),
+        UINT64_C(0xe32591e007dbc947),
+        UINT64_C(0x96ebac2c10cfb6e5),
+        UINT64_C(0x510a96bc9f57be18),
+        UINT64_C(0xa8c831720ceb8a5b),
+        UINT64_C(0x3b14a327e8924c9c),
+        UINT64_C(0x00000000000003e0) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_5[2][8] = {
+    { UINT64_C(0x36c8463871e35b24),
+        UINT64_C(0x5491b5d2a7570d99),
+        UINT64_C(0x5989e117b61d8847),
+        UINT64_C(0x851b25f2c98585ae),
+        UINT64_C(0x8e6037cd502a0352),
+        UINT64_C(0x50533ce4e82071a7),
+        UINT64_C(0x39cc62be03b2af65),
+        UINT64_C(0x000000000000028b) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P3_1[2][8] = {
+    { UINT64_C(0xe3041ed8c35c8ae6),
+        UINT64_C(0x24fae40195ac51d0),
+        UINT64_C(0x6355355eb2180f77),
+        UINT64_C(0xb483db73e9748239),
+        UINT64_C(0x8a32ff4b715f6bc6),
+        UINT64_C(0xe00ebd21ba62e546),
+        UINT64_C(0xd1beeb0331cc4b01),
+        UINT64_C(0x0000000000001536) },
+    { UINT64_C(0xc7a7e127e74e1fc5),
+        UINT64_C(0xdb251c03bfa8f8d9),
+        UINT64_C(0xabd17532a366f0c8),
+        UINT64_C(0xd6becd6c10e79a86),
+        UINT64_C(0xa8a5bb81331ba8bd),
+        UINT64_C(0xf6855771a55a89d7),
+        UINT64_C(0x83866a4a28890f53),
+        UINT64_C(0x000000000000001e) }
+  };
+  static const limb_t FROB_P3_2[2][8] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0xf3f7fcfdfcfffe7f),
+        UINT64_C(0xbf9fe840002813ff),
+        UINT64_C(0x858af9c903c0bf3f),
+        UINT64_C(0x797222a6b311eb88),
+        UINT64_C(0x702e5bdd554d59be),
+        UINT64_C(0x7e1f20063af2566a),
+        UINT64_C(0x53fd14e37575bd1e),
+        UINT64_C(0x0000000000001400) }
+  };
+  static const limb_t FROB_P3_3[2][8] = {
+    { UINT64_C(0xe3041ed8c35c8ae6),
+        UINT64_C(0x24fae40195ac51d0),
+        UINT64_C(0x6355355eb2180f77),
+        UINT64_C(0xb483db73e9748239),
+        UINT64_C(0x8a32ff4b715f6bc6),
+        UINT64_C(0xe00ebd21ba62e546),
+        UINT64_C(0xd1beeb0331cc4b01),
+        UINT64_C(0x0000000000001536) },
+    { UINT64_C(0xe3041ed8c35c8ae6),
+        UINT64_C(0x24fae40195ac51d0),
+        UINT64_C(0x6355355eb2180f77),
+        UINT64_C(0xb483db73e9748239),
+        UINT64_C(0x8a32ff4b715f6bc6),
+        UINT64_C(0xe00ebd21ba62e546),
+        UINT64_C(0xd1beeb0331cc4b01),
+        UINT64_C(0x0000000000001536) }
+  };
+  static const limb_t FROB_P3_4[2][8] = {
+    { UINT64_C(0xb6b40302adaaac2c),
+        UINT64_C(0x408017c5552d36aa),
+        UINT64_C(0x899bb0c851be4100),
+        UINT64_C(0x11d08639474a3137),
+        UINT64_C(0xc2aa5eef4f2dbac6),
+        UINT64_C(0x5874f48d24cb18b3),
+        UINT64_C(0x01484069e4df9d37),
+        UINT64_C(0x0000000000000155) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P3_5[2][8] = {
+    { UINT64_C(0xc7a7e127e74e1fc5),
+        UINT64_C(0xdb251c03bfa8f8d9),
+        UINT64_C(0xabd17532a366f0c8),
+        UINT64_C(0xd6becd6c10e79a86),
+        UINT64_C(0xa8a5bb81331ba8bd),
+        UINT64_C(0xf6855771a55a89d7),
+        UINT64_C(0x83866a4a28890f53),
+        UINT64_C(0x000000000000001e) },
+    { UINT64_C(0xe3041ed8c35c8ae6),
+        UINT64_C(0x24fae40195ac51d0),
+        UINT64_C(0x6355355eb2180f77),
+        UINT64_C(0xb483db73e9748239),
+        UINT64_C(0x8a32ff4b715f6bc6),
+        UINT64_C(0xe00ebd21ba62e546),
+        UINT64_C(0xd1beeb0331cc4b01),
+        UINT64_C(0x0000000000001536) }
+  };
 #endif
 
 #if defined(ELIPS_CURVE_BN_462)
@@ -136,6 +680,308 @@ typedef mp_limb_t limb_t;
         UINT64_C(0xffaffe8680658205),
         UINT64_C(0xfde7f1801dfec009),
         UINT64_C(0x0000000000000fe5)
+  };
+  /* Miller loop parameter, signed digits. */
+  #define ELIPS_LOOP_TOP     116
+  #define ELIPS_FAMILY_BN   1
+  static const signed char ELIPS_LOOP[117] = { 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 };
+  /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
+  #define ELIPS_HARD_BITS    1384
+  #define ELIPS_HARD_LIMBS   22
+  static const limb_t ELIPS_HARD_EXP[22] = {
+        UINT64_C(0x58dd86c90ef8a70d),
+        UINT64_C(0xe041e8139b2b6ae4),
+        UINT64_C(0x5069142fc0decda1),
+        UINT64_C(0xa00fdba234b5cfce),
+        UINT64_C(0x52d15c8c3d3fde27),
+        UINT64_C(0xcb9ca8c8b25ffda6),
+        UINT64_C(0x18ae421489e2a2f3),
+        UINT64_C(0x2650f201e62cee8e),
+        UINT64_C(0x9fe9e747b3944dc0),
+        UINT64_C(0x332ec64efe39b216),
+        UINT64_C(0xeafd6a3772b0c660),
+        UINT64_C(0x1cdec6480f05e9c8),
+        UINT64_C(0x0d646832f8dd3f67),
+        UINT64_C(0x71fed0f45be9613d),
+        UINT64_C(0xc4152eb60b421eb6),
+        UINT64_C(0x65501898851f44eb),
+        UINT64_C(0xa8f7501f22fe920f),
+        UINT64_C(0x14b25132a0bf5fa4),
+        UINT64_C(0x592379155dd3fe95),
+        UINT64_C(0x8a068e8f6ac5a85e),
+        UINT64_C(0x540775f547827b97),
+        UINT64_C(0x000000b68463c059)
+  };
+  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
+  static const limb_t FROB_P1_1[2][8] = {
+    { UINT64_C(0xc6569749d7a29138),
+        UINT64_C(0x088422c2fc3f62f7),
+        UINT64_C(0x8d883f2791dbb9ba),
+        UINT64_C(0x421bd675add87977),
+        UINT64_C(0x6baba36b7d105355),
+        UINT64_C(0xe109d821f95a514d),
+        UINT64_C(0xe92eedbc894ac3a5),
+        UINT64_C(0x0000000000001e23) },
+    { UINT64_C(0x5dab18be6870eedb),
+        UINT64_C(0xee03d37d03c09d08),
+        UINT64_C(0x7277c0cf6d8b42b5),
+        UINT64_C(0xd074b8cc1a299688),
+        UINT64_C(0x541e5c9482efad82),
+        UINT64_C(0x1ef61edd139c668c),
+        UINT64_C(0x9707136378f53c5a),
+        UINT64_C(0x00000000000005e0) }
+  };
+  static const limb_t FROB_P1_2[2][8] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0x1411710cf60202c8),
+        UINT64_C(0x66e69ee38f2f8e88),
+        UINT64_C(0x6280de9a92a4e382),
+        UINT64_C(0xb29d7462344c7831),
+        UINT64_C(0x7f965ccd9ee433ba),
+        UINT64_C(0x0087fb5a1511f6b7),
+        UINT64_C(0x318cc43c76021fef),
+        UINT64_C(0x0000000000000078) }
+  };
+  static const limb_t FROB_P1_3[2][8] = {
+    { UINT64_C(0x41353c4f9eda314a),
+        UINT64_C(0x00a909289ead578b),
+        UINT64_C(0x1d9aa4ee823ec8dd),
+        UINT64_C(0xd1a00197c0d685bb),
+        UINT64_C(0xec7cabfe2e9578d9),
+        UINT64_C(0xda077411b817498f),
+        UINT64_C(0x6183fbbfc9629aed),
+        UINT64_C(0x0000000000002044) },
+    { UINT64_C(0x41353c4f9eda314a),
+        UINT64_C(0x00a909289ead578b),
+        UINT64_C(0x1d9aa4ee823ec8dd),
+        UINT64_C(0xd1a00197c0d685bb),
+        UINT64_C(0xec7cabfe2e9578d9),
+        UINT64_C(0xda077411b817498f),
+        UINT64_C(0x6183fbbfc9629aed),
+        UINT64_C(0x0000000000002044) }
+  };
+  static const limb_t FROB_P1_4[2][8] = {
+    { UINT64_C(0x52235fc114f07370),
+        UINT64_C(0x95d0dcf78df4f4a7),
+        UINT64_C(0x93d3ecafc85764d5),
+        UINT64_C(0x1b6c2af43f17f471),
+        UINT64_C(0x7cc698cb2452332e),
+        UINT64_C(0x0037f9e0957778bd),
+        UINT64_C(0x2f74b5bc9400dff9),
+        UINT64_C(0x000000000000105e) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P1_5[2][8] = {
+    { UINT64_C(0xe38a23913669426f),
+        UINT64_C(0x12a535ab9aecba82),
+        UINT64_C(0xab22e41f14b38627),
+        UINT64_C(0x012b48cba6acef32),
+        UINT64_C(0x985e4f69aba5cb57),
+        UINT64_C(0xbb115534a47ae303),
+        UINT64_C(0xca7ce85c506d5e93),
+        UINT64_C(0x0000000000001a63) },
+    { UINT64_C(0x40778c7709aa3da4),
+        UINT64_C(0xe3e2c0946513457d),
+        UINT64_C(0x54dd1bd7eab37648),
+        UINT64_C(0x11654676215520cd),
+        UINT64_C(0x276bb096545a3581),
+        UINT64_C(0x44eea1ca687bd4d6),
+        UINT64_C(0xb5b918c3b1d2a16c),
+        UINT64_C(0x00000000000009a0) }
+  };
+  static const limb_t FROB_P2_1[2][8] = {
+    { UINT64_C(0x0ff03efb4a117d4b),
+        UINT64_C(0x8fa1575c70d07178),
+        UINT64_C(0x9d7f215c6cc218ed),
+        UINT64_C(0x5ff31adf93b597ce),
+        UINT64_C(0x4033a332611bcd1d),
+        UINT64_C(0xff77fba4f7e4c122),
+        UINT64_C(0x4ea93ce38c3de010),
+        UINT64_C(0x000000000000238c) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_2[2][8] = {
+    { UINT64_C(0xd1de50472b230ca3),
+        UINT64_C(0x60b71948720b0b58),
+        UINT64_C(0x6c2c1347370f979a),
+        UINT64_C(0xf724644d88ea1b8e),
+        UINT64_C(0x43036734dbadcda9),
+        UINT64_C(0xffc7fd1e777f3f1c),
+        UINT64_C(0x50c14b636e3f2006),
+        UINT64_C(0x00000000000013a6) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_3[2][8] = {
+    { UINT64_C(0xe5efc15421250f6b),
+        UINT64_C(0xc79db82c013a99e0),
+        UINT64_C(0xceacf1e1c9b47b1c),
+        UINT64_C(0xa9c1d8afbd3693bf),
+        UINT64_C(0xc299c4027a920164),
+        UINT64_C(0x004ff8788c9135d3),
+        UINT64_C(0x824e0f9fe4413ff6),
+        UINT64_C(0x000000000000141e) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_4[2][8] = {
+    { UINT64_C(0x1411710cf60202c8),
+        UINT64_C(0x66e69ee38f2f8e88),
+        UINT64_C(0x6280de9a92a4e382),
+        UINT64_C(0xb29d7462344c7831),
+        UINT64_C(0x7f965ccd9ee433ba),
+        UINT64_C(0x0087fb5a1511f6b7),
+        UINT64_C(0x318cc43c76021fef),
+        UINT64_C(0x0000000000000078) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P2_5[2][8] = {
+    { UINT64_C(0x52235fc114f07370),
+        UINT64_C(0x95d0dcf78df4f4a7),
+        UINT64_C(0x93d3ecafc85764d5),
+        UINT64_C(0x1b6c2af43f17f471),
+        UINT64_C(0x7cc698cb2452332e),
+        UINT64_C(0x0037f9e0957778bd),
+        UINT64_C(0x2f74b5bc9400dff9),
+        UINT64_C(0x000000000000105e) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P3_1[2][8] = {
+    { UINT64_C(0xe2cc73b8a1394ec9),
+        UINT64_C(0xf5deed176152a874),
+        UINT64_C(0xe2655b087d283392),
+        UINT64_C(0x40f08daa072b8a44),
+        UINT64_C(0xd34d5401d16a87fe),
+        UINT64_C(0x25f882ed54df6e49),
+        UINT64_C(0x1eb2056038dd6512),
+        UINT64_C(0x00000000000003c0) },
+    { UINT64_C(0x41353c4f9eda314a),
+        UINT64_C(0x00a909289ead578b),
+        UINT64_C(0x1d9aa4ee823ec8dd),
+        UINT64_C(0xd1a00197c0d685bb),
+        UINT64_C(0xec7cabfe2e9578d9),
+        UINT64_C(0xda077411b817498f),
+        UINT64_C(0x6183fbbfc9629aed),
+        UINT64_C(0x0000000000002044) }
+  };
+  static const limb_t FROB_P3_2[2][8] = {
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) },
+    { UINT64_C(0x3e11eeb41eee70a8),
+        UINT64_C(0x2eea3e13fec5661f),
+        UINT64_C(0x31530e1535b28153),
+        UINT64_C(0x68ceb6920acb7c40),
+        UINT64_C(0xfd303bfd856dff73),
+        UINT64_C(0xffaffe8680658205),
+        UINT64_C(0xfde7f1801dfec009),
+        UINT64_C(0x0000000000000fe5) }
+  };
+  static const limb_t FROB_P3_3[2][8] = {
+    { UINT64_C(0xe2cc73b8a1394ec9),
+        UINT64_C(0xf5deed176152a874),
+        UINT64_C(0xe2655b087d283392),
+        UINT64_C(0x40f08daa072b8a44),
+        UINT64_C(0xd34d5401d16a87fe),
+        UINT64_C(0x25f882ed54df6e49),
+        UINT64_C(0x1eb2056038dd6512),
+        UINT64_C(0x00000000000003c0) },
+    { UINT64_C(0xe2cc73b8a1394ec9),
+        UINT64_C(0xf5deed176152a874),
+        UINT64_C(0xe2655b087d283392),
+        UINT64_C(0x40f08daa072b8a44),
+        UINT64_C(0xd34d5401d16a87fe),
+        UINT64_C(0x25f882ed54df6e49),
+        UINT64_C(0x1eb2056038dd6512),
+        UINT64_C(0x00000000000003c0) }
+  };
+  static const limb_t FROB_P3_4[2][8] = {
+    { UINT64_C(0xe5efc15421250f6b),
+        UINT64_C(0xc79db82c013a99e0),
+        UINT64_C(0xceacf1e1c9b47b1c),
+        UINT64_C(0xa9c1d8afbd3693bf),
+        UINT64_C(0xc299c4027a920164),
+        UINT64_C(0x004ff8788c9135d3),
+        UINT64_C(0x824e0f9fe4413ff6),
+        UINT64_C(0x000000000000141e) },
+    { UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0x0000000000000000) }
+  };
+  static const limb_t FROB_P3_5[2][8] = {
+    { UINT64_C(0x41353c4f9eda314a),
+        UINT64_C(0x00a909289ead578b),
+        UINT64_C(0x1d9aa4ee823ec8dd),
+        UINT64_C(0xd1a00197c0d685bb),
+        UINT64_C(0xec7cabfe2e9578d9),
+        UINT64_C(0xda077411b817498f),
+        UINT64_C(0x6183fbbfc9629aed),
+        UINT64_C(0x0000000000002044) },
+    { UINT64_C(0xe2cc73b8a1394ec9),
+        UINT64_C(0xf5deed176152a874),
+        UINT64_C(0xe2655b087d283392),
+        UINT64_C(0x40f08daa072b8a44),
+        UINT64_C(0xd34d5401d16a87fe),
+        UINT64_C(0x25f882ed54df6e49),
+        UINT64_C(0x1eb2056038dd6512),
+        UINT64_C(0x00000000000003c0) }
   };
 #endif
 

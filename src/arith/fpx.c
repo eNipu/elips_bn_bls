@@ -185,7 +185,81 @@ void fp12_mul(fp12_t r, const fp12_t a, const fp12_t b)
     fp6_copy(r[1], s);
 }
 
-void fp12_sqr(fp12_t r, const fp12_t a) { fp12_mul(r, a, a); }
+void fp12_sqr(fp12_t r, const fp12_t a)
+{
+    /* Complex squaring: two fp6 multiplications rather than three.
+     *   (d0 + d1 w)^2 = (d0^2 + v d1^2) + 2 d0 d1 w
+     * and (d0+d1)(d0 + v d1) - d0d1 - v d0d1 = d0^2 + v d1^2, so the whole
+     * thing costs one product of sums plus one d0*d1. */
+    fp6_t s, u, m, t;
+    fp6_add(s, a[0], a[1]);
+    fp6_mul_v(u, a[1]);
+    fp6_add(u, u, a[0]);
+    fp6_mul(m, a[0], a[1]);
+    fp6_mul(s, s, u);
+    fp6_sub(s, s, m);
+    fp6_mul_v(t, m);
+    fp6_sub(s, s, t);
+    fp6_add(r[1], m, m);
+    fp6_copy(r[0], s);
+}
+
+/* Frobenius.
+ *
+ * In fp12 = fp6[w] with w^2 = v and v^3 = xi, an element is
+ *     c0 + c3 w + c1 w^2 + c4 w^3 + c2 w^4 + c5 w^5
+ * where the storage is d0 = (c0,c1,c2) and d1 = (c3,c4,c5). Raising to the
+ * p^k power conjugates each fp2 coefficient (for odd k) and multiplies the
+ * coefficient of w^i by gamma^i, with gamma = w^(p^k - 1) = xi^((p^k-1)/6).
+ * The gamma powers are generated into fp_params.h already in Montgomery form,
+ * so this needs no setup and no global state. */
+void fp12_frobenius(fp12_t r, const fp12_t a, int k)
+{
+    const limb_t (*g[5])[FP_LIMBS];
+    int odd;
+    switch (k) {
+        case 1: g[0]=FROB_P1_1; g[1]=FROB_P1_2; g[2]=FROB_P1_3;
+                g[3]=FROB_P1_4; g[4]=FROB_P1_5; odd = 1; break;
+        case 2: g[0]=FROB_P2_1; g[1]=FROB_P2_2; g[2]=FROB_P2_3;
+                g[3]=FROB_P2_4; g[4]=FROB_P2_5; odd = 0; break;
+        case 3: g[0]=FROB_P3_1; g[1]=FROB_P3_2; g[2]=FROB_P3_3;
+                g[3]=FROB_P3_4; g[4]=FROB_P3_5; odd = 1; break;
+        case 6: fp12_conj(r, a); return;
+        default: fp12_copy(r, a); return;      /* k = 0 or 12 */
+    }
+
+    /* coefficient of w^i, in storage order */
+    fp12_t out;
+    fp2_copy(out[0][0], a[0][0]);              /* w^0, gamma^0 = 1 */
+    fp2_copy(out[1][0], a[1][0]);              /* w^1 */
+    fp2_copy(out[0][1], a[0][1]);              /* w^2 */
+    fp2_copy(out[1][1], a[1][1]);              /* w^3 */
+    fp2_copy(out[0][2], a[0][2]);              /* w^4 */
+    fp2_copy(out[1][2], a[1][2]);              /* w^5 */
+
+    if (odd) {
+        fp2_conj(out[0][0], out[0][0]); fp2_conj(out[1][0], out[1][0]);
+        fp2_conj(out[0][1], out[0][1]); fp2_conj(out[1][1], out[1][1]);
+        fp2_conj(out[0][2], out[0][2]); fp2_conj(out[1][2], out[1][2]);
+    }
+    fp2_mul(out[1][0], out[1][0], g[0]);       /* w^1 * gamma^1 */
+    fp2_mul(out[0][1], out[0][1], g[1]);       /* w^2 * gamma^2 */
+    fp2_mul(out[1][1], out[1][1], g[2]);       /* w^3 * gamma^3 */
+    fp2_mul(out[0][2], out[0][2], g[3]);       /* w^4 * gamma^4 */
+    fp2_mul(out[1][2], out[1][2], g[4]);       /* w^5 * gamma^5 */
+    fp12_copy(r, out);
+}
+
+void fp12_exp(fp12_t r, const fp12_t a, const limb_t *e, int ebits)
+{
+    fp12_t acc;
+    fp12_set_one(acc);
+    for (int i = ebits - 1; i >= 0; i--) {
+        fp12_sqr(acc, acc);
+        if ((e[i / 64] >> (i % 64)) & 1) fp12_mul(acc, acc, a);
+    }
+    fp12_copy(r, acc);
+}
 
 void fp12_inv(fp12_t r, const fp12_t a)
 {

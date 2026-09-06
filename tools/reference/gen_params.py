@@ -50,6 +50,61 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
     assert (p * n0) % (1 << W) == MASK, "n0 must satisfy p*n0 == -1 mod 2^64"
     r2, one = (R * R) % p, R % p
     sign = "+" if cv.sign_b > 0 else "-"
+
+    # Frobenius constants. In fp12 = fp6[w] with w^6 = xi = 1+u, the p-power
+    # map sends sum(a_i w^i) to sum(conj(a_i) * gamma^i * w^i) where
+    # gamma = w^(p-1) = xi^((p-1)/6). Emitted already in Montgomery form so the
+    # library needs no initialisation step and no global state.
+    def fp2_pow(base, e):
+        r_ = (1, 0)
+        b_ = base
+        while e:
+            if e & 1:
+                r_ = ((r_[0]*b_[0] - r_[1]*b_[1]) % p, (r_[0]*b_[1] + r_[1]*b_[0]) % p)
+            b_ = ((b_[0]*b_[0] - b_[1]*b_[1]) % p, (2*b_[0]*b_[1]) % p)
+            e >>= 1
+        return r_
+    xi = (1, 1)
+    frob = {}
+    for k in (1, 2, 3):
+        e = (pow(p, k) - 1) // 6
+        g = fp2_pow(xi, e)
+        # gamma^1 .. gamma^5
+        acc, row = (1, 0), []
+        for _ in range(5):
+            acc = ((acc[0]*g[0] - acc[1]*g[1]) % p, (acc[0]*g[1] + acc[1]*g[0]) % p)
+            row.append(acc)
+        frob[k] = row
+    # sanity: gamma^6 must be xi^(p^k - 1), and applying frobenius 12 times is
+    # the identity, which the C-side vectors will confirm independently.
+    # Miller loop parameter as signed digits, most significant last in the
+    # array. BLS12 loops over X; BN loops over 6x+2.
+    loop = cv.loop_digits
+    top = max(loop)
+    digits = [loop.get(i, 0) for i in range(top + 1)]
+    loop_txt = ("  #define ELIPS_LOOP_TOP     %d\n" % top +
+                "  #define ELIPS_FAMILY_%s   1\n" % cv.family.upper() +
+                "  static const signed char ELIPS_LOOP[%d] = { %s };\n"
+                % (top + 1, ", ".join(str(d) for d in digits)))
+
+    # Hard part of the final exponentiation, (p^4 - p^2 + 1)/r, as limbs.
+    # Used by the definitionally-correct slow path that validates any fast chain.
+    ordr = cv.r
+    hard = (p**4 - p**2 + 1) // ordr
+    assert (p**4 - p**2 + 1) % ordr == 0, "r must divide p^4 - p^2 + 1"
+    hn = (hard.bit_length() + W - 1) // W
+    hard_txt = ("  #define ELIPS_HARD_BITS    %d\n" % hard.bit_length() +
+                "  #define ELIPS_HARD_LIMBS   %d\n" % hn +
+                "  static const limb_t ELIPS_HARD_EXP[%d] = {\n        %s\n  };\n"
+                % (hn, limb_list(hard, hn)))
+
+    frob_txt = ""
+    for k in (1, 2, 3):
+        for i, (a, b) in enumerate(frob[k], start=1):
+            am, bm = (a * R) % p, (b * R) % p
+            frob_txt += ("  static const limb_t FROB_P%d_%d[2][%d] = {\n"
+                         "    { %s },\n    { %s }\n  };\n"
+                         % (k, i, n, limb_list(am, n), limb_list(bm, n)))
     parts.append(
         "#if defined(" + macro + ")\n"
         '  #define ELIPS_CURVE_NAME   "' + cv.name + '"\n'
@@ -63,6 +118,10 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
         "  static const limb_t FP_MODULUS[%d] = {\n        %s\n  };\n" % (n, limb_list(p, n)) +
         "  static const limb_t FP_R2[%d] = {\n        %s\n  };\n" % (n, limb_list(r2, n)) +
         "  static const limb_t FP_ONE[%d] = {\n        %s\n  };\n" % (n, limb_list(one, n)) +
+        "  /* Miller loop parameter, signed digits. */\n" + loop_txt +
+        "  /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */\n" + hard_txt +
+        "  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */\n" +
+        frob_txt +
         "#endif\n")
 
 parts.append("""#ifndef ELIPS_HAS_CURVE

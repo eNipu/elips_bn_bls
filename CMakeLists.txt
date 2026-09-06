@@ -82,7 +82,8 @@ endif()
 set(ELIPS_CURVES BLS12_381 BLS12_461 BN_462)
 foreach(_cv IN LISTS ELIPS_CURVES)
   add_library(elips_arith_${_cv} STATIC
-    src/arith/fp.c src/arith/fpx.c src/arith/ec.c)
+    src/arith/fp.c src/arith/fpx.c src/arith/ec.c
+    $<$<NOT:$<STREQUAL:${_cv},BN_462>>:${CMAKE_CURRENT_SOURCE_DIR}/src/pairing/miller.c>)
   target_include_directories(elips_arith_${_cv} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
@@ -154,6 +155,14 @@ if(ELIPS_BUILD_TESTS)
                      "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/${_vec_${_cv}}.vec")
     set_tests_properties(kat.new.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
+
+  # The new pairing against the value Phase 0 established as correct, plus
+  # non-degeneracy and mu_r membership. BLS12-461 only: the reference side is
+  # the legacy library, which initialises that curve at runtime.
+  add_executable(pairing_test test/pairing_test.c)
+  target_link_libraries(pairing_test PRIVATE elips_arith_BLS12_461 elips GMP::GMP)
+  add_test(NAME pairing.matches_reference COMMAND pairing_test)
+  set_tests_properties(pairing.matches_reference PROPERTIES TIMEOUT 900)
 
   # Group-law properties. Only the BLS12-461 build: the test borrows a genuine
   # G2 point from the legacy layer, which initialises that curve at runtime.
