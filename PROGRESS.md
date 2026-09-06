@@ -583,18 +583,12 @@ run, as BLS12 had.
 |---|---|---|---|
 | BN-462 Miller loop | 4077.9 us | 1326.8 us | **3.07x** |
 
-### No fast final exponentiation for BN, on purpose
+### BN fast chain: initially withheld, then written properly
 
-The identity the BLS12 chain rests on is specific to that family. Applying it to
-BN gives a wrong exponent, which the suite caught the moment BN was wired in.
-BN has its own standard chain and it is simply not written yet, so BN callers
-get the exact slow path or nothing.
-
-Declining to provide one is a deliberate choice, not an oversight. The legacy
-library ships a BN "optimal" final exponentiation that raises to roughly
-`12*X^3` times the correct exponent, and nothing noticed for years because the
-result is still bilinear. **A missing function fails better than a plausible
-wrong one.**
+The BLS12 identity is family-specific; applying it to BN gave a wrong exponent,
+which the suite caught the moment BN was wired in. Rather than ship a plausible
+wrong chain — the exact defect the legacy library has — BN was left with the
+exact slow path until the right chain existed. It now does; see part 6.
 
 ### Current state of the new stack
 
@@ -602,15 +596,64 @@ wrong one.**
 |---|---|---|---|---|---|
 | BLS12-381 | yes | yes | yes | yes | yes |
 | BLS12-461 | yes | yes | yes | yes | yes |
-| BN-462 | yes | yes | yes | yes | **not written** |
+| BN-462 | yes | yes | yes | yes | yes (exact e) |
 
 17 CTest targets green, ASan and UBSan clean, zero warnings on a clean build.
 
 ### Remaining in Phase 3
 
-- [ ] BN fast final exponentiation chain
+- [x] BN fast final exponentiation chain — done, part 6
 - [ ] Cyclotomic squaring, a further cut for both families
 - [ ] Retire the legacy layer, which is what actually deletes the globals and
       defects A3 and A4. The new layer never had them: its constants are
       compile-time, so the planned "curve context struct" turned out to be
       unnecessary rather than merely deferred.
+
+
+---
+
+## Phase 3, part 6 — BN fast final exponentiation
+
+Derived symbolically rather than from memory:
+
+```
+lambda = d0 + d1 p + d2 p^2 + d3 p^3
+d0 = -36x^3 - 30x^2 - 18x - 2
+d1 = -36x^3 - 18x^2 - 12x + 1
+d2 =            6x^2      + 1
+d3 =                        1
+```
+
+Regrouped by power of x, that is three parameter exponentiations plus a few
+shared small powers. **Unlike BLS12 the decomposition is exact**, so BN returns
+`e`, not `e^3`.
+
+| BN-462 | legacy | new | speedup |
+|---|---|---|---|
+| Miller loop | 4013.5 us | 1286.2 us | 3.12x |
+| final exponentiation | 5457.5 us | 1499.9 us | 3.64x |
+| **whole pairing** | **9471 us** | **2786 us** | **3.40x** |
+
+The final exponentiation row flatters the legacy side, which is computing the
+wrong exponent while the new one computes `e` exactly. The new path is both
+faster and correct.
+
+### A bug the suite caught, worth recording
+
+The first version of this chain used `ELIPS_LOOP` to compute `f^x`. Those
+constants coincide on BLS12, but **the BN Miller loop runs over `6x+2` while its
+final exponentiation needs `x`**, so BN silently got a wrong exponent. The
+generator now emits `ELIPS_PARAM` for the mother parameter separately from
+`ELIPS_LOOP` for the Miller loop, and the comment at the use site says why they
+must not be confused.
+
+This is the same shape as the defect the whole project started from: a
+wrong-but-bilinear pairing that passes casual inspection. The difference is that
+this time a test caught it within minutes.
+
+### Where Phase 3 stands
+
+| Curve | whole pairing, legacy | new | speedup | new value |
+|---|---|---|---|---|
+| BLS12-461 | 8642 us | 2447 us | 3.53x | `e^3` |
+| BN-462 | 9471 us | 2786 us | 3.40x | `e` (exact) |
