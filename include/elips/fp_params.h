@@ -58,6 +58,11 @@ typedef mp_limb_t limb_t;
   /* Miller loop parameter, signed digits. */
   #define ELIPS_PARAM_TOP    64
   static const signed char ELIPS_PARAM[65] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, -1 };
+  #define ELIPS_ABSX_BITS    64
+  #define ELIPS_X_NEGATIVE   1
+  static const limb_t ELIPS_ABSX[1] = {
+        UINT64_C(0xd201000000010000)
+  };
   #define ELIPS_LOOP_TOP     64
   #define ELIPS_FAMILY_BLS12   1
   static const signed char ELIPS_LOOP[65] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, -1 };
@@ -450,6 +455,12 @@ typedef mp_limb_t limb_t;
   /* Miller loop parameter, signed digits. */
   #define ELIPS_PARAM_TOP    77
   static const signed char ELIPS_PARAM[78] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 };
+  #define ELIPS_ABSX_BITS    77
+  #define ELIPS_X_NEGATIVE   1
+  static const limb_t ELIPS_ABSX[2] = {
+        UINT64_C(0xfffbfffe00000000),
+        UINT64_C(0x0000000000001fff)
+  };
   #define ELIPS_LOOP_TOP     77
   #define ELIPS_FAMILY_BLS12   1
   static const signed char ELIPS_LOOP[78] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 };
@@ -935,6 +946,12 @@ typedef mp_limb_t limb_t;
   /* Miller loop parameter, signed digits. */
   #define ELIPS_PARAM_TOP    114
   static const signed char ELIPS_PARAM[115] = { -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 };
+  #define ELIPS_ABSX_BITS    115
+  #define ELIPS_X_NEGATIVE   0
+  static const limb_t ELIPS_ABSX[2] = {
+        UINT64_C(0xffffffffffffbfff),
+        UINT64_C(0x0004001fffffffff)
+  };
   #define ELIPS_LOOP_TOP     116
   #define ELIPS_FAMILY_BN   1
   static const signed char ELIPS_LOOP[117] = { 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 };

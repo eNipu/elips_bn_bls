@@ -96,6 +96,13 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
                  "  static const signed char ELIPS_PARAM[%d] = { %s };\n"
                  % (xtop + 1, ", ".join(str(d) for d in xdigits)))
 
+    absx = abs(cv.X)
+    axn = (absx.bit_length() + W - 1) // W
+    param_txt += ("  #define ELIPS_ABSX_BITS    %d\n" % absx.bit_length() +
+                  "  #define ELIPS_X_NEGATIVE   %d\n" % (1 if cv.X < 0 else 0) +
+                  "  static const limb_t ELIPS_ABSX[%d] = {\n        %s\n  };\n"
+                  % (axn, limb_list(absx, axn)))
+
     loop_txt = param_txt + ("  #define ELIPS_LOOP_TOP     %d\n" % top +
                 "  #define ELIPS_FAMILY_%s   1\n" % cv.family.upper() +
                 "  static const signed char ELIPS_LOOP[%d] = { %s };\n"

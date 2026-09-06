@@ -46,6 +46,23 @@ void ep2_add_generic(ep2_t *r, const ep2_t *p, const ep2_t *q);
 void ep2_from_affine(ep2_t *r, const fp2_t x, const fp2_t y);
 int  ep2_to_affine(fp2_t x, fp2_t y, const ep2_t *p);
 void ep2_mul(ep2_t *r, const ep2_t *p, const limb_t *k, int kbits);
+/* The skew Frobenius on the twist. On G2 it acts as multiplication by a fixed
+ * eigenvalue, which is what makes GLV possible. */
+void ep2_psi(ep2_t *r, const ep2_t *p);
+
+#ifdef ELIPS_FAMILY_BLS12
+/* GLV scalar multiplication on G2, four-dimensional via psi.
+ *
+ * On BLS12, psi acts on G2 as multiplication by the mother parameter x, which
+ * is only 64 to 77 bits against a 255 to 308 bit group order. Writing the
+ * scalar in base |x| therefore gives four short digits and cuts the ladder to a
+ * quarter of its length.
+ *
+ * The ladder is constant time. The DECOMPOSITION is not yet: it uses GMP
+ * division, which is data dependent. So this is opt-in and must not be used on
+ * secret scalars until that is fixed; ep2_mul remains the safe default. */
+void ep2_mul_glv(ep2_t *r, const ep2_t *q, const limb_t *k, int kbits);
+#endif
 int  ep2_on_curve(const ep2_t *p);
 
 /* Curve constant b in Montgomery form, and the twist constant b*xi. */
