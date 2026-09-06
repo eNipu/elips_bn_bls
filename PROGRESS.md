@@ -657,3 +657,66 @@ this time a test caught it within minutes.
 |---|---|---|---|---|
 | BLS12-461 | 8642 us | 2447 us | 3.53x | `e^3` |
 | BN-462 | 9471 us | 2786 us | 3.40x | `e` (exact) |
+
+
+---
+
+## Phase 3, part 7 — public API, generators, standalone
+
+**Status: the new layer is self-contained. Phase 3's arithmetic goals are met.**
+
+### What changed
+
+Verified group generators for all three curves, **generated rather than
+transcribed**. The script asserts each is on its curve and of order exactly `r`
+before emitting it, so a generator that quietly landed in the wrong subgroup
+cannot ship.
+
+On top of that: `ep_generator`, `ep2_generator`, `ep_in_subgroup`,
+`ep2_in_subgroup`, and `elips_pairing`, which validates both inputs and returns
+0 rather than a subtly wrong value when a point is the identity or outside the
+order-`r` subgroup.
+
+**The subgroup check is new to this codebase.** Nothing in the legacy layer ever
+performed one, which is precisely what small-subgroup attacks rely on.
+
+### Standalone
+
+`test/standalone_test.c` links no legacy code. Twelve checks per curve, all
+passing on all three:
+
+```
+generators on curve and of order r; pairing non-degenerate and in mu_r;
+bilinearity in both arguments; the identity rejected rather than paired
+```
+
+**BLS12-381 has a working pairing here for the first time** — the legacy layer
+never supported it. This is also what unblocks retiring that layer, since tests
+no longer need to borrow points from it.
+
+20 CTest targets green on both build types, ASan and UBSan clean, zero warnings.
+
+### Phase 3 final scorecard
+
+| Gate condition | Result |
+|---|---|
+| Vectors pass, all three curves | yes, 857 each against the new layer |
+| Differential test, 10^6 inputs per level | yes, 1,204,813 checks per curve |
+| Sanitizers clean | yes |
+| Speedup >= 3x | **3.53x BLS12-461, 3.40x BN-462** |
+
+| Curve | pairing, legacy | new | speedup | value |
+|---|---|---|---|---|
+| BLS12-381 | not supported | works | — | `e^3` |
+| BLS12-461 | 8642 us | 2447 us | 3.53x | `e^3` |
+| BN-462 | 9471 us | 2786 us | 3.40x | `e` exact |
+
+### What is left, and where it belongs
+
+- **Cyclotomic squaring** — this is a Phase 4 item in the plan, not Phase 3.
+  Worth roughly a further 1.4x on the pairing.
+- **Retiring the legacy layer** — now unblocked. It is what finally deletes the
+  globals and defects A3 and A4. The planned "curve context struct" turned out
+  to be unnecessary: the new layer's constants are compile-time, so it never had
+  globals to remove.
+- **Windowing and GLV** for scalar multiplication — Phase 4.
