@@ -753,3 +753,20 @@ squarings and a handful of multiplications for a 381-bit prime — negligible
 against a whole pairing. safegcd is several times faster but considerably more
 intricate and easier to get subtly wrong. Start with the addition chain and only
 reach for safegcd if a measurement says inversion is material.
+
+
+## Gate revision (2026-09-06)
+
+## Exit gate (revised 2026-09-06)
+
+Vectors pass; every individual optimization shown to be a measured win; and the
+**RELIC-relative gate**: BLS12-381 pairing within 25% of RELIC built with the
+same class of arithmetic on the same machine, with scalar multiplication within
+1.5x.
+
+The original gate asked for a cumulative 8x against the legacy layer. It was
+replaced because it was set before anyone knew where the time actually went, and
+the Phase 0 model that produced it turned out to be wrong about inversion by a
+factor of four or five. A ratio against the legacy library also measures the old
+code's weaknesses rather than this one's quality. "Comparable to RELIC" was the
+stated goal from the start, so the gate now says that directly.
