@@ -131,5 +131,11 @@ int main(void)
 
     printf("%s\n", fails ? "FAILED" : "OK");
     mpz_clears(a, b, NULL);
+    /* The legacy types are heap-allocated mpz underneath, and LeakSanitizer
+     * runs by default with AddressSanitizer on Linux, so a test that abandons
+     * them turns the Asan job red without any library defect behind it. */
+    Fp12_clear(&lf);
+    EFp_clear(&mp); EFp2_clear(&mq);
+    EFp12_clear(&P12); EFp12_clear(&Q12);
     return fails ? 1 : 0;
 }

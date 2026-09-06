@@ -197,15 +197,22 @@ int fp_eq(const fp_t a, const fp_t b)
  */
 void fp_inv(fp_t r, const fp_t a)
 {
-    if (fp_is_zero(a)) { fp_set_zero(r); return; }   /* 0 has no inverse */
-
     mp_limb_t scratch[64];                            /* itch is 4n; 64 covers n<=16 */
-    fp_t t;
-    fp_copy(t, a);
-    (void)mpn_sec_invert(r, t, FP_MODULUS, FP_LIMBS,
+    fp_t t, out, zero;
+
+    fp_copy(t, a);                                    /* mpn_sec_invert clobbers its input */
+    (void)mpn_sec_invert(out, t, FP_MODULUS, FP_LIMBS,
                          2 * FP_LIMBS * GMP_NUMB_BITS, scratch);
-    fp_mul(r, r, FP_R2);
-    fp_mul(r, r, FP_R2);
+    fp_mul(out, out, FP_R2);
+    fp_mul(out, out, FP_R2);
+
+    /* Zero has no inverse, and fp_inv(0) is defined to be 0. The obvious way to
+     * write that is an early return, which is a branch on the operand: the one
+     * thing this routine is not allowed to do. mpn_sec_invert runs on zero
+     * without complaint -- it just reports failure and leaves a meaningless
+     * result -- so run it unconditionally and select. */
+    fp_set_zero(zero);
+    fp_cselect(r, zero, out, (limb_t)0 - (limb_t)fp_is_zero(a));
 }
 
 /* Variable-time inversion, for values that are already public: a point being
@@ -225,4 +232,103 @@ void fp_inv_vartime(fp_t r, const fp_t a)
     mpz_clears(A, P, R, NULL);
     fp_mul(r, r, FP_R2);
     fp_mul(r, r, FP_R2);
+}
+
+/* --- exponentiation and square roots -------------------------------------- */
+
+void fp_exp(fp_t r, const fp_t a, const limb_t *e, int ebits)
+{
+    fp_t acc;
+    fp_set_one(acc);
+    for (int i = ebits - 1; i >= 0; i--) {
+        fp_sqr(acc, acc);
+        if ((e[i / 64] >> (i % 64)) & 1) fp_mul(acc, acc, a);
+    }
+    fp_copy(r, acc);
+}
+
+/* (p + add_one) >> shift. The three exponents the square roots need all have
+ * this shape, because p is odd and congruent to 3 mod 4:
+ *
+ *   (p+1)/4  = (p+1) >> 2      the Fp square root
+ *   (p-1)/2  = p >> 1          the quadratic character, and "lexicographically
+ *                              largest" for the compressed encodings
+ *   (p-3)/4  = p >> 2          the first step of the Fp2 square root
+ *
+ * All three are functions of the modulus alone, so this runs on public data.
+ */
+static void modulus_shifted(limb_t *out, int add_one, int shift)
+{
+    limb_t t[FP_LIMBS + 1];
+    for (int i = 0; i < NLIMB; i++) t[i] = FP_MODULUS[i];
+    t[NLIMB] = 0;
+
+    if (add_one) {
+        limb_t carry = 1;
+        for (int i = 0; i <= NLIMB && carry; i++) {
+            t[i] += carry;
+            carry = (t[i] == 0);
+        }
+    }
+
+    for (int s = 0; s < shift; s++) {
+        for (int i = 0; i < NLIMB; i++)
+            t[i] = (t[i] >> 1) | (t[i + 1] << 63);
+        t[NLIMB] >>= 1;
+    }
+    for (int i = 0; i < NLIMB; i++) out[i] = t[i];
+}
+
+void fp_exp_constants(limb_t *sqrt_e, limb_t *half_e, limb_t *quarter_e)
+{
+    if (sqrt_e)    modulus_shifted(sqrt_e,    1, 2);   /* (p+1)/4 */
+    if (half_e)    modulus_shifted(half_e,    0, 1);   /* (p-1)/2 */
+    if (quarter_e) modulus_shifted(quarter_e, 0, 2);   /* (p-3)/4 */
+}
+
+/* All three supported primes satisfy p = 3 (mod 4). Checked rather than
+ * assumed: a curve added later with p = 1 (mod 4) needs Tonelli-Shanks, and
+ * silently returning wrong roots is exactly the class of defect this project
+ * exists to remove. */
+static int modulus_is_3_mod_4(void) { return (FP_MODULUS[0] & 3u) == 3u; }
+
+int fp_sqrt(fp_t r, const fp_t a)
+{
+    if (!modulus_is_3_mod_4()) { fp_set_zero(r); return 0; }
+
+    limb_t e[FP_LIMBS];
+    fp_exp_constants(e, NULL, NULL);
+
+    fp_t c, chk;
+    fp_exp(c, a, e, FP_BITS);
+    fp_sqr(chk, c);
+    int ok = fp_eq(chk, a);
+
+    /* Branch-free: a non-residue yields zero, a residue yields the root. */
+    limb_t mask = (limb_t)0 - (limb_t)ok;
+    fp_t zero;
+    fp_set_zero(zero);
+    fp_cselect(r, c, zero, mask);
+    return ok;
+}
+
+int fp_is_lex_largest(const fp_t a)
+{
+    /* Compare the canonical residue against (p-1)/2. Larger means the borrow
+     * out of half - a is set, i.e. a > (p-1)/2. */
+    limb_t plain[FP_LIMBS], half[FP_LIMBS];
+    fp_to_limbs(plain, a);
+    fp_exp_constants(NULL, half, NULL);   /* (p-1)/2, since p is odd */
+
+    limb_t borrow = 0;
+    for (int i = 0; i < NLIMB; i++) {
+        limb_t x = half[i], y = plain[i];
+        limb_t d  = x - y;
+        limb_t b1 = (x < y);
+        limb_t d2 = d - borrow;
+        limb_t b2 = (d < borrow);
+        (void)d2;
+        borrow = b1 | b2;
+    }
+    return (int)borrow;
 }

@@ -34,6 +34,10 @@ jobs:
       - name: Build
         run: cmake --build build -j
 
+      # The dudect timing tests are registered in Release builds only, and they
+      # are statistical: on a shared runner a single sample can throw a large
+      # t-value with nothing wrong. The harness re-measures before it reports a
+      # leak, so a failure here means two independent samples agreed.
       - name: Test
         run: ctest --test-dir build --output-on-failure --timeout 900
 

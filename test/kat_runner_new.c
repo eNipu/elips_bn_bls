@@ -10,6 +10,9 @@
  * layer exists; until then they are counted as skipped and reported, so a
  * silently unverified operation cannot hide.
  */
+/* getline, strtok_r and ssize_t are POSIX, and the build compiles with
+ * -std=c11 (no GNU extensions), which hides them on glibc unless asked for. */
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -228,6 +231,16 @@ int main(int argc, char **argv)
         if (n_fail == before) n_pass++;
     }
     free(line); fclose(f);
+
+    /* Release everything. LeakSanitizer is enabled by default alongside
+     * AddressSanitizer on Linux and reports leaks in the harness as loudly as
+     * leaks in the library, so a test that abandons its mpz_t turns the Asan CI
+     * job red for no reason -- and a red job that is known to be noise stops
+     * being read. */
+    for (int i = 0; i < 40; i++) mpz_clear(in[i]);
+    for (int i = 0; i < 16; i++) { mpz_clear(out[i]); mpz_clear(want[i]); }
+    mpz_clear(got);
+    mpz_clear(PRIME);
 
     printf("%s [%s]: %ld passed, %ld failed", argv[1], ELIPS_CURVE_NAME, n_pass, n_fail);
     if (n_skip) printf(", %ld skipped (elliptic-curve records)", n_skip);

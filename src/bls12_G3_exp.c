@@ -233,6 +233,8 @@ void bls12_4split_G3_exp( Fp12 *ANS,Fp12 *A,mpz_t scalar){
     Fp12_clear(&frobenius_f_3x);
     mpz_clear(x_1);
     mpz_clear(x_2);
+    mpz_clear(C);   /* M11: init'd with x_1/x_2, never released */
+    mpz_clear(D);
     for(i=0; i<4; i++){
         mpz_clear(s[i]);
     }

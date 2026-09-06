@@ -342,6 +342,8 @@ void bls12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
     EFp2_clear(&twisted_Q_3x);   /* M6: was EFp2_init */
     mpz_clear(x_1);
     mpz_clear(x_2);
+    mpz_clear(A);   /* M11: init'd with x_1/x_2, never released */
+    mpz_clear(B);
     for(i=0; i<4; i++){
         mpz_clear(s[i]);
     }

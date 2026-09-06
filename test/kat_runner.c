@@ -22,6 +22,11 @@
  * with a wrong value.
  */
 
+/* getline, strtok_r and ssize_t are POSIX, and the build compiles with
+ * -std=c11 (no GNU extensions), which hides them on glibc unless asked for.
+ * Without this the two functions are implicitly declared as returning int,
+ * which truncates their pointer results on any 64-bit target. */
+#define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

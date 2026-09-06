@@ -109,32 +109,32 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0bbc3efc5008a26a)
   };
   static const limb_t EP2_GEN_X[2][6] = {
-    { UINT64_C(0x3e53a5f8c8ffaef8),
-        UINT64_C(0xb99c06aaf3b276c3),
-        UINT64_C(0xfb79858ebcad992d),
-        UINT64_C(0xe9df675fc458d908),
-        UINT64_C(0xe673bab9a7b788b7),
-        UINT64_C(0x055f75de1e08db1d) },
-    { UINT64_C(0x4d1c8a6a79bafb7d),
-        UINT64_C(0x2a2ed51ab0816bc7),
-        UINT64_C(0x3860876a6dda17c6),
-        UINT64_C(0x713b9c28071a239a),
-        UINT64_C(0xa9c18852c003bc5a),
-        UINT64_C(0x12c09cd114b7fa69) }
+    { UINT64_C(0xf5f28fa202940a10),
+        UINT64_C(0xb3f5fb2687b4961a),
+        UINT64_C(0xa1a893b53e2ae580),
+        UINT64_C(0x9894999d1a3caee9),
+        UINT64_C(0x6f67b7631863366b),
+        UINT64_C(0x058191924350bcd7) },
+    { UINT64_C(0xa5a9c0759e23f606),
+        UINT64_C(0xaaa0c59dbccd60c3),
+        UINT64_C(0x3bb17e18e2867806),
+        UINT64_C(0x1b1ab6cc8541b367),
+        UINT64_C(0xc2b6ed0ef2158547),
+        UINT64_C(0x11922a097360edf3) }
   };
   static const limb_t EP2_GEN_Y[2][6] = {
-    { UINT64_C(0xb589385988a1a4fc),
-        UINT64_C(0x6225b2f878bce232),
-        UINT64_C(0xca23289fcfe62047),
-        UINT64_C(0x9dafb522eee3e2b3),
-        UINT64_C(0x691238cd99b4ec9f),
-        UINT64_C(0x14fc893c21245d2c) },
-    { UINT64_C(0x8b2f4b2f9c4921de),
-        UINT64_C(0x827df6c6a087b5fb),
-        UINT64_C(0x5f3663668b7caf52),
-        UINT64_C(0xc637447e65d03e6d),
-        UINT64_C(0x7dab1e1fb38756d0),
-        UINT64_C(0x0da1940f68192943) }
+    { UINT64_C(0x4c730af860494c4a),
+        UINT64_C(0x597cfa1f5e369c5a),
+        UINT64_C(0xe7e6856caa0a635a),
+        UINT64_C(0xbbefb5e96e0d495f),
+        UINT64_C(0x07d3a975f0ef25a2),
+        UINT64_C(0x0083fd8e7e80dae5) },
+    { UINT64_C(0xadc0fc92df64b05d),
+        UINT64_C(0x18aa270a2b1461dc),
+        UINT64_C(0x86adac6a3be4eba0),
+        UINT64_C(0x79495c4ec93da33a),
+        UINT64_C(0xe7175850a43ccaed),
+        UINT64_C(0x0b2bc2a163de1bf2) }
   };
   #define ELIPS_ORDER_BITS   255
   static const limb_t ELIPS_ORDER[4] = {

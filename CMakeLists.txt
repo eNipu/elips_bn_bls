@@ -57,7 +57,10 @@ file(GLOB ELIPS_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c")
 file(GLOB ELIPS_HEADERS CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/include/ELiPS_bn_bls/*.h")
 
-add_library(elips ${ELIPS_SOURCES})
+# src/util/sysrand.c is the system CSPRNG. It carries no curve dependency, so
+# both layers compile it: the legacy library needs it to seed its gmp_randstate,
+# which used to come from time(NULL).
+add_library(elips ${ELIPS_SOURCES} src/util/sysrand.c)
 add_library(ELiPS::elips ALIAS elips)
 
 target_include_directories(elips
@@ -83,6 +86,7 @@ set(ELIPS_CURVES BLS12_381 BLS12_461 BN_462)
 foreach(_cv IN LISTS ELIPS_CURVES)
   add_library(elips_arith_${_cv} STATIC
     src/arith/fp.c src/arith/fpx.c src/arith/ec.c
+    src/arith/serialize.c src/util/random.c src/util/sysrand.c
     src/pairing/miller.c)
   target_include_directories(elips_arith_${_cv} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -167,6 +171,44 @@ if(ELIPS_BUILD_TESTS)
     add_test(NAME standalone.${_cv} COMMAND standalone_${_cv})
     set_tests_properties(standalone.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
+
+  # Serialization, randomness and square roots. All three curves; the negative
+  # cases are the point, so this runs everywhere rather than on one curve.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(serialize_test_${_cv} test/serialize_test.c)
+    target_link_libraries(serialize_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    add_test(NAME serialize.${_cv} COMMAND serialize_test_${_cv})
+    set_tests_properties(serialize.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
+
+  # Timing-leakage tests. Statistical, so they are noisy by nature and their
+  # sample sizes are kept small enough to run on every CI build; a developer
+  # investigating a specific routine runs the binary directly with a larger n.
+  # BLS12-381 only in CTest: the other two exercise the same code paths at
+  # different widths, and three copies of a slow statistical test is not three
+  # times the information.
+  add_executable(dudect_test test/dudect_test.c)
+  target_link_libraries(dudect_test PRIVATE elips_arith_BLS12_381 GMP::GMP m)
+
+  # Built in every configuration so the harness itself is sanitized, but only
+  # RUN in un-instrumented builds. Under Asan or Ubsan the measurement is of the
+  # instrumentation, not of the routine: every memory access grows a shadow
+  # lookup, which changes both the mean and the variance the t-test reads.
+  # A "clean" result there would be evidence of nothing.
+  if(CMAKE_BUILD_TYPE STREQUAL "Asan" OR CMAKE_BUILD_TYPE STREQUAL "Ubsan"
+     OR CMAKE_BUILD_TYPE STREQUAL "Msan")
+    message(STATUS "dudect timing tests built but not registered under ${CMAKE_BUILD_TYPE}")
+  else()
+    # control_vartime is the negative control: it calls fp_inv_vartime on secret
+    # inputs and the test FAILS if no leak is found. A leakage detector that
+    # cannot detect a leak says nothing about the targets it passes -- the same
+    # argument that put kat.detects_corruption in the Phase 0 suite.
+    foreach(_t fp_mul fp_add fp_cselect fp_inv ep_mul ep2_mul ep2_mul_glv
+               control_vartime)
+      add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})
+      set_tests_properties(dudect.${_t} PROPERTIES TIMEOUT 900)
+    endforeach()
+  endif()
 
   # BLS12-461 and BN-462: the reference side is the legacy library, which picks
   # its curve at runtime, so only the curves it can actually initialise. The

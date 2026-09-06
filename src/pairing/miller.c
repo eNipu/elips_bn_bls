@@ -47,21 +47,31 @@
  * ponytail: the legacy code reached 2 non-trivial coefficients by rescaling P
  * so that yP became 1. Worth copying if the final measurement asks for it; the
  * ceiling here is those 15 multiplications. */
-static void fp12_mul_sparse035(fp12_t f, const fp2_t c0, const fp2_t c3, const fp2_t c5)
+/* Takes the two fp6 halves separately rather than the fp12.
+ *
+ * Not a style choice: given an fp12_t parameter, GCC narrows what it believes
+ * f[1] to be the moment the body indexes into it, and then reports every later
+ * whole-fp6 access to f[1] as a 288-byte write into a 96-byte object. The
+ * object really is 288 bytes and the code was correct, but a false warning that
+ * cannot be distinguished from a true one is worth the signature change.
+ * Passing the halves gives GCC types it reasons about correctly, and costs
+ * nothing at runtime. */
+static void fp12_mul_sparse035(fp6_t f0, fp6_t f1,
+                               const fp2_t c0, const fp2_t c3, const fp2_t c5)
 {
     fp6_t t0, t1, s, u;
 
     /* t0 = a0 * (c0,0,0) */
-    fp2_mul(t0[0], f[0][0], c0);
-    fp2_mul(t0[1], f[0][1], c0);
-    fp2_mul(t0[2], f[0][2], c0);
+    fp2_mul(t0[0], f0[0], c0);
+    fp2_mul(t0[1], f0[1], c0);
+    fp2_mul(t0[2], f0[2], c0);
 
     /* t1 = a1 * (0,c3,c5), using v^3 = xi:
      *   r0 = (a1*c5 + a2*c3)*xi
      *   r1 =  a0*c3 + a2*c5*xi
      *   r2 =  a0*c5 + a1*c3   */
     {
-        const fp_t *a0 = f[1][0], *a1 = f[1][1], *a2 = f[1][2];
+        const fp_t *a0 = f1[0], *a1 = f1[1], *a2 = f1[2];
         fp2_t m1, m2, m3, m4, m5, m6;
         fp2_mul(m1, a1, c5); fp2_mul(m2, a2, c3);
         fp2_add(t1[0], m1, m2); fp2_mul_xi(t1[0], t1[0]);
@@ -72,7 +82,7 @@ static void fp12_mul_sparse035(fp12_t f, const fp2_t c0, const fp2_t c3, const f
     }
 
     /* s = (a0 + a1) * (c0, c3, c5) */
-    fp6_add(s, f[0], f[1]);
+    fp6_add(s, f0, f1);
     {
         fp6_t L; fp2_copy(L[0], c0); fp2_copy(L[1], c3); fp2_copy(L[2], c5);
         fp6_mul(s, s, L);
@@ -81,8 +91,8 @@ static void fp12_mul_sparse035(fp12_t f, const fp2_t c0, const fp2_t c3, const f
     fp6_sub(s, s, t1);
 
     fp6_mul_v(u, t1);
-    fp6_add(f[0], t0, u);
-    fp6_copy(f[1], s);
+    fp6_add(f0, t0, u);
+    fp6_copy(f1, s);
 }
 
 /* T <- 2T, and f *= the tangent line at T evaluated at P.
@@ -146,7 +156,7 @@ static void dbl_step(fp12_t f, ep2_t *T, const fp_t px, const fp_t py)
 
     fp2_copy(T->x, x3); fp2_copy(T->y, y3); fp2_copy(T->z, z3);
 
-    fp12_mul_sparse035(f, c0, c3, c5);
+    fp12_mul_sparse035(f[0], f[1], c0, c3, c5);
 }
 
 /* T <- T + Q (Q affine), and f *= the chord line evaluated at P.
@@ -181,7 +191,7 @@ static void add_step(fp12_t f, ep2_t *T, const fp2_t qx, const fp2_t qy,
 
     ep2_from_affine(&Qp, qx, qy);
     ep2_add(T, T, &Qp);
-    fp12_mul_sparse035(f, c0, c3, c5);
+    fp12_mul_sparse035(f[0], f[1], c0, c3, c5);
 }
 
 void pairing_miller(fp12_t f, const fp2_t qx, const fp2_t qy,

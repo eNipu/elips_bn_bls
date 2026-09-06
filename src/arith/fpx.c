@@ -320,3 +320,90 @@ void fp12_inv(fp12_t r, const fp12_t a)
     fp6_mul(t, a[1], f);
     fp6_neg(r[1], t);
 }
+
+/* --- fp2 exponentiation and square roots ----------------------------------
+ *
+ * Needed by point decompression: a compressed point carries x and one bit of y,
+ * and recovering y means taking a square root of x^3 + b in Fp (for G1) or in
+ * Fp2 (for G2).
+ */
+
+void fp2_mul_u(fp2_t r, const fp2_t a)
+{
+    /* (c0 + c1 u) * u = -c1 + c0 u, since u^2 = -1. */
+    fp_t t;
+    fp_copy(t, a[0]);
+    fp_neg(r[0], a[1]);
+    fp_copy(r[1], t);
+}
+
+void fp2_exp(fp2_t r, const fp2_t a, const limb_t *e, int ebits)
+{
+    fp2_t acc;
+    fp2_set_one(acc);
+    for (int i = ebits - 1; i >= 0; i--) {
+        fp2_sqr(acc, acc);
+        if ((e[i / 64] >> (i % 64)) & 1) fp2_mul(acc, acc, a);
+    }
+    fp2_copy(r, acc);
+}
+
+/* Adj and Rodriguez-Henriquez, "Square root computation over even extension
+ * fields", Algorithm 9, for q = p = 3 (mod 4):
+ *
+ *   a1    = a^((p-3)/4)
+ *   alpha = a1^2 * a
+ *   x0    = a1 * a
+ *   x     = i * x0                    if alpha == -1
+ *         = (1 + alpha)^((p-1)/2) * x0  otherwise
+ *
+ * The alpha == -1 case is genuinely value-dependent, so it is resolved with a
+ * masked select over both candidates rather than a branch. Both candidates are
+ * computed either way; that costs one extra exponentiation and buys a routine
+ * whose timing does not reveal which case an input fell into.
+ *
+ * Rather than Algorithm 9's separate norm test for non-residues, the result is
+ * squared and compared. Same decision, one fewer exponentiation, and it also
+ * catches any arithmetic slip in the chain above it.
+ */
+int fp2_sqrt(fp2_t r, const fp2_t a)
+{
+    limb_t e_quarter[FP_LIMBS], e_half[FP_LIMBS];
+    fp_exp_constants(NULL, e_half, e_quarter);
+
+    fp2_t a1, alpha, x0, one, negone, cand_i, cand_b, b, chk, zero;
+
+    fp2_exp(a1, a, e_quarter, FP_BITS);       /* a^((p-3)/4) */
+    fp2_sqr(alpha, a1);
+    fp2_mul(alpha, alpha, a);                 /* a^((p-1)/2) */
+    fp2_mul(x0, a1, a);                       /* a^((p+1)/4) */
+
+    fp2_set_one(one);
+    fp2_neg(negone, one);
+
+    fp2_mul_u(cand_i, x0);                    /* the alpha == -1 branch */
+
+    fp2_add(b, one, alpha);
+    fp2_exp(b, b, e_half, FP_BITS);
+    fp2_mul(cand_b, b, x0);                   /* the ordinary branch */
+
+    limb_t mask = (limb_t)0 - (limb_t)fp2_eq(alpha, negone);
+    fp2_cselect(r, cand_i, cand_b, mask);
+
+    fp2_sqr(chk, r);
+    int ok = fp2_eq(chk, a);
+    fp2_set_zero(zero);
+    fp2_cselect(r, r, zero, (limb_t)0 - (limb_t)ok);
+    return ok;
+}
+
+int fp2_is_lex_largest(const fp2_t a)
+{
+    /* Order by the imaginary part first, then the real part -- the rule the
+     * BLS12-381 compressed encodings use. Both halves are evaluated and
+     * combined with masks, so nothing branches on a. */
+    int c1_big  = fp_is_lex_largest(a[1]);
+    int c1_zero = fp_is_zero(a[1]);
+    int c0_big  = fp_is_lex_largest(a[0]);
+    return c1_big | (c1_zero & c0_big);
+}

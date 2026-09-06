@@ -45,8 +45,17 @@ void fp12_exp_param(fp12_t r, const fp12_t f);
  * to borrow points from the legacy library, which is the last thing keeping
  * that layer alive. */
 
-/* The standard generators, verified at generation time to be on their curves
- * and of order exactly r. */
+/* The group generators, verified at generation time to be on their curves and
+ * of order exactly r.
+ *
+ * On BLS12-381 these are the generators the specification publishes, taken from
+ * it rather than searched for: a library that hands out a different generator
+ * of the same subgroup does not interoperate even with a byte-exact encoding,
+ * because signatures verify against the standard generator or not at all.
+ * test/serialize_test.c pins both against the published encodings.
+ *
+ * BLS12-461 and BN-462 have no specification to follow, so their generators are
+ * the first ones the search in tools/reference/gen_params.py finds. */
 void ep_generator(ep_t *g);
 void ep2_generator(ep2_t *g);
 

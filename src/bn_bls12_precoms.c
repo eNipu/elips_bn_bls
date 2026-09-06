@@ -27,6 +27,9 @@
  */
 
 #include <ELiPS_bn_bls/bn_bls12_precoms.h>
+#include <elips/sysrand.h>          /* Phase 5: a real seed for the shared state */
+#include <stdlib.h>                 /* abort */
+#include <stdio.h>                  /* fprintf */
 
 gmp_randstate_t state;
 
@@ -74,10 +77,34 @@ void init_precoms(int curvetype){
      * to declare a local gmp_randstate_t that shadowed this global, and none
      * of them released it, so each call leaked a Mersenne Twister state.
      *
-     * The seeding is unchanged from before and is NOT cryptographically
-     * sound; replacing it with a real CSPRNG is Phase 5 (issue #6). */
+     * Phase 5: the seed now comes from the operating system's CSPRNG rather
+     * than from time(NULL). A time(NULL) seed has a search space of a few
+     * million values, so every "random" point this library produced was
+     * reproducible by anyone who knew roughly when the process started.
+     *
+     * The generator itself is still GMP's Mersenne Twister, which is not
+     * cryptographically strong: given enough output an observer can predict the
+     * rest. Seeding it properly fixes the guessable-seed defect, not the
+     * generator. Nothing on this legacy path produces key material -- it
+     * generates test points -- and the path is retired by issue #17. New code
+     * takes fp_rand and elips_random_scalar, which read the OS directly. */
     gmp_randinit_default(state);
-    gmp_randseed_ui(state,(unsigned long)time(NULL));
+    {
+        unsigned char seed_bytes[32];
+        if (elips_random_bytes(seed_bytes, sizeof seed_bytes) != 0) {
+            /* No usable entropy source. Continuing would mean seeding from
+             * something guessable, which is the defect being fixed, so stop. */
+            fprintf(stderr,
+                    "ELiPS: no system entropy source available; refusing to "
+                    "seed the random state\n");
+            abort();
+        }
+        mpz_t seed;
+        mpz_init(seed);
+        mpz_import(seed, sizeof seed_bytes, 1, 1, 0, 0, seed_bytes);
+        gmp_randseed(state, seed);
+        mpz_clear(seed);
+    }
 
     get_epsilon();
     set_basis();

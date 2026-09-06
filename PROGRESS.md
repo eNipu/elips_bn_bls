@@ -907,83 +907,286 @@ C. Phase 6 is what addresses the rest.
 
 ---
 
-# HAND-OFF — next session starts at Phase 5
+## Phase 5 — Constant-time completion and API hardening (issue #6)
 
-**Phases 0 to 4 are complete and their gates are met.** Phase 5 (issue #6,
-constant-time completion and API hardening) is the next thing to start.
+**Status: complete. Exit gate met.**
+
+Phases 3 and 4 had already delivered constant-time field arithmetic, scalar
+multiplication, inversion and subgroup checks, so this phase was the three
+things the hand-off named — CSPRNG, dudect, serialization — plus the trust
+boundary that ties them together.
+
+### What exists now
+
+| Artifact | Purpose |
+|---|---|
+| `include/elips/sysrand.h`, `src/util/sysrand.c` | The system CSPRNG, with no curve dependency so both layers can use it |
+| `include/elips/random.h`, `src/util/random.c` | Uniform field elements and scalars, and the scalar range predicate |
+| `include/elips/serialize.h`, `src/arith/serialize.c` | Compressed and uncompressed point encodings, with validating readers |
+| `fp_sqrt`, `fp2_sqrt`, `fp_exp`, `fp2_exp` | What decompression rests on |
+| `test/serialize_test.c` | Round trips, the format's fixed points, and every rejection |
+| `test/dudect_test.c` | Timing-leakage tests, with a negative control |
+
+### The CSPRNG
+
+`elips_random_bytes` reads the operating system: `getrandom(2)` on Linux,
+`arc4random_buf` on macOS and the BSDs, `/dev/urandom` as the fallback. No
+userspace generator, no seeding, no state. Every failure mode of the old design
+— guessable seed, two processes agreeing, a stale state after fork — comes from
+having state to get wrong.
+
+`fp_rand` and `elips_random_scalar` reduce 128 extra bits into range with
+`mpn_sec_div_r`, so the bias is below 2^-128 and the running time does not
+depend on the sample. Rejection sampling would be exactly uniform and would
+leak.
+
+The legacy layer's `gmp_randstate_t` now takes a 256-bit seed from the same
+source instead of `time(NULL)`. **Stated plainly: this fixes the guessable
+seed, not the generator.** GMP's Mersenne Twister is still predictable from its
+own output. Nothing on that path produces key material — it generates test
+points — and issue #17 retires it.
+
+### Serialization, and what it took to make it interoperate
+
+Format is the BLS12-381 convention: big-endian, three flag bits in the top of
+the first byte, Fp2 written imaginary part first. The field width is derived
+from the requirement rather than from `ceil(FP_BITS/8)`, which is what lets one
+implementation serve all three curves:
+
+| Curve | FP_BITS | naive width | spare bits | width used |
+|---|---|---|---|---|
+| BLS12-381 | 381 | 48 | 3 | 48 (the standard's own size) |
+| BLS12-461 | 461 | 58 | 3 | 58 |
+| BN-462 | 462 | 58 | **2** | **59** |
+
+BN-462 has only two spare bits at 58 bytes, so the three-flag scheme does not
+fit and it takes 59. Choosing `(FP_BITS + 3 + 7) / 8` makes that fall out
+rather than needing a special case.
+
+**Byte-exact against the specification, which took a parameter change.** The
+G1 generator already matched the published encoding. The G2 generator did not:
+`gen_params.py` searched for the first suitable point, and found a perfectly
+valid generator of the same subgroup that no other implementation uses. Format
+compatibility would not have saved it — signatures verify against the standard
+generator or not at all. `gen_params.py` now takes BLS12-381's generators from
+the specification, in the published encoded form, and re-derives and re-asserts
+them (on curve, order exactly r) before emitting. The two curves with no
+specification keep the search.
+
+The three published encodings are pinned as known answers in
+`serialize_test.c`. That is the only place in this project where the new layer
+is checked against something outside it.
+
+**Readers validate.** Non-canonical coordinates, inconsistent flags, points off
+the curve and points outside the order-r subgroup each get their own return
+code, and each has its own negative test — asserting the specific code, so a
+decoder cannot pass by rejecting everything. The subgroup check is the one that
+stops small-subgroup attacks and the one an implementation is most likely to
+skip, because everything appears to work without it.
+
+### dudect
+
+Two input classes, fixed and random, timed and compared with Welch's t-test
+over a ladder of percentile crops; the reported figure is the largest |t|.
+Following dudect's own thresholds: under 5 is clean, over 10 is leaking, and
+between the two the sample is too small to decide. A first reading over 10 is
+re-measured on a fresh sample before it is reported, because a preempted run on
+a shared machine throws a large t with nothing wrong.
+
+```
+  [PASS ] fp_mul           max|t| =    2.41
+  [PASS ] fp_add           max|t| =    2.22
+  [PASS ] fp_cselect       max|t| =    1.08
+  [PASS ] fp_inv           max|t| =    1.08
+  [PASS ] ep_mul           max|t| =    0.93
+  [PASS ] ep2_mul          max|t| =    2.27
+  [PASS ] ep2_mul_glv      max|t| =    1.31
+  [PASS ] miller           max|t| =    2.68
+  [PASS ] control_vartime  max|t| =  779.34   <- negative control, must leak
+```
+
+**The negative control is the point.** `control_vartime` calls
+`fp_inv_vartime` — documented as variable time, never used on secrets — on
+secret inputs, and the test fails if no leak is found. A leakage detector that
+cannot detect a leak says nothing about the targets it passes. Same argument as
+`kat.detects_corruption` in Phase 0.
+
+Registered in CTest for Release builds only. Under Asan or Ubsan the
+measurement is of the instrumentation, not of the routine, so a clean result
+there would be evidence of nothing. The binary is still built in every
+configuration so the harness itself is sanitized.
+
+### A measurement that changed the harness, worth recording
+
+The first version reported **|t| = 98 for `fp_add`** — an addition with no
+branch in it. The leak was in the test, not the code: preparing a random field
+element calls into the kernel, and doing that inside the timed loop for one
+class and not the other leaves the cache and branch predictor in visibly
+different states. Preparing every input before any measurement made the same
+test read 1.4.
+
+That is the failure mode of this whole technique. A timing test that measures
+its own setup will happily accuse correct code, and the accusation looks exactly
+like a real finding.
+
+### One real leak found and fixed
+
+`fp_inv` early-returned on a zero input. Correct, and a branch on the operand —
+the one thing that routine is not allowed to do. dudect did not catch it
+because random inputs are never zero. It now runs `mpn_sec_invert`
+unconditionally and selects, and `fp_difftest` pins `fp_inv(0) == 0`.
+
+### Cleared out while here
+
+- **`ep_add_generic` / `ep2_add_generic` deleted.** Since the move to RCB they
+  were aliases for the complete addition, but the header still documented them
+  as "wrong for p==q, p==-q or infinity". A public routine advertised as unsafe
+  for inputs a caller can plausibly supply is a defect waiting for its first
+  careless call site.
+- **Two leaks in the legacy 4-split routines** (`bls12_4split_G2_scm`,
+  `bls12_4split_G3_exp`): `A`/`B` and `C`/`D` were initialised beside `x_1` and
+  `x_2` and never released. Phase 2's "zero leaks" was measured with macOS
+  `leaks`; LeakSanitizer on Linux sees them.
+- **Test-harness leaks** in `kat_runner_new.c`, `pairing_test.c` and
+  `ec_test.c`, for the same reason.
+
+### Corrections to earlier claims
+
+**"Zero warnings, ASan and UBSan clean" was true on macOS and false on Linux.**
+Both were measured with clang on Apple Silicon. On this branch, before any
+Phase 5 change:
+
+- `test/kat_runner.c` and `test/kat_runner_new.c` used `getline`, `strtok_r`
+  and `ssize_t` without a feature-test macro. Under `-std=c11` glibc hides all
+  three. The new-layer runner failed to compile; the legacy one compiled with
+  `getline` and `strtok_r` implicitly declared as returning `int`, which
+  truncates their pointer results on any 64-bit target. **The Linux CI job
+  cannot have been passing.**
+- GCC reported six `-Wstringop-overflow` warnings in `fp12_mul_sparse035`. A
+  false positive: given an `fp12_t` parameter, GCC narrows what it believes
+  `f[1]` to be as soon as the body indexes into it, then reports every later
+  whole-`fp6` access as overflowing. The object really is 288 bytes and the
+  code was correct, but a false warning that cannot be told apart from a true
+  one is worth a signature change, so the routine now takes its two `fp6`
+  halves separately. No runtime cost.
+- LeakSanitizer runs by default alongside AddressSanitizer on Linux and is not
+  supported on Apple Silicon, which is why the leaks above were invisible.
+
+All three are fixed. Both sanitizer builds are green on Linux now.
+
+### Measured
+
+x86-64, gcc -O2, this machine. Not comparable with the Apple Silicon figures
+earlier in this file — the same Miller loop measures 1474 us here against 442
+us there — so these are for internal proportions only.
+
+| | BLS12-381 | BLS12-461 | BN-462 |
+|---|---|---|---|
+| Miller loop | 1474 us | 2702 us | 4075 us |
+| final exponentiation (fast) | 2384 us | 3833 us | 3713 us |
+| `elips_pairing`, with subgroup checks | 6033 us | 10782 us | 14157 us |
+| G1 decompress and validate | 550 us | 1070 us | 1571 us |
+| G2 decompress and validate | 2243 us | 3777 us | 5321 us |
+
+**The subgroup checks cost more than a third of `elips_pairing`** — 2175 us of
+6033 on BLS12-381 — because each one is a full scalar multiplication by r.
+That is the price of the guarantee, and it is being paid on every call.
+
+Deliberately not optimised. The known fast tests (Scott's `psi(Q) == [x]Q` for
+G2, the GLV-endomorphism test for G1) are each valid only under conditions on
+the curve that have to be checked, not recalled, and a subgroup test that is
+wrong is a security hole rather than a slow path. Correct and slow now;
+Phase 6 or the backlog can make it fast, with the derivation written down.
+
+### Phase 5 scorecard against its gate
+
+| Gate condition | Result |
+|---|---|
+| dudect reports no leakage on secret-dependent paths | yes, 8 targets, max abs t 2.68 |
+| ...on both architectures | CTest targets, so both CI legs run them |
+| the detector can detect | yes, negative control at abs t 779 |
+| variable-time paths only behind `_vartime` | yes; `fp_inv_vartime` is the only one, and it is the control |
+| malformed and off-curve inputs rejected | yes, six distinct failure modes, each with its own test |
+
+31 CTest targets green on Release, 23 on Asan and on Ubsan (dudect is not
+registered under sanitizers), zero warnings on gcc and clang.
+
+### What Phase 5 did not do
+
+- **The new headers are not installed.** `include/elips/*.h` and the per-curve
+  `elips_arith_*` libraries are outside the install and export set, so the new
+  API cannot be consumed via `find_package`. That needs a decision on how a
+  downstream project selects its curve, which is a packaging question rather
+  than a hardening one, so it is left for whoever makes it.
+- **No hash-to-curve.** Serialization is the half of interoperability this
+  phase was asked for; a full BLS signature implementation also needs
+  `hash_to_curve`, which is a specification of its own.
+- **Scalar range is offered, not enforced.** `elips_scalar_is_reduced` exists
+  and is tested, but `ep_mul` cannot reject k >= r: the subgroup checks
+  legitimately call it with exactly r. Callers with secret scalars reduce
+  first; documented at the declaration.
+
+---
+
+# HAND-OFF — next session starts at Phase 6
+
+**Phases 0 to 5 are complete and their gates are met.** Phase 6 (assembly) is
+the next thing, and the plan makes it conditional on a profile showing that
+limb arithmetic is the bottleneck. That profile has not been taken on an x86-64
+machine with a comparable RELIC build, and taking it is the first task.
 
 ## Where things stand
 
-Branch `claude/pairing-crypto-modernize-2faff2`, 29 commits.
-20 CTest targets green on both Release and Asan builds, zero warnings.
+Branch `claude/pairing-crypto-modernize-2faff2`.
+31 CTest targets green on Release, 23 on Asan and Ubsan, zero warnings on both
+gcc and clang.
 
-| Curve | pairing | vs legacy | value returned |
-|---|---|---|---|
-| BLS12-381 | 1175 us | legacy never supported it | `e^3` |
-| BLS12-461 | 2112 us | 3.7x | `e^3` |
-| BN-462 | 2495 us | 3.4x | `e` exact |
-
-Against RELIC on BLS12-381, portable arithmetic both sides:
-
-| | RELIC | ELiPS | ratio | gate |
+| Curve | pairing value | serialized sizes (G1, G2) | GLV | generators |
 |---|---|---|---|---|
-| pairing | 955.5 us | 1175.1 us | 1.23x | <= 1.25x |
-| G1 scalar mult | 128.1 us | 176.2 us | 1.38x | <= 1.5x |
-| G2 scalar mult | 204.5 us | 287.9 us | 1.41x | <= 1.5x |
+| BLS12-381 | `e^3` | 48/96, 96/192 | yes | **from the specification** |
+| BLS12-461 | `e^3` | 58/116, 116/232 | yes | searched |
+| BN-462 | `e` exact | 59/118, 118/236 | no | searched |
 
-## What Phase 5 inherits, and what it does not
-
-Phase 5's scope in the plan was written before Phases 3 and 4 happened. Several
-items are already done:
-
-| Phase 5 item | Status |
-|---|---|
-| Constant-time field arithmetic | **done** in Phase 3 |
-| Constant-time scalar multiplication | **done** in Phase 4, GLV included |
-| Constant-time inversion | **done** — `mpn_sec_invert`, with `fp_inv_vartime` for public values |
-| Subgroup membership checks | **done** in Phase 3 — `ep_in_subgroup`, `ep2_in_subgroup` |
-| Input validation at the API boundary | **partly** — `elips_pairing` rejects identity and off-subgroup points |
-| A real CSPRNG | **not started** — the legacy layer still seeds from `time(NULL)` |
-| `dudect` timing-leakage tests in CI | **not started** |
-| Serialization in compressed point formats | **not started** — needed for BLS12-381 interoperability |
-
-So Phase 5 is realistically: **CSPRNG, dudect in CI, and serialization.**
+The RELIC comparison in Phase 4 (BLS12-381 pairing within 1.23x, scalar
+multiplication within 1.41x) was taken on Apple Silicon with RELIC on its
+portable GMP backend, and still stands as the Phase 4 gate. It does not
+transfer to this x86-64 machine and was not re-run here.
 
 ## Three open issues worth reading first
 
-- **#17 retire the legacy mpz layer.** The new layer stands alone now
-  (`standalone_test.c` links no legacy code), so this is unblocked. It is what
-  finally deletes defects A3 and A4. Note the planned "curve context struct"
-  turned out unnecessary: the new layer's constants are compile-time.
-- **#16 final exponentiation exponent.** Resolved on the new layer. BLS12's
-  factor of 3 is inherent to the standard chain; BN's `12*X^3` is a genuine
-  defect. Both only affect the legacy layer now, so #16 closes when #17 lands.
-- **#15 baseline measurements.** Low priority, superseded in practice by the
-  RELIC comparison.
+- **#17 retire the legacy mpz layer.** Still the largest single cleanup. It is
+  what deletes defects A3 and A4, and what closes #16.
+- **#16 final exponentiation exponent.** Resolved on the new layer; only the
+  legacy layer is affected, so it closes when #17 lands.
+- **#15 baseline measurements.** Superseded in practice by the RELIC
+  comparison.
 
 ## Things a fresh session should not re-derive
 
-- The tower collapses to `Fp[w]/(w^12 - 2w^6 + 2)`, irreducible over all three
-  primes. That is what makes Sage a directly comparable oracle.
-- `psi` acts on G2 as multiplication by `p mod r`: that is `x` on BLS12 (short,
-  hence 4-dimensional GLV) and `6x^2` on BN (only 2-dimensional). **BN has no
-  GLV implemented.**
-- `3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3` on BLS12 — why the fast chain
-  returns `e^3`. BN's decomposition is exact and returns `e`.
-- RCB gives cheaper addition and dearer doubling than Jacobian. Addition-heavy
-  code wins, doubling-heavy code loses. Do not "fix" the pairing regression by
-  reverting; it was a deliberate trade.
-- Five suspected bugs were investigated and **disproved**: the Miller loop
-  bounds on both curves, `Fp2_set_ui`'s broadcast, the `char str[5]` buffer, and
-  the global mutation in `bls12_finalexp_optimal`. Do not "fix" them.
+Everything in the previous hand-off still holds. Added by Phase 5:
+
+- All three primes are `3 mod 4`, so square roots are one exponentiation by
+  `(p+1)/4` and Fp2 roots follow Adj and Rodriguez-Henriquez. No
+  Tonelli-Shanks anywhere, and `fp_sqrt` checks the congruence rather than
+  assuming it.
+- The serialized field width is `(FP_BITS + 3 + 7) / 8`, not `ceil(FP_BITS/8)`.
+  BN-462 needs the extra byte for its third flag bit.
+- BLS12-381's G2 generator is the published one and its encoding is pinned as a
+  known answer. **Do not regenerate it from a search.**
+- dudect must prepare every input before it times anything. Preparing inside
+  the timed loop measures the preparation and reports |t| near 100 on code with
+  no branch in it.
+- `-Wstringop-overflow` on a whole-`fp6` access to `f[0]` or `f[1]` inside a
+  function taking `fp12_t` is a GCC false positive. Pass the halves.
 
 ## Known limitations, stated plainly
 
+- Subgroup checks are full scalar multiplications and cost over a third of
+  `elips_pairing`. Correct, and slow.
+- The new API cannot be installed or consumed via `find_package`.
+- No hash-to-curve, so this is not yet a BLS signature library.
 - BN has no GLV and no compressed squaring.
-- The plain (non-GLV) G2 window ladder regressed 20% under RCB. It is only used
-  for points not known to be in G2.
-- RELIC comparison is portable-C to portable-C; its x86-64 assembly cannot run
-  on this AArch64 machine. Phase 6 is where that gap gets addressed.
+- The legacy layer's RNG is seeded properly but is still a Mersenne Twister.
 - `docs/` is still tracked, 1280 files, because GitHub Pages serves from
   `master:/docs`. A workflow to publish from `gh-pages` exists; once Pages is
   repointed, `git rm -r --cached docs` drops the repo to ~126 tracked files.

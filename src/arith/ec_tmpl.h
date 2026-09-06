@@ -142,11 +142,6 @@ void PT(dbl)(PTT *r, const PTT *p)
     F(copy)(r->x, x3); F(copy)(r->y, y3); F(copy)(r->z, z3);
 }
 
-/* Kept for source compatibility with the Jacobian version, which needed a
- * separate incomplete routine for speed. The complete formulas are already the
- * fast path, so this is simply an alias. */
-void PT(add_generic)(PTT *r, const PTT *p, const PTT *q) { PT(add)(r, p, q); }
-
 int PT(to_affine)(EC_FT x, EC_FT y, const PTT *p)
 {
     if (PT(is_infinity)(p)) { F(set_zero)(x); F(set_zero)(y); return 0; }

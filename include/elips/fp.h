@@ -62,4 +62,32 @@ int fp_eq(const fp_t a, const fp_t b);
 /* Constant-time select: r = mask ? a : b, where mask must be 0 or all ones. */
 void fp_cselect(fp_t r, const fp_t a, const fp_t b, limb_t mask);
 
+/* --- exponentiation and square roots ---------------------------------------
+ * The exponent is read as ebits little-endian bits and is assumed PUBLIC: the
+ * square-and-multiply schedule depends on it. Every exponent used inside the
+ * library is derived from p, which is public. Never pass a secret. */
+void fp_exp(fp_t r, const fp_t a, const limb_t *e, int ebits);
+
+/* The three exponents derived from the modulus, each FP_LIMBS limbs wide and
+ * FP_BITS bits long: (p+1)/4, (p-1)/2 and (p-3)/4. Any argument may be NULL.
+ * Exposed because the Fp2 square root needs the same values. */
+void fp_exp_constants(limb_t *sqrt_e, limb_t *half_e, limb_t *quarter_e);
+
+/* Square root, for the p = 3 (mod 4) primes this library supports.
+ *
+ * Returns 1 and writes a root to r when a is a quadratic residue; returns 0 and
+ * zeroes r when it is not. The result is the root with the exponentiation's own
+ * sign convention, which is arbitrary -- callers that need a specific one (the
+ * point decompressor does) must fix it themselves.
+ *
+ * Constant time with respect to a: one exponentiation by the public constant
+ * (p+1)/4, then a comparison. Which of the two roots comes back does depend on
+ * a, but that is inherent to the function's output, not a side channel. */
+int fp_sqrt(fp_t r, const fp_t a);
+
+/* Is a strictly greater than (p-1)/2 in the canonical representation? This is
+ * the "lexicographically largest" predicate the compressed point encodings use
+ * to recover the sign of y from a single bit. Constant time. */
+int fp_is_lex_largest(const fp_t a);
+
 #endif /* ELIPS_FP_H */

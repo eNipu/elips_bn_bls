@@ -37,6 +37,21 @@ void fp2_mul_fp(fp2_t r, const fp2_t a, const fp_t b);
 int  fp2_is_zero(const fp2_t a);
 int  fp2_eq(const fp2_t a, const fp2_t b);
 void fp2_cselect(fp2_t r, const fp2_t a, const fp2_t b, limb_t mask);
+/* r = a * u, i.e. (c0, c1) -> (-c1, c0). */
+void fp2_mul_u(fp2_t r, const fp2_t a);
+/* Public exponent, same contract as fp_exp. */
+void fp2_exp(fp2_t r, const fp2_t a, const limb_t *e, int ebits);
+/* Square root over Fp2 for p = 3 (mod 4), by the Adj and Rodriguez-Henriquez
+ * method. Returns 1 and a root when a is a square, 0 and zero when it is not.
+ * The sign of the returned root is arbitrary; the point decompressor fixes it.
+ *
+ * Control flow depends only on p, and the one value-dependent choice inside the
+ * algorithm is made by masked select rather than a branch. */
+int  fp2_sqrt(fp2_t r, const fp2_t a);
+/* "Lexicographically largest": c1 > (p-1)/2, or c1 == 0 and c0 > (p-1)/2.
+ * The Fp2 analogue of fp_is_lex_largest, and the sign rule the compressed G2
+ * encoding uses. Constant time. */
+int  fp2_is_lex_largest(const fp2_t a);
 
 /* ---- fp6 ---- */
 void fp6_set_zero(fp6_t r);
