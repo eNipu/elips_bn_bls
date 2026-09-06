@@ -491,9 +491,70 @@ still unexplained and still looks unintentional.
 
 ### Remaining in Phase 3
 
-- [ ] Fast final exponentiation chain plus cyclotomic squaring, to win on the clock
-- [ ] BN support in the new Miller loop: two post-loop correction lines and the
-      skew Frobenius on the twist. Currently excluded from the build rather than
-      silently compiled untested
+- [x] Fast final exponentiation chain — done, see part 4 below
+- [ ] Cyclotomic squaring, for a further cut in the final exponentiation
+- [ ] BN support in the new Miller loop
 - [ ] Curve context struct, retiring the globals and with them A3 and A4
 - [ ] Retire the legacy layer once the new one covers every entry point
+
+
+---
+
+## Phase 3, part 4 — fast final exponentiation. Gate met on the clock.
+
+**Status: the >= 3x gate is met on an absolute, like-for-like wall-clock
+comparison.**
+
+### Measured, BLS12-461, both sides computing e^3
+
+| | legacy | new | speedup |
+|---|---|---|---|
+| Miller loop | 2576.8 us | 858.4 us | **3.00x** |
+| final exponentiation | 6065.2 us | 1588.5 us | **3.82x** |
+| **whole pairing** | **8642.0 us** | **2446.9 us** | **3.53x** |
+
+For reference, the exact-`e` path costs 9861.8 us, which is why the fast chain
+matters rather than being a nicety.
+
+### The chain
+
+Rests on an identity verified numerically on both BLS12 curves:
+
+```
+3*lambda = (x-1)^2 * (x+p) * (x^2+p^2-1) + 3
+```
+
+Five parameter exponentiations replace a 1534-bit ladder. Every inverse in the
+hard part is a conjugation, because the easy part has already put the element in
+the cyclotomic subgroup.
+
+### This settles the BLS12 half of issue #16
+
+The factor of three is **a property of the standard algorithm, not a defect**.
+`lambda` alone has no short evaluation — its base-p digits are full width — and
+recovering `e` from `e^3` needs a cube root in mu_r, which is a full-width
+exponentiation. The legacy library and RELIC both land in the same place.
+
+Since `gcd(3, r) = 1`, `e^3` is still bilinear and non-degenerate, so any
+protocol that only compares pairings is unaffected. Raw values will not match an
+implementation that emits `e`.
+
+Both paths are kept and documented: `pairing_final_exp_fast` for speed,
+`pairing_final_exp_plain` when the exact value is needed. The suite pins the
+relationship between them, so neither can drift.
+
+**The BN factor of roughly `12*X^3` remains unexplained and still looks
+unintentional.** Nothing here changes that half of the issue.
+
+### Phase 3 scorecard against its gate
+
+| Gate condition | Result |
+|---|---|
+| Vectors pass on all three curves | yes, 857 each, new layer |
+| Differential test, 10^6 inputs per level | yes, 1,204,813 checks per curve |
+| Sanitizers clean | yes |
+| **Speedup >= 3x** | **3.53x on the whole pairing** |
+
+Caveat worth keeping visible: the pairing is complete for the BLS12 families
+only. BN still needs the two post-loop correction lines and the skew Frobenius
+on the twist, and is excluded from the build rather than compiled untested.
