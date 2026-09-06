@@ -196,25 +196,63 @@ int PT(to_affine)(EC_FT x, EC_FT y, const PTT *p)
     return 1;
 }
 
-/* Double-and-add-always: the addition happens on every bit and its result is
- * discarded by a masked select when the bit is zero, so the sequence of field
- * operations does not depend on the scalar. Costs twice a plain ladder; window
- * methods are Phase 4's job. */
+/* Constant-time fixed-window scalar multiplication, 4 bits at a time.
+ *
+ * The window index selects from a precomputed table by scanning every entry and
+ * combining with a mask, so no memory address depends on the scalar. Only the
+ * declared bit length affects the loop count, and that is public.
+ *
+ * This replaces double-and-add-always, which performed an addition on every bit
+ * and threw half of them away. For a 256-bit scalar the window does 256
+ * doublings and 64 additions where the old routine did 256 of each.
+ *
+ * Window 4 is a deliberate middle: the table is 16 points, and the masked scan
+ * that keeps the lookup constant-time costs 16 selects per window, so a wider
+ * window buys fewer additions but pays more scanning.
+ * ponytail: 4 bits until a measurement says otherwise. */
+#define EC_WIN      4
+#define EC_TBL_SIZE (1 << EC_WIN)
+
 void PT(mul)(PTT *r, const PTT *p, const limb_t *k, int kbits)
 {
-    PTT acc, sum;
+    PTT tbl[EC_TBL_SIZE], acc, sel;
+
+    PT(set_infinity)(&tbl[0]);
+    PT(copy)(&tbl[1], p);
+    for (int i = 2; i < EC_TBL_SIZE; i++) {
+        if (i & 1) PT(add)(&tbl[i], &tbl[i - 1], p);
+        else       PT(dbl)(&tbl[i], &tbl[i / 2]);
+    }
+
     PT(set_infinity)(&acc);
-    for (int i = kbits - 1; i >= 0; i--) {
-        PT(dbl)(&acc, &acc);
-        PT(add)(&sum, &acc, p);
-        limb_t bit  = (k[i / 64] >> (i % 64)) & 1;
-        limb_t mask = (limb_t)0 - bit;
-        F(cselect)(acc.x, sum.x, acc.x, mask);
-        F(cselect)(acc.y, sum.y, acc.y, mask);
-        F(cselect)(acc.z, sum.z, acc.z, mask);
+    int top = ((kbits + EC_WIN - 1) / EC_WIN) * EC_WIN;   /* round up */
+    for (int pos = top - EC_WIN; pos >= 0; pos -= EC_WIN) {
+        for (int d = 0; d < EC_WIN; d++) PT(dbl)(&acc, &acc);
+
+        /* extract the window without branching on its value */
+        limb_t w = 0;
+        for (int b = 0; b < EC_WIN; b++) {
+            int bit = pos + b;
+            if (bit < kbits)
+                w |= ((k[bit / 64] >> (bit % 64)) & 1) << b;
+        }
+
+        /* masked linear scan: touch every entry, keep one */
+        PT(set_infinity)(&sel);
+        for (int i = 0; i < EC_TBL_SIZE; i++) {
+            limb_t diff = w ^ (limb_t)i;
+            limb_t mask = (limb_t)0 - (limb_t)(1 - (int)((diff | (~diff + 1)) >> 63));
+            F(cselect)(sel.x, tbl[i].x, sel.x, mask);
+            F(cselect)(sel.y, tbl[i].y, sel.y, mask);
+            F(cselect)(sel.z, tbl[i].z, sel.z, mask);
+        }
+        PT(add)(&acc, &acc, &sel);
     }
     PT(copy)(r, &acc);
 }
+
+#undef EC_WIN
+#undef EC_TBL_SIZE
 
 /* y^2 == x^3 + b, in Jacobian form: Y^2 == X^3 + b Z^6 */
 int PT(on_curve)(const PTT *p)
