@@ -27,6 +27,7 @@
  */
 
 #include <ELiPS_bn_bls/bls12_scm.h>
+#include <stdio.h>   /* snprintf; was relying on a transitive include */
 
 void bls12_plain_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
     gettimeofday(&t0,NULL);
@@ -104,7 +105,7 @@ void bls12_2split_G1_scm(EFp12 *ANS,EFp12 *P,mpz_t scalar){
         }
     }
     for(i=0; i<loop_length; i++){
-        sprintf(str,"%c%c",binary_s[1][i],binary_s[0][i]);
+        snprintf(str, sizeof str, "%c%c", binary_s[1][i],binary_s[0][i]);
         binary[i]=(int)strtol(str,&e,2);
     }
     EFp_set(&next_P,&table[binary[0]]);
@@ -209,7 +210,7 @@ void bls12_2split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
         }
     }
     for(i=0; i<loop_length; i++){
-        sprintf(str,"%c%c",binary_s[1][i],binary_s[0][i]);
+        snprintf(str, sizeof str, "%c%c", binary_s[1][i],binary_s[0][i]);
         binary[i]=(int)strtol(str,&e,2);
     }
     EFp2_set(&next_twisted_Q,&table[binary[0]]);
@@ -321,7 +322,7 @@ void bls12_4split_G2_scm(EFp12 *ANS,EFp12 *Q,mpz_t scalar){
         }
     }
     for(i=0; i<loop_length; i++){
-        sprintf(str,"%c%c%c%c",binary_s[3][i],binary_s[2][i],binary_s[1][i],binary_s[0][i]);
+        snprintf(str, sizeof str, "%c%c%c%c", binary_s[3][i],binary_s[2][i],binary_s[1][i],binary_s[0][i]);
         binary[i]=(int)strtol(str,&e,2);
     }
     

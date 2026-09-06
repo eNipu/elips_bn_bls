@@ -1419,6 +1419,26 @@ Miller loop plus 1639 µs of final exponentiation against 4410 µs for
 `elips_pairing`, so the validation is more than a third of the call. That is the
 §10.3 argument, visible without reading the plan.
 
+### What the gate caught immediately
+
+Turning `-Werror` on across the matrix failed the macOS jobs on the first run,
+which is the gate doing its job on its first day:
+
+```
+src/bls12_scm.c:107: error: 'sprintf' is deprecated ... [-Werror,-Wdeprecated-declarations]
+```
+
+Apple's SDK marks `sprintf` deprecated; glibc does not, so gcc and Linux clang
+had been silent about five call sites in the legacy split-scalar and G3
+exponentiation routines. Replaced with `snprintf`, and the two files now include
+`<stdio.h>` themselves rather than relying on a transitive include.
+
+Not an overflow -- Phase 0 checked that `char str[5]` holds its four characters
+and terminator, and that finding still stands. It was a deprecation, invisible
+on one platform and fatal on the other, which is exactly the class of problem a
+two-architecture matrix exists to find and could not while nothing set
+`-Werror`.
+
 ### Where the suite stands
 
 43 CTest targets on Release (40 tests plus the 3 examples), 27 under each
