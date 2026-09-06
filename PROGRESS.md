@@ -798,3 +798,53 @@ It is not yet true against RELIC's assembly builds.
       as written is not met, and the RELIC comparison suggests the remaining
       headroom on portable C is modest. Worth deciding whether 8x was the right
       target or whether "within X% of RELIC" is the more meaningful gate.
+
+### GLV on G2, and the revised gate
+
+The Phase 4 gate is now **RELIC-relative** rather than a multiple of the legacy
+layer: BLS12-381 pairing within 25% of RELIC on comparable arithmetic, scalar
+multiplication within 1.5x. The old 8x figure was set before anyone knew where
+the time went, and it measured the old code's weaknesses rather than this one's
+quality.
+
+`psi` acts on G2 as multiplication by `p mod r` — verified on all three curves,
+not assumed. For BLS12 that reduces to the mother parameter `x`, only 64 to 77
+bits against a 255 to 308 bit order, so a base-`|x|` decomposition gives four
+short digits and quarters the ladder.
+
+| G2 scalar mult | fixed window | GLV | speedup |
+|---|---|---|---|
+| BLS12-381 | 461.5 us | **312.6 us** | 1.48x |
+| BLS12-461 | 903.6 us | **603.0 us** | 1.50x |
+
+### Standing against the gate, BLS12-381
+
+| | RELIC | ELiPS | ratio | gate | met |
+|---|---|---|---|---|---|
+| pairing | 955.5 us | 1145.2 us | **1.20x** | <= 1.25x | **yes** |
+| G1 scalar mult | 128.1 us | 181.1 us | **1.41x** | <= 1.5x | **yes** |
+| G2 scalar mult | 204.5 us | 312.6 us | **1.53x** | <= 1.5x | marginally no |
+
+### Two honest limits on the GLV
+
+**The decomposition is variable time.** It uses GMP division; the ladder around
+it is constant time. So `ep2_mul_glv` is opt-in and documented as unsafe for
+secret scalars, and `ep2_mul` remains the default. A constant-time Barrett
+decomposition is the remaining piece.
+
+**BN gets no GLV.** There `psi` acts as `6x^2`, 231 bits against a 462-bit
+order, so only a two-dimensional split exists and the win would be about half.
+Worth doing; not done.
+
+### The remaining lever
+
+G2 is 0.03x outside its gate, and the cause is identifiable: the complete
+addition computes a full doubling on every call so the coincident-point case can
+be selected without branching. That is roughly a 1.4x tax on every addition, and
+the GLV ladder is addition-dominated.
+
+The principled fix is Renes–Costello–Batina complete formulas in homogeneous
+projective coordinates, which are genuinely complete in one formula at about 12
+multiplications, against the current 16 plus a wasted doubling. That would speed
+up the ladder and possibly the Miller loop. It is a coordinate-system change for
+the EC layer, so it is a real piece of work rather than a tweak.
