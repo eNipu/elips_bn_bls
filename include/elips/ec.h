@@ -58,9 +58,16 @@ void ep2_psi(ep2_t *r, const ep2_t *p);
  * scalar in base |x| therefore gives four short digits and cuts the ladder to a
  * quarter of its length.
  *
- * The ladder is constant time. The DECOMPOSITION is not yet: it uses GMP
- * division, which is data dependent. So this is opt-in and must not be used on
- * secret scalars until that is fixed; ep2_mul remains the safe default. */
+ * Constant time throughout, decomposition included: the division is restoring,
+ * one bit at a time, with the conditional subtraction done by mask. Safe for
+ * secret scalars.
+ *
+ * PRECONDITION: q must lie in G2, the order-r subgroup. psi acts as
+ * multiplication by x only on that eigenspace; on an arbitrary point of the
+ * twist it does not, and this routine then returns a wrong answer rather than
+ * failing. Use ep2_in_subgroup if the caller cannot guarantee it, or ep2_mul,
+ * which is general-purpose and has no such requirement. This is why ep2_mul
+ * does not simply dispatch here. */
 void ep2_mul_glv(ep2_t *r, const ep2_t *q, const limb_t *k, int kbits);
 #endif
 int  ep2_on_curve(const ep2_t *p);
