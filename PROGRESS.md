@@ -848,3 +848,59 @@ projective coordinates, which are genuinely complete in one formula at about 12
 multiplications, against the current 16 plus a wasted doubling. That would speed
 up the ladder and possibly the Miller loop. It is a coordinate-system change for
 the EC layer, so it is a real piece of work rather than a tweak.
+
+### RCB complete formulas, and the constant-time GLV
+
+The curve layer moved from Jacobian to homogeneous projective with the
+Renes–Costello–Batina complete formulas (a = 0), and the Miller loop's line
+functions were re-derived to match. **All 20 tests passed on the first run after
+a coordinate-system change** — the Phase 0 vectors earning their keep.
+
+It is a tradeoff, not a clean win.
+
+| | Jacobian | RCB |
+|---|---|---|
+| ep2_add (381) | ~4.00 us | **2.24 us** |
+| ep2_dbl (381) | ~0.80 us | 1.44 us |
+| pairing (381) | 1145.2 us | 1175.1 us |
+| G2 via GLV (381) | 312.6 us | **283.2 us** |
+| G2 window ladder (381) | 461.5 us | 552.7 us |
+
+Addition is 1.8x cheaper and doubling 1.8x dearer, because Jacobian
+`dbl-2009-l` at 2M+5S is simply cheaper than any homogeneous doubling. So
+addition-heavy work (the GLV ladder) wins and doubling-heavy work (the pairing,
+the plain window ladder) loses a little.
+
+Kept on three grounds: it is what carries G2 over the gate, the pairing cost is
+2–5% and still inside its gate, and **the incomplete `add_generic` and its
+precondition are gone** — one formula is now correct for every input pair, so
+there is no longer a routine in the codebase that is wrong for inputs a caller
+might plausibly supply.
+
+One measurement worth keeping: splitting the line evaluation out of the doubling
+cost 11% of the Miller loop, because the shared squares are most of the work.
+Re-fusing them recovered it.
+
+The GLV decomposition is now constant time — restoring division by mask rather
+than GMP's `mpz_tdiv_qr` — for 1.6% overhead, verified against the plain ladder
+on 3000 scalars per curve. It is no longer opt-in.
+
+**A precondition that was implicit and should not have been:** `psi` acts as
+multiplication by `x` only on G2. On an arbitrary twist point it does not, so
+`ep2_mul_glv` returns a wrong answer rather than failing. That is why `ep2_mul`
+does not dispatch to it, and why the known-answer vectors keep using the
+general routine.
+
+### Phase 4 standing against the RELIC-relative gate, BLS12-381
+
+| | RELIC | ELiPS | ratio | gate | met |
+|---|---|---|---|---|---|
+| pairing | 955.5 us | 1175.1 us | **1.23x** | <= 1.25x | **yes** |
+| G1 scalar mult | 128.1 us | 176.2 us | **1.38x** | <= 1.5x | **yes** |
+| G2 scalar mult (GLV) | 204.5 us | 287.9 us | **1.41x** | <= 1.5x | **yes** |
+
+All three met, with G2 now constant time on the fast path.
+
+Caveat that stays true: RELIC is on its portable GMP backend because its x86-64
+assembly cannot run on this AArch64 machine. This is portable C against portable
+C. Phase 6 is what addresses the rest.
