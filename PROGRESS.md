@@ -428,3 +428,72 @@ replaces the routine.
 
 All the primitives the Miller loop needs now exist and are measured, so the
 remaining work is assembly of known parts rather than exploration.
+
+---
+
+## Phase 3, part 3 — Miller loop and the gate
+
+**Status: BLS12 pairing complete on the new stack. The >= 3x gate is met on a
+like-for-like comparison. Absolute wall-clock is not yet better; see below.**
+
+### What exists now
+
+| Artifact | Purpose |
+|---|---|
+| Frobenius constants in `fp_params.h` | Generated in Montgomery form, so no init step and no globals |
+| `fp12_frobenius`, `fp12_exp` | The p, p^2, p^3 maps and public-exponent exponentiation |
+| dedicated `fp12_sqr` | Two fp6 multiplies instead of three |
+| `src/pairing/miller.c` | Line functions, sparse multiply, Miller loop, final exponentiation |
+| `test/pairing_test.c` | The new pairing against the Phase 0 reference value |
+
+### Correctness
+
+The new pairing equals the value Phase 0 established as correct, coefficient by
+coefficient, on the first run. Also non-degenerate and in mu_r. 16 CTest targets
+green, ASan and UBSan clean, zero warnings on a clean build.
+
+Frobenius was checked against explicit exponentiation by `p^k` on all three
+curves, plus the homomorphism property and twelve-applications-is-the-identity.
+
+The line-function derivation independently reproduced the `(0,3,5)` sparsity the
+legacy code uses. Arriving at the same pattern from the defining equations is
+good evidence the twist conventions were read correctly.
+
+### Measured, BLS12-461, like for like
+
+| | legacy | new | speedup |
+|---|---|---|---|
+| Miller loop | 2610.8 us | 856.0 us | **3.05x** |
+| final exponentiation | 37977.1 us | 10095.9 us | **3.76x** |
+| whole pairing | 40587.9 us | 10951.9 us | **3.71x** |
+
+Both sides of the final exponentiation row use the same definitionally-correct
+exponent, so this compares implementations rather than algorithms.
+
+### What this does not say
+
+**The new stack is not yet faster in absolute terms.** The legacy fast path runs
+a pairing in about 8.5 ms, but it computes `e^3` rather than `e` (issue #16),
+while the new code computes the correct value by direct exponentiation. Fair
+ratios, unfair clock.
+
+Closing that gap needs a fast final exponentiation chain and cyclotomic
+squaring. Both are well understood; neither is written.
+
+### Bearing on issue #16
+
+The hard exponent's base-p digits are full width (381, 254, 381, 126 bits for
+BLS12-381), so the cheap decomposition that would give `e` directly does not
+exist. The factor of 3 the standard BLS12 chain introduces is a property of that
+algorithm, not a mistake in this codebase. That answers the question the issue
+put to the maintainer for the BLS12 half. The BN factor of roughly `12*X^3` is
+still unexplained and still looks unintentional.
+
+### Remaining in Phase 3
+
+- [ ] Fast final exponentiation chain plus cyclotomic squaring, to win on the clock
+- [ ] BN support in the new Miller loop: two post-loop correction lines and the
+      skew Frobenius on the twist. Currently excluded from the build rather than
+      silently compiled untested
+- [ ] Curve context struct, retiring the globals and with them A3 and A4
+- [ ] Retire the legacy layer once the new one covers every entry point
