@@ -5,7 +5,7 @@ arithmetic that is wrong in a way no amount of staring detects.
 """
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from elips_ref import CURVES
+from elips_ref import CURVES, _naf as _naf_digits
 
 W = 64
 MASK = (1 << W) - 1
@@ -82,7 +82,19 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
     loop = cv.loop_digits
     top = max(loop)
     digits = [loop.get(i, 0) for i in range(top + 1)]
-    loop_txt = ("  #define ELIPS_LOOP_TOP     %d\n" % top +
+    # The mother parameter x, as signed digits. For BLS12 this is the same as
+    # the Miller loop parameter; for BN the loop runs over 6x+2 instead, and
+    # the final exponentiation needs x itself. Keeping them separate avoids the
+    # obvious trap.
+    xd = _naf_digits(cv.X)
+    xtop = max(xd)
+    xdigits = [xd.get(i, 0) for i in range(xtop + 1)]
+    assert sum(d * 2**i for i, d in enumerate(xdigits)) == cv.X
+    param_txt = ("  #define ELIPS_PARAM_TOP    %d\n" % xtop +
+                 "  static const signed char ELIPS_PARAM[%d] = { %s };\n"
+                 % (xtop + 1, ", ".join(str(d) for d in xdigits)))
+
+    loop_txt = param_txt + ("  #define ELIPS_LOOP_TOP     %d\n" % top +
                 "  #define ELIPS_FAMILY_%s   1\n" % cv.family.upper() +
                 "  static const signed char ELIPS_LOOP[%d] = { %s };\n"
                 % (top + 1, ", ".join(str(d) for d in digits)))

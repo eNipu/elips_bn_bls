@@ -120,7 +120,13 @@ int main(void)
         else printf("  [PASS] fast final exponentiation == exact^3\n");
     }
 #else
-    printf("  [SKIP] no fast final exponentiation chain for BN yet\n");
+    {   /* BN's hard part decomposes exactly, so its fast chain must equal the
+         * exact value with no factor -- unlike BLS12. */
+        fp12_t fast;
+        pairing_final_exp_fast(fast, nf);
+        if (!fp12_eq(fast, nz)) { printf("  [FAIL] BN fast chain != exact e\n"); fails++; }
+        else printf("  [PASS] fast final exponentiation == exact e\n");
+    }
 #endif
 
     printf("%s\n", fails ? "FAILED" : "OK");

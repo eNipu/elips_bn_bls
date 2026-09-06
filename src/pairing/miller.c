@@ -235,7 +235,12 @@ void pairing_final_exp_plain(fp12_t r, const fp12_t f)
     fp12_exp(r, t0, ELIPS_HARD_EXP, ELIPS_HARD_BITS);
 }
 
-/* f^x over the signed digits of the curve parameter.
+/* f^x over the signed digits of the MOTHER parameter x.
+ *
+ * Deliberately ELIPS_PARAM and not ELIPS_LOOP. They coincide on BLS12, but the
+ * BN Miller loop runs over 6x+2 while its final exponentiation needs x, and
+ * using the loop constant here silently computed the wrong exponent until the
+ * test caught it.
  *
  * Only valid for f in the cyclotomic subgroup, where the conjugate is the
  * inverse -- which is what makes the negative digits free. Every element the
@@ -246,12 +251,12 @@ void fp12_exp_param(fp12_t r, const fp12_t f)
 {
     fp12_t acc, fi;
     fp12_conj(fi, f);
-    if (ELIPS_LOOP[ELIPS_LOOP_TOP] > 0) fp12_copy(acc, f);
-    else                                fp12_copy(acc, fi);
-    for (int i = ELIPS_LOOP_TOP - 1; i >= 0; i--) {
+    if (ELIPS_PARAM[ELIPS_PARAM_TOP] > 0) fp12_copy(acc, f);
+    else                                  fp12_copy(acc, fi);
+    for (int i = ELIPS_PARAM_TOP - 1; i >= 0; i--) {
         fp12_sqr(acc, acc);
-        if (ELIPS_LOOP[i] > 0)      fp12_mul(acc, acc, f);
-        else if (ELIPS_LOOP[i] < 0) fp12_mul(acc, acc, fi);
+        if (ELIPS_PARAM[i] > 0)      fp12_mul(acc, acc, f);
+        else if (ELIPS_PARAM[i] < 0) fp12_mul(acc, acc, fi);
     }
     fp12_copy(r, acc);
 }
@@ -296,17 +301,94 @@ void pairing_final_exp_fast(fp12_t r, const fp12_t f)
     fp12_mul(r, d, e);
 }
 #else
-/* No fast chain for BN yet.
+/* Fast final exponentiation for BN.
  *
- * The identity the BLS12 chain rests on,
+ * Unlike BLS12, the BN hard part decomposes exactly, with no stray factor.
+ * Derived symbolically and reproduced here:
+ *
+ *     lambda = d0 + d1*p + d2*p^2 + d3*p^3
+ *     d0 = -36x^3 - 30x^2 - 18x - 2
+ *     d1 = -36x^3 - 18x^2 - 12x + 1
+ *     d2 =            6x^2      + 1
+ *     d3 =                        1
+ *
+ * Regrouping by which power of x each term needs, with u1 = f^x, u2 = f^(x^2)
+ * and u3 = f^(x^3):
+ *
+ *     f^lambda = u3^(-36 - 36p)
+ *              * u2^(-30 - 18p + 6p^2)
+ *              * u1^(-18 - 12p)
+ *              * f ^( -2 +   p +  p^2 + p^3)
+ *
+ * so three parameter exponentiations plus a handful of small powers. Every
+ * negative exponent is a conjugation, because the easy part already put f in
+ * the cyclotomic subgroup.
+ *
+ * This yields e exactly. The legacy BN chain raised to roughly 12*X^3 times
+ * this (issue #16), so the new path is not just faster but right. */
+
+/* a^6, then the multiples the chain needs, sharing intermediates. */
+static void small_powers(fp12_t a6, fp12_t a12, fp12_t a18,
+                         fp12_t a30, fp12_t a36, const fp12_t a)
+{
+    fp12_t t2, t4;
+    fp12_sqr(t2, a);            /* a^2  */
+    fp12_sqr(t4, t2);           /* a^4  */
+    fp12_mul(a6, t4, t2);       /* a^6  */
+    fp12_sqr(a12, a6);          /* a^12 */
+    fp12_mul(a18, a12, a6);     /* a^18 */
+    fp12_mul(a30, a18, a12);    /* a^30 */
+    fp12_sqr(a36, a18);         /* a^36 */
+}
+
+void pairing_final_exp_fast(fp12_t r, const fp12_t f)
+{
+    /* easy part */
+    fp12_t m, t0, t1;
+    fp12_conj(t0, f);
+    fp12_inv(t1, f);
+    fp12_mul(t0, t0, t1);
+    fp12_frobenius(t1, t0, 2);
+    fp12_mul(m, t1, t0);
+
+    fp12_t u1, u2, u3;
+    fp12_exp_param(u1, m);      /* m^x     */
+    fp12_exp_param(u2, u1);     /* m^(x^2) */
+    fp12_exp_param(u3, u2);     /* m^(x^3) */
+
+    fp12_t a6, a12, a18, a30, a36, acc, tmp;
+
+    /* u3^(-36 - 36p) */
+    small_powers(a6, a12, a18, a30, a36, u3);
+    fp12_conj(acc, a36);                       /* u3^-36        */
+    fp12_frobenius(tmp, a36, 1);
+    fp12_conj(tmp, tmp);
+    fp12_mul(acc, acc, tmp);                   /* * u3^(-36p)   */
+
+    /* u2^(-30 - 18p + 6p^2) */
+    small_powers(a6, a12, a18, a30, a36, u2);
+    fp12_conj(tmp, a30);         fp12_mul(acc, acc, tmp);
+    fp12_frobenius(tmp, a18, 1); fp12_conj(tmp, tmp); fp12_mul(acc, acc, tmp);
+    fp12_frobenius(tmp, a6, 2);  fp12_mul(acc, acc, tmp);
+
+    /* u1^(-18 - 12p) */
+    small_powers(a6, a12, a18, a30, a36, u1);
+    fp12_conj(tmp, a18);         fp12_mul(acc, acc, tmp);
+    fp12_frobenius(tmp, a12, 1); fp12_conj(tmp, tmp); fp12_mul(acc, acc, tmp);
+
+    /* m^(-2 + p + p^2 + p^3) */
+    fp12_sqr(tmp, m); fp12_conj(tmp, tmp);     /* m^-2 */
+    fp12_mul(acc, acc, tmp);
+    fp12_frobenius(tmp, m, 1); fp12_mul(acc, acc, tmp);
+    fp12_frobenius(tmp, m, 2); fp12_mul(acc, acc, tmp);
+    fp12_frobenius(tmp, m, 3); fp12_mul(acc, acc, tmp);
+
+    fp12_copy(r, acc);
+}
+
+/* Note for anyone comparing families: the identity the BLS12 chain rests on,
  *     3*lambda = (x-1)^2 (x+p) (x^2+p^2-1) + 3,
- * is specific to that family; applying it to BN gives a wrong exponent, which
- * the test suite catches. BN has its own standard chain (Devegili, Scott and
- * Dahab) and it is simply not written yet.
- *
- * Declining to provide one is deliberate. The legacy library ships a BN
- * "optimal" final exponentiation that raises to roughly 12*X^3 times the
- * correct exponent (issue #16) and nothing noticed for years, because the
- * result is still bilinear. A missing function is a better failure mode than a
- * plausible wrong one, so BN callers get the exact path or nothing. */
+ * is specific to BLS12. Applying it to BN gives a wrong exponent, which the
+ * test suite caught the moment BN was wired in. BN's own decomposition above
+ * is exact, so BN returns e while BLS12 returns e^3. */
 #endif
