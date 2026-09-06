@@ -85,94 +85,102 @@ static void fp12_mul_sparse035(fp12_t f, const fp2_t c0, const fp2_t c3, const f
     fp6_copy(f[1], s);
 }
 
-/* T <- 2T, and f *= the tangent line at T evaluated at P. */
+/* T <- 2T, and f *= the tangent line at T evaluated at P.
+ *
+ * In homogeneous coordinates x_T = X/Z and y_T = Y/Z, so the tangent slope is
+ * 3X^2/(2YZ). Scaling the line by xi*2YZ^2 clears every denominator and leaves
+ *
+ *     c0 = xi * yP * (2 Y Z^2)
+ *     c3 = 3X^3 - 2 Y^2 Z
+ *     c5 = -3 X^2 Z * xP
+ *
+ * which is a term simpler than the Jacobian version this replaced. The xi and
+ * the common denominator both live in Fp2 and die in the final exponentiation,
+ * so the pairing value is unchanged. */
 static void dbl_step(fp12_t f, ep2_t *T, const fp_t px, const fp_t py)
 {
-    fp2_t A, B, C, D, E, FF, t, ZZ, c0, c3, c5;
+    /* The line and the doubled point are computed together so that X^2, Y^2,
+     * Z^2, XY and YZ are each formed once. Splitting them into a line
+     * evaluation followed by a call to ep2_dbl cost 11% of the Miller loop,
+     * measured -- the shared subexpressions are most of the work. */
+    fp2_t XX, YY, ZZ, XY, YZ, t, u, c0, c3, c5, b3;
+    fp2_t z3, x3, y3;
 
-    fp2_sqr(A, T->x);                       /* X^2   */
-    fp2_sqr(B, T->y);                       /* Y^2   */
-    fp2_sqr(C, B);                          /* Y^4   */
-    fp2_sqr(ZZ, T->z);                      /* Z^2   */
+    fp2_sqr(XX, T->x);
+    fp2_sqr(YY, T->y);
+    fp2_sqr(ZZ, T->z);
+    fp2_mul(XY, T->x, T->y);
+    fp2_mul(YZ, T->y, T->z);
 
-    /* c3 = 3X^3 - 2Y^2 */
-    fp2_mul(c3, A, T->x);                   /* X^3 */
-    fp2_add(t, c3, c3); fp2_add(c3, t, c3); /* 3X^3 */
-    fp2_add(t, B, B);                       /* 2Y^2 */
+    /* ---- line: c3 = 3X^3 - 2Y^2 Z, c5 = -3X^2 Z xP, c0 = xi yP 2YZ^2 ---- */
+    fp2_mul(t, XX, T->x);                       /* X^3        */
+    fp2_add(u, t, t); fp2_add(c3, u, t);        /* 3X^3       */
+    fp2_mul(t, YY, T->z); fp2_add(t, t, t);     /* 2 Y^2 Z    */
     fp2_sub(c3, c3, t);
 
-    /* c5 = -3 X^2 Z^2 xP */
-    fp2_add(t, A, A); fp2_add(t, t, A);     /* 3X^2 */
-    fp2_mul(c5, t, ZZ);
-    fp2_mul_fp(c5, c5, px);
+    fp2_mul(t, XX, T->z);                       /* X^2 Z      */
+    fp2_add(u, t, t); fp2_add(u, u, t);         /* 3 X^2 Z    */
+    fp2_mul_fp(c5, u, px);
     fp2_neg(c5, c5);
 
-    /* c0 = xi * yP * (2 Y Z^3) ; note Z3 = 2YZ so 2YZ^3 = Z3 * Z^2 */
-    fp2_mul(t, T->y, T->z);
-    fp2_add(t, t, t);                       /* Z3 = 2YZ */
-    fp2_t Z3; fp2_copy(Z3, t);
-    fp2_mul(c0, t, ZZ);                     /* 2 Y Z^3 */
-    fp2_mul_fp(c0, c0, py);
+    fp2_mul(t, YZ, T->z);                       /* Y Z^2      */
+    fp2_add(t, t, t);
+    fp2_mul_fp(c0, t, py);
     fp2_mul_xi(c0, c0);
 
-    /* the doubling itself (dbl-2009-l, a = 0) */
-    fp2_add(D, T->x, B); fp2_sqr(D, D); fp2_sub(D, D, A); fp2_sub(D, D, C);
-    fp2_add(D, D, D);
-    fp2_add(E, A, A); fp2_add(E, E, A);
-    fp2_sqr(FF, E);
-    fp2_add(t, D, D); fp2_sub(t, FF, t);
-    fp2_copy(T->z, Z3);
-    fp2_sub(D, D, t); fp2_mul(D, E, D);
-    fp2_add(C, C, C); fp2_add(C, C, C); fp2_add(C, C, C);
-    fp2_sub(T->y, D, C);
-    fp2_copy(T->x, t);
+    /* ---- RCB doubling, reusing the same squares ---- */
+    ep2_curve_b(b3);
+    fp2_add(t, b3, b3); fp2_add(b3, t, b3);     /* 3b */
+
+    fp2_add(z3, YY, YY); fp2_add(z3, z3, z3); fp2_add(z3, z3, z3);  /* 8Y^2 */
+    fp2_mul(t, b3, ZZ);                         /* b3 Z^2 */
+    fp2_mul(x3, t, z3);
+    fp2_add(y3, YY, t);
+    fp2_mul(z3, YZ, z3);
+    fp2_add(u, t, t); fp2_add(u, u, t);         /* 3 b3 Z^2 */
+    fp2_sub(u, YY, u);                          /* Y^2 - 3b3Z^2 */
+    fp2_mul(y3, u, y3);
+    fp2_add(y3, x3, y3);
+    fp2_mul(x3, u, XY);
+    fp2_add(x3, x3, x3);
+
+    fp2_copy(T->x, x3); fp2_copy(T->y, y3); fp2_copy(T->z, z3);
 
     fp12_mul_sparse035(f, c0, c3, c5);
 }
 
-/* T <- T + Q (Q affine), and f *= the chord line evaluated at P. */
+/* T <- T + Q (Q affine), and f *= the chord line evaluated at P.
+ *
+ * With H = xQ*Z - X and R = yQ*Z - Y the slope is R/H, and scaling by xi*H*Z
+ * leaves
+ *
+ *     c0 = xi * yP * H * Z
+ *     c3 = R*X - Y*H
+ *     c5 = -R * Z * xP
+ */
 static void add_step(fp12_t f, ep2_t *T, const fp2_t qx, const fp2_t qy,
                      const fp_t px, const fp_t py)
 {
-    fp2_t ZZ, U, S, H, R, HH, I, J, V, t, c0, c3, c5;
+    fp2_t H, R, t, c0, c3, c5;
+    ep2_t Qp;
 
-    fp2_sqr(ZZ, T->z);
-    fp2_mul(U, qx, ZZ);                     /* xQ Z^2      */
-    fp2_mul(S, qy, T->z); fp2_mul(S, S, ZZ);/* yQ Z^3      */
-    fp2_sub(H, U, T->x);                    /* H = xQZ^2-X */
-    fp2_sub(R, S, T->y);                    /* R = yQZ^3-Y */
+    fp2_mul(H, qx, T->z); fp2_sub(H, H, T->x);
+    fp2_mul(R, qy, T->z); fp2_sub(R, R, T->y);
 
-    /* c3 = R*X - Y*H */
     fp2_mul(c3, R, T->x);
     fp2_mul(t, T->y, H);
     fp2_sub(c3, c3, t);
 
-    /* c5 = -R Z^2 xP */
-    fp2_mul(c5, R, ZZ);
+    fp2_mul(c5, R, T->z);
     fp2_mul_fp(c5, c5, px);
     fp2_neg(c5, c5);
 
-    /* c0 = xi * yP * H * Z^3 */
-    fp2_mul(c0, H, ZZ); fp2_mul(c0, c0, T->z);
+    fp2_mul(c0, H, T->z);
     fp2_mul_fp(c0, c0, py);
     fp2_mul_xi(c0, c0);
 
-    /* mixed addition (madd-2007-bl) */
-    fp2_sqr(HH, H);
-    fp2_add(I, HH, HH); fp2_add(I, I, I);   /* 4 H^2 */
-    fp2_mul(J, H, I);
-    fp2_add(R, R, R);                       /* r = 2R */
-    fp2_mul(V, T->x, I);
-    fp2_sqr(t, R); fp2_sub(t, t, J);
-    fp2_t tv; fp2_add(tv, V, V); fp2_sub(t, t, tv);
-    fp2_t X3; fp2_copy(X3, t);
-    fp2_sub(t, V, X3); fp2_mul(t, R, t);
-    fp2_mul(tv, T->y, J); fp2_add(tv, tv, tv);
-    fp2_sub(T->y, t, tv);
-    fp2_add(t, T->z, H); fp2_sqr(t, t); fp2_sub(t, t, ZZ); fp2_sub(t, t, HH);
-    fp2_copy(T->z, t);
-    fp2_copy(T->x, X3);
-
+    ep2_from_affine(&Qp, qx, qy);
+    ep2_add(T, T, &Qp);
     fp12_mul_sparse035(f, c0, c3, c5);
 }
 

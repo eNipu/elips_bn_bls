@@ -8,9 +8,9 @@
  * against a 2.49 ms loop, so constant-time arithmetic is unaffordable until the
  * inversions are gone. Jacobian coordinates remove all but one of them.
  *
- * A point is (X : Y : Z) with x = X/Z^2 and y = Y/Z^3. The point at infinity is
- * Z = 0. Both curves have a = 0 (y^2 = x^3 + b), so the doubling and addition
- * formulas below never reference b.
+ * A point is (X : Y : Z) with x = X/Z and y = Y/Z. The identity has Z = 0.
+ * Both curves have a = 0, so the RCB formulas specialise to their cheapest form.
+ 
  */
 #ifndef ELIPS_EC_H
 #define ELIPS_EC_H
