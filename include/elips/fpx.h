@@ -65,6 +65,10 @@ void fp12_inv(fp12_t r, const fp12_t a);
 void fp12_conj(fp12_t r, const fp12_t a);     /* the p^6 Frobenius */
 /* r = a^(p^k) for k in {1,2,3}. k=6 is fp12_conj. */
 void fp12_frobenius(fp12_t r, const fp12_t a, int k);
+/* Squaring for elements of the cyclotomic subgroup, where conj(a) = a^-1.
+ * Cheaper than fp12_sqr, and WRONG outside that subgroup. Everything the final
+ * exponentiation touches after the easy part qualifies. */
+void fp12_sqr_cyc(fp12_t r, const fp12_t a);
 /* r = a^e, e given as little-endian limbs of ebits bits. Not constant time in
  * the exponent, which is fine: every exponent used here is a public curve
  * parameter. */

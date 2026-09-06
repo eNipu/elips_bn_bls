@@ -129,7 +129,34 @@ void fp6_mul(fp6_t r, const fp6_t a, const fp6_t b)
     fp2_copy(r[0], e0); fp2_copy(r[1], e1); fp2_copy(r[2], e2);
 }
 
-void fp6_sqr(fp6_t r, const fp6_t a) { fp6_mul(r, a, a); }
+void fp6_sqr(fp6_t r, const fp6_t a)
+{
+    /* (a0 + a1 v + a2 v^2)^2 with v^3 = xi expands to
+     *   c0 = a0^2 + 2*xi*a1*a2
+     *   c1 = 2*a0*a1 + xi*a2^2
+     *   c2 = a1^2 + 2*a0*a2
+     * Each doubled cross term comes from a squaring rather than a
+     * multiplication, via 2ab = (a+b)^2 - a^2 - b^2, so this costs six fp2
+     * squarings instead of six fp2 multiplications. */
+    fp2_t s0, s1, s2, t01, t12, t02, c0, c1, c2, t;
+
+    fp2_sqr(s0, a[0]);
+    fp2_sqr(s1, a[1]);
+    fp2_sqr(s2, a[2]);
+
+    fp2_add(t, a[0], a[1]); fp2_sqr(t01, t);
+    fp2_sub(t01, t01, s0); fp2_sub(t01, t01, s1);   /* 2 a0 a1 */
+    fp2_add(t, a[1], a[2]); fp2_sqr(t12, t);
+    fp2_sub(t12, t12, s1); fp2_sub(t12, t12, s2);   /* 2 a1 a2 */
+    fp2_add(t, a[0], a[2]); fp2_sqr(t02, t);
+    fp2_sub(t02, t02, s0); fp2_sub(t02, t02, s2);   /* 2 a0 a2 */
+
+    fp2_mul_xi(t, t12);  fp2_add(c0, s0, t);
+    fp2_mul_xi(t, s2);   fp2_add(c1, t01, t);
+    fp2_add(c2, s1, t02);
+
+    fp2_copy(r[0], c0); fp2_copy(r[1], c1); fp2_copy(r[2], c2);
+}
 
 void fp6_inv(fp6_t r, const fp6_t a)
 {
@@ -248,6 +275,25 @@ void fp12_frobenius(fp12_t r, const fp12_t a, int k)
     fp2_mul(out[0][2], out[0][2], g[3]);       /* w^4 * gamma^4 */
     fp2_mul(out[1][2], out[1][2], g[4]);       /* w^5 * gamma^5 */
     fp12_copy(r, out);
+}
+
+void fp12_sqr_cyc(fp12_t r, const fp12_t a)
+{
+    /* An element of the cyclotomic subgroup satisfies conj(a) = a^-1, so
+     *     (d0 + d1 w)(d0 - d1 w) = d0^2 - v*d1^2 = 1.
+     * Squaring normally needs d0^2 + v*d1^2, and the constraint rewrites that
+     * as 2*d0^2 - 1, so one squaring and one multiplication suffice where the
+     * generic routine needs two multiplications:
+     *     a^2 = (2*d0^2 - 1) + (2*d0*d1) w
+     * Only valid inside the subgroup; fp12_sqr remains for everything else. */
+    fp6_t s, m, one;
+    fp6_sqr(s, a[0]);
+    fp6_mul(m, a[0], a[1]);
+    fp6_add(s, s, s);
+    fp6_set_one(one);
+    fp6_sub(s, s, one);
+    fp6_add(r[1], m, m);
+    fp6_copy(r[0], s);
 }
 
 void fp12_exp(fp12_t r, const fp12_t a, const limb_t *e, int ebits)

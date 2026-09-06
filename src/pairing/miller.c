@@ -232,7 +232,14 @@ void pairing_final_exp_plain(fp12_t r, const fp12_t f)
     /* hard part: raise to (p^4 - p^2 + 1)/r, computed directly.
      * Slow on purpose. This is the definition, and it is what the fast chain
      * gets validated against. */
-    fp12_exp(r, t0, ELIPS_HARD_EXP, ELIPS_HARD_BITS);
+    /* t0 is cyclotomic after the easy part, so the cheap squaring applies. */
+    fp12_t acc;
+    fp12_set_one(acc);
+    for (int i = ELIPS_HARD_BITS - 1; i >= 0; i--) {
+        fp12_sqr_cyc(acc, acc);
+        if ((ELIPS_HARD_EXP[i / 64] >> (i % 64)) & 1) fp12_mul(acc, acc, t0);
+    }
+    fp12_copy(r, acc);
 }
 
 /* f^x over the signed digits of the MOTHER parameter x.
@@ -254,7 +261,7 @@ void fp12_exp_param(fp12_t r, const fp12_t f)
     if (ELIPS_PARAM[ELIPS_PARAM_TOP] > 0) fp12_copy(acc, f);
     else                                  fp12_copy(acc, fi);
     for (int i = ELIPS_PARAM_TOP - 1; i >= 0; i--) {
-        fp12_sqr(acc, acc);
+        fp12_sqr_cyc(acc, acc);       /* acc stays cyclotomic throughout */
         if (ELIPS_PARAM[i] > 0)      fp12_mul(acc, acc, f);
         else if (ELIPS_PARAM[i] < 0) fp12_mul(acc, acc, fi);
     }
@@ -296,7 +303,7 @@ void pairing_final_exp_fast(fp12_t r, const fp12_t f)
     fp12_conj(t0, c);
     fp12_mul(d, d, t0);            /* * c^-1  => c^(x^2+p^2-1) */
 
-    fp12_sqr(e, m);
+    fp12_sqr_cyc(e, m);
     fp12_mul(e, e, m);             /* m^3            */
     fp12_mul(r, d, e);
 }
@@ -332,13 +339,13 @@ static void small_powers(fp12_t a6, fp12_t a12, fp12_t a18,
                          fp12_t a30, fp12_t a36, const fp12_t a)
 {
     fp12_t t2, t4;
-    fp12_sqr(t2, a);            /* a^2  */
-    fp12_sqr(t4, t2);           /* a^4  */
+    fp12_sqr_cyc(t2, a);        /* a^2  ; a is cyclotomic, so all of these are */
+    fp12_sqr_cyc(t4, t2);       /* a^4  */
     fp12_mul(a6, t4, t2);       /* a^6  */
-    fp12_sqr(a12, a6);          /* a^12 */
+    fp12_sqr_cyc(a12, a6);      /* a^12 */
     fp12_mul(a18, a12, a6);     /* a^18 */
     fp12_mul(a30, a18, a12);    /* a^30 */
-    fp12_sqr(a36, a18);         /* a^36 */
+    fp12_sqr_cyc(a36, a18);     /* a^36 */
 }
 
 void pairing_final_exp_fast(fp12_t r, const fp12_t f)
@@ -377,7 +384,7 @@ void pairing_final_exp_fast(fp12_t r, const fp12_t f)
     fp12_frobenius(tmp, a12, 1); fp12_conj(tmp, tmp); fp12_mul(acc, acc, tmp);
 
     /* m^(-2 + p + p^2 + p^3) */
-    fp12_sqr(tmp, m); fp12_conj(tmp, tmp);     /* m^-2 */
+    fp12_sqr_cyc(tmp, m); fp12_conj(tmp, tmp); /* m^-2 */
     fp12_mul(acc, acc, tmp);
     fp12_frobenius(tmp, m, 1); fp12_mul(acc, acc, tmp);
     fp12_frobenius(tmp, m, 2); fp12_mul(acc, acc, tmp);
