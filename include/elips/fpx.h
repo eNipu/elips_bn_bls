@@ -52,6 +52,12 @@ int  fp2_sqrt(fp2_t r, const fp2_t a);
  * The Fp2 analogue of fp_is_lex_largest, and the sign rule the compressed G2
  * encoding uses. Constant time. */
 int  fp2_is_lex_largest(const fp2_t a);
+/* RFC 9380 4.1 sgn0 for m = 2: sgn0(c0), unless c0 is zero, in which case
+ * sgn0(c1). See the note on fp_sgn0. Constant time. */
+int  fp2_sgn0(const fp2_t a);
+/* Is a a square in Fp2? Equivalent to its norm being a square in Fp, which is
+ * one Fp exponentiation rather than an Fp2 one. Constant time. */
+int  fp2_is_square(const fp2_t a);
 
 /* ---- fp6 ---- */
 void fp6_set_zero(fp6_t r);

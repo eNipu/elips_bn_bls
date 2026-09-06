@@ -90,4 +90,13 @@ int fp_sqrt(fp_t r, const fp_t a);
  * to recover the sign of y from a single bit. Constant time. */
 int fp_is_lex_largest(const fp_t a);
 
+/* RFC 9380 4.1 sgn0: the low bit of the canonical representation.
+ *
+ * A different predicate from fp_is_lex_largest, and the two are easy to
+ * confuse. Both answer "which of the two square roots is this", but the
+ * encodings use "greater than (p-1)/2" and hash-to-curve uses "odd", and
+ * substituting one for the other produces points that are on the curve, in the
+ * group, and wrong. Constant time. */
+int fp_sgn0(const fp_t a);
+
 #endif /* ELIPS_FP_H */

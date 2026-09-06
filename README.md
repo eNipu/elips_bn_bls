@@ -5,11 +5,13 @@ Pairing-based cryptography over BN and BLS12 curves, built on GMP.
 > **Status: under active modernization.** See [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md)
 > for the roadmap and [`PROGRESS.md`](PROGRESS.md) for what has landed.
 >
-> **Known defect:** the optimal final exponentiation raises to the wrong
-> exponent — `e^3` on BLS12 and `e^(~12·X³)` on BN. The result is still a valid
-> bilinear pairing, but it does not match `finalexp_plain` in this same library
-> and will not interoperate with other implementations.
-> See [issue #16](https://github.com/eNipu/elips_bn_bls/issues/16).
+> There are two layers in the tree. **New code should use the modern one**,
+> `include/elips/*.h`: fixed-width Montgomery arithmetic, constant-time scalar
+> multiplication, standard serialization and RFC 9380 hash-to-curve. The legacy
+> `include/ELiPS_bn_bls/*.h` layer is retained only until
+> [issue #17](https://github.com/eNipu/elips_bn_bls/issues/17) retires it, and
+> it still has the wrong-exponent final exponentiation of
+> [issue #16](https://github.com/eNipu/elips_bn_bls/issues/16).
 
 ## Requirements
 
@@ -23,6 +25,26 @@ Pairing-based cryptography over BN and BLS12 curves, built on GMP.
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
+
+### Choosing a curve
+
+The modern arithmetic is compiled for one curve: the field width has to be a
+compile-time constant for the loops to unroll. Pick it with `ELIPS_CURVE`:
+
+```bash
+cmake -B build -DELIPS_CURVE=BLS12_381    # default, and the only standardised one
+cmake -B build -DELIPS_CURVE=BLS12_461
+cmake -B build -DELIPS_CURVE=BN_462
+```
+
+That choice decides which library is installed and what
+`find_package(ELiPS)` hands back as `ELiPS::arith`; `ELiPS_CURVE` is set in the
+package config so a consumer can read it back. The test suite always builds all
+three regardless, because the vectors have to cover all three.
+
+**Use BLS12-381 unless you have a reason not to.** It is the curve with a
+specification, so it is the one whose generators, encodings and hash-to-curve
+outputs match other implementations byte for byte.
 
 ## Test
 
@@ -44,8 +66,26 @@ Then from a downstream project:
 
 ```cmake
 find_package(ELiPS REQUIRED)
-target_link_libraries(your_target PRIVATE ELiPS::elips)
+target_link_libraries(your_target PRIVATE ELiPS::arith)   # the modern layer
 ```
+
+```c
+#include "elips/hash_to_curve.h"
+#include "elips/serialize.h"
+#include "elips/pairing.h"
+
+static const char DST[] = "MY-PROTOCOL-V01-CS01-" ELIPS_H2C_SUITE_G1;
+
+ep_t P;  ep2_t Q;  fp12_t z;
+elips_hash_to_g1(&P, msg, msg_len, (const uint8_t *)DST, sizeof DST - 1);
+ep2_generator(&Q);
+if (!elips_pairing(z, &P, &Q)) { /* a point failed validation */ }
+
+uint8_t enc[EP_SER_COMPRESSED_BYTES];
+ep_write_compressed(enc, &P);
+```
+
+`ELiPS::elips` still exists and links the legacy runtime-curve layer.
 
 ## Sanitizer builds
 
@@ -66,7 +106,9 @@ is what found the final exponentiation defect.
 
 ```bash
 python3 tools/reference/selftest.py        # field axioms and tower relations
+python3 tools/reference/h2c_ref.py         # RFC 9380 maps, isogenies, SvdW
 python3 tools/reference/gen_vectors.py test/kat
+python3 tools/reference/gen_h2c_vectors.py test/kat
 python3 tools/reference/trace_finalexp.py  # exact exponent of each chain
 ```
 
@@ -83,11 +125,27 @@ coefficient.
 
 ## Curves
 
-| Curve | p | r | Status |
-|---|---|---|---|
-| BN-462 | 462 bits | 462 bits | supported |
-| BLS12-461 | 461 bits | 308 bits | supported |
-| BLS12-381 | 381 bits | 255 bits | field layer only; curve support in Phase 3 |
+| Curve | p | r | Generators | Serialized G1 / G2 | hash-to-curve |
+|---|---|---|---|---|---|
+| BLS12-381 | 381 bits | 255 bits | from the specification | 48 / 96 bytes | RFC 9380 `SSWU_RO_`, byte-exact |
+| BLS12-461 | 461 bits | 308 bits | generated | 58 / 116 bytes | RFC 9380 `SVDW_RO_`, no registered suite |
+| BN-462 | 462 bits | 462 bits | generated | 59 / 118 bytes | RFC 9380 `SVDW_RO_`, no registered suite |
+
+Sizes are the compressed encodings; uncompressed is twice each. BN-462 needs one
+byte more than its field width because the three flag bits do not fit otherwise.
+
+Only BLS12-381 has a specification to conform to. For it, the generators, the
+point encodings and the hash-to-curve outputs are pinned against the published
+values and match any conforming implementation. The other two curves have no
+standard, so their vectors pin self-consistency rather than interoperability.
+
+**On BLS12 the pairing returns `e³`, not `e`.** That is a property of the
+standard final-exponentiation chain, which RELIC and the original library also
+use, and not a defect: since `gcd(3, r) = 1` it is still bilinear and
+non-degenerate, so any protocol that only compares pairings is unaffected. Raw
+values will not match an implementation that outputs `e`; use
+`pairing_final_exp_plain` when the exact value is needed. On BN the value is
+`e` exactly.
 
 ## Licence
 

@@ -34,6 +34,25 @@ endif()
 option(ELIPS_BUILD_TESTS "Build the test suite" ON)
 option(ELIPS_WERROR      "Treat warnings as errors" OFF)
 
+# ------------------------------------------------------------ curve selection
+# The modern arithmetic needs its curve at compile time: FP_LIMBS has to be a
+# constant for the loops to unroll and for the Phase 6 assembly to target a
+# known width. So a consumer picks one curve and gets one library.
+#
+#   cmake -B build -DELIPS_CURVE=BLS12_381
+#
+# That is the target that gets installed and that find_package(ELiPS) hands
+# back as ELiPS::arith. The test suite still builds all three, because the
+# vectors have to cover all three.
+set(ELIPS_CURVES BLS12_381 BLS12_461 BN_462)
+set(ELIPS_CURVE "BLS12_381" CACHE STRING
+    "Curve for the installed library: BLS12_381 (the standard one), BLS12_461 or BN_462")
+set_property(CACHE ELIPS_CURVE PROPERTY STRINGS ${ELIPS_CURVES})
+if(NOT ELIPS_CURVE IN_LIST ELIPS_CURVES)
+  message(FATAL_ERROR
+    "ELIPS_CURVE is '${ELIPS_CURVE}'. Choose one of: ${ELIPS_CURVES}")
+endif()
+
 # ---------------------------------------------------------------- sanitizers
 # Exposed as build types so a sanitizer run is one cache variable, not a
 # hand-assembled flag string.
@@ -82,20 +101,27 @@ endif()
 # ------------------------------------------------- Phase 3 arithmetic (new)
 # Built once per curve. These are the fixed-width Montgomery routines that
 # replace the heap mpz_t field layer; see include/elips/fp.h.
-set(ELIPS_CURVES BLS12_381 BLS12_461 BN_462)
 foreach(_cv IN LISTS ELIPS_CURVES)
   add_library(elips_arith_${_cv} STATIC
     src/arith/fp.c src/arith/fpx.c src/arith/ec.c
     src/arith/serialize.c src/util/random.c src/util/sysrand.c
-    src/pairing/miller.c)
+    src/pairing/miller.c
+    src/hash/sha256.c src/hash/hash_to_curve.c)
   target_include_directories(elips_arith_${_cv} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include>)
   target_compile_definitions(elips_arith_${_cv} PUBLIC ELIPS_CURVE_${_cv})
   target_link_libraries(elips_arith_${_cv} PUBLIC GMP::GMP)
   target_compile_options(elips_arith_${_cv} PRIVATE -Wall -Wextra)
   set_target_properties(elips_arith_${_cv} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 endforeach()
+
+# The selected curve, under a stable name. This is what gets installed, so a
+# downstream project writes target_link_libraries(app PRIVATE ELiPS::arith)
+# and never names a curve in its own build files.
+add_library(ELiPS::arith ALIAS elips_arith_${ELIPS_CURVE})
+message(STATUS "ELiPS curve for the installed library: ${ELIPS_CURVE}")
 
 # --------------------------------------------------------------------- tests
 if(ELIPS_BUILD_TESTS)
@@ -181,6 +207,28 @@ if(ELIPS_BUILD_TESTS)
     set_tests_properties(serialize.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
 
+  # Hash-to-curve. On BLS12-381 these records use RFC 9380's own domain
+  # separation tag, so they ARE the specification's published vectors and this
+  # test is what pins interoperability. The other two curves have no registered
+  # suite, so theirs pin agreement with the Python reference.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(h2c_test_${_cv} test/h2c_test.c)
+    target_link_libraries(h2c_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    add_test(NAME h2c.${_cv}
+             COMMAND h2c_test_${_cv}
+                     "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/h2c_${_vec_${_cv}}.vec")
+    set_tests_properties(h2c.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
+
+  # Negative control, same argument as kat.detects_corruption: a runner that
+  # cannot fail proves nothing about the vectors it passes.
+  add_test(NAME h2c.detects_corruption
+           COMMAND ${CMAKE_COMMAND}
+                   -DRUNNER=$<TARGET_FILE:h2c_test_BLS12_381>
+                   -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/test/kat/h2c_bls12_381.vec
+                   -DPATTERN=h2c_g1
+                   -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
+
   # Timing-leakage tests. Statistical, so they are noisy by nature and their
   # sample sizes are kept small enough to run on every CI build; a developer
   # investigating a specific routine runs the binary directly with a larger n.
@@ -204,7 +252,7 @@ if(ELIPS_BUILD_TESTS)
     # cannot detect a leak says nothing about the targets it passes -- the same
     # argument that put kat.detects_corruption in the Phase 0 suite.
     foreach(_t fp_mul fp_add fp_cselect fp_inv ep_mul ep2_mul ep2_mul_glv
-               control_vartime)
+               hash_to_g1 hash_to_g2 control_vartime)
       add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})
       set_tests_properties(dudect.${_t} PROPERTIES TIMEOUT 900)
     endforeach()
@@ -234,12 +282,19 @@ endif()
 
 # ------------------------------------------------------------------- install
 include(GNUInstallDirs)
-install(TARGETS elips EXPORT elipsTargets
+# Both libraries are installed: the legacy one under its historical name, and
+# the selected-curve modern one as ELiPS::arith. Until Phase 5b the modern
+# headers were not installed at all, so the API that has the pairing, the
+# serialization and the hash-to-curve could not be consumed by anyone.
+install(TARGETS elips elips_arith_${ELIPS_CURVE} EXPORT elipsTargets
   LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(FILES ${ELIPS_HEADERS}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ELiPS_bn_bls)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/elips
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h")
 install(EXPORT elipsTargets
         FILE ELiPSTargets.cmake NAMESPACE ELiPS::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ELiPS)
@@ -253,6 +308,14 @@ file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/ELiPSConfig.cmake"
 list(APPEND CMAKE_MODULE_PATH \"\${CMAKE_CURRENT_LIST_DIR}\")
 find_dependency(GMP)
 include(\"\${CMAKE_CURRENT_LIST_DIR}/ELiPSTargets.cmake\")
+
+# The modern library is built per curve, so its exported name carries one.
+# ELiPS::arith is the stable alias a consumer links against, and
+# ELiPS_CURVE says which curve this installation was built for.
+set(ELiPS_CURVE \"${ELIPS_CURVE}\")
+if(NOT TARGET ELiPS::arith)
+  add_library(ELiPS::arith ALIAS ELiPS::elips_arith_${ELIPS_CURVE})
+endif()
 ")
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/ELiPSConfig.cmake"

@@ -1128,65 +1128,277 @@ registered under sanitizers), zero warnings on gcc and clang.
 
 ---
 
+## Phase 5b — hash to curve, curve selection, and the decisions on what is left
+
+**Status: complete. RFC 9380 is implemented on all three curves and BLS12-381
+reproduces the specification's published test vectors.**
+
+### What exists now
+
+| Artifact | Purpose |
+|---|---|
+| `include/elips/hash_to_curve.h`, `src/hash/hash_to_curve.c` | RFC 9380 `hash_to_curve` and `encode_to_curve` for G1 and G2 |
+| `src/hash/h2c_tmpl.h` | The two maps, written once and instantiated per group |
+| `include/elips/sha256.h`, `src/hash/sha256.c` | SHA-256, so the build stays one library plus GMP |
+| `tools/reference/h2c_ref.py` | An independent RFC 9380 implementation: the oracle |
+| `tools/reference/h2c_iso_bls12_381.json` | The isogeny data, with provenance |
+| `tools/reference/gen_h2c_params.py`, `gen_h2c_vectors.py` | Constants and vectors, both gated on the reference self-test |
+| `test/kat/h2c_*.vec`, `test/h2c_test.c` | 46 records per curve, plus a corruption control |
+
+### Two maps, and why
+
+| Curve | Map | Status |
+|---|---|---|
+| BLS12-381 | simplified SWU over an 11-isogenous (G1) / 3-isogenous (G2) curve | The registered RFC 9380 suite. **Byte-exact with the specification's vectors.** |
+| BLS12-461, BN-462 | Shallue–van de Woestijne | No registered suite exists; SvdW is what RFC 9380 uses for BN254 and needs no isogeny. |
+
+Both curves have `A = 0`, which simplified SWU cannot handle, hence the isogeny
+on BLS12-381 and SvdW elsewhere. The plan's §10.1 records the alternatives that
+were rejected and why.
+
+### The one place data had to be trusted, and what was done about it
+
+The 11- and 3-isogeny coefficients are the only numbers in this project that
+cannot be derived from the curve parameters: finding an isogenous curve needs
+Vélu's formulas or modular polynomials, and the result is only useful if it is
+*the same model the specification chose*.
+
+They were extracted mechanically from py_ecc 8.0.0 — never retyped — committed
+as data with a provenance note, and then **verified three independent ways**
+before the generator will emit them:
+
+1. points of `E'` map onto `E`;
+2. the map is a group homomorphism, so it really is an isogeny;
+3. the whole suite reproduces RFC 9380's published vectors.
+
+A mistranscribed coefficient fails all three.
+
+Everything else is derived: the SvdW `Z` values come from the Appendix H.1
+search, `c1..c4` from their defining equations (each asserted), and the cofactor
+multipliers from the curve parameter — `1-x` on BLS12 G1 and `3(x²-1)h2` on G2,
+both landing on RFC 9380's own values without being told them.
+
+### Verification
+
+```
+BLS12-381   46 passed, 0 failed     <- includes RFC 9380 J.9.1 and J.10.1
+BLS12-461   46 passed, 0 failed
+BN-462      46 passed, 0 failed
+```
+
+Each layer is pinned separately — SHA-256, `expand_message_xmd`,
+`hash_to_field`, then the map — because they all fail the same way, with a wrong
+point, and one end-to-end check would not say which broke. There is a corruption
+control, as for the Phase 0 vectors.
+
+The reference's own self-test also passes `expand_message_xmd` against RFC 9380
+Appendix K.1, and checks that every suite's output lands in the order-`r`
+subgroup for random messages.
+
+### A correction the search itself produced
+
+`cofactor_multiplier` first asserted that the multiplier is a multiple of the
+cofactor. It is not: on BLS12-381 G1, `h_eff = 1-x` is 64 bits against a 128-bit
+cofactor, and multiplying by it still lands in the subgroup because `E(Fp)` is
+not cyclic there and `(1-x)` kills both of its cofactor components. That is
+precisely why RFC 9380 can specify such a short multiplier. The assertion would
+have rejected the correct answer; it now checks the property that matters —
+`[h]P` has order dividing `r` for points drawn without reference to the subgroup.
+
+### Fast G2 cofactor clearing
+
+`h_eff` is 636 bits on BLS12-381, so cofactor clearing, not the map, dominated
+`hash_to_g2`. Budroni–Pintore (ePrint 2017/419):
+
+```
+[h_eff]Q = [x^2 - x - 1]Q + [x - 1]psi(Q) + psi^2([2]Q)
+```
+
+| hash_to_g2 | before | after |
+|---|---|---|
+| BLS12-381 | 4070 us | **2133 us** (1.91x) |
+| BLS12-461 | 7041 us | **3794 us** (1.86x) |
+
+The identity was **verified numerically against the derived `h_eff` on random
+points of the twist** — not of G2, where much weaker relations hold and would
+hide a wrong chain — and then again by the RFC vectors still matching. BN keeps
+the plain multiplication; no chain for it was verified.
+
+### Measured
+
+| | BLS12-381 | BLS12-461 | BN-462 |
+|---|---|---|---|
+| `hash_to_g1` | 469 us | 696 us | 563 us |
+| `encode_to_g1` | 271 us | 417 us | 290 us |
+| `hash_to_g2` | 2133 us | 3794 us | 4987 us |
+
+x86-64, gcc -O2, the same slow VM as the Phase 5 numbers. G2 is still dominated
+by the two short ladders rebuilding their window tables; a shared table would
+help and is not done.
+
+### Curve selection, and an API that can actually be installed
+
+```bash
+cmake -B build -DELIPS_CURVE=BLS12_381    # default; also BLS12_461, BN_462
+```
+
+The choice decides which library is installed and what `find_package(ELiPS)`
+hands back as `ELiPS::arith`, with `ELiPS_CURVE` in the package config so a
+consumer can read it back. An unknown value is a configure error listing the
+valid ones. The test suite still builds all three.
+
+This also closes the gap Phase 5 recorded as remaining: `include/elips/*.h` was
+not installed at all, so the API carrying the pairing, the serialization and now
+the hash-to-curve could not be consumed by anyone. CI now builds a downstream
+project against the installed package with `-Wall -Wextra -Werror`, hashes to
+G1, pairs, serializes and round-trips — and configures and installs all three
+curve selections.
+
+### Constant time
+
+`hash_to_g1` and `hash_to_g2` are dudect targets, because the message is not
+always public: an OPRF or a PAKE hashes a secret. Both branches of every
+value-dependent choice are computed and selected under a mask, square roots
+included.
+
+```
+  [PASS ] hash_to_g1       max|t| =     1.93
+  [PASS ] hash_to_g2       max|t| =     1.67
+  [PASS ] control_vartime  max|t| =  1030.35   <- negative control, must leak
+```
+
+### State of the art, surveyed and decided
+
+`MODERNIZATION_PLAN.md` §10 now records a decision for every item Phases 0–5
+left open, with citations: fast subgroup membership tests (Scott 2021/1130 as
+corrected by El Housni–Guillevic–Piellard 2022/352, generalised by Dai et al.
+2022/348), GLV for BN and for G1, Karabina compressed squaring, multi-pairing
+with fixed-argument precomputation, safegcd, and why these three curves.
+
+**Two of those changed a Phase 6 assumption.**
+
+- **The x86-64 assembly target is wrong in §6.** The state of the art there is
+  AVX-512 IFMA applied to the extension fields, not a scalar limb multiply:
+  ePrint 2025/1283 (TCHES 2025) reports ~1.2M cycles for a full BLS12-381
+  pairing, about 400 µs at 3 GHz against this library's 1175 µs of portable C.
+  So the headroom is roughly **3x, not the ~1.3x the plan assumed**. AArch64
+  keeps the scalar plan; there is no IFMA equivalent.
+- **Fast subgroup tests are the largest single win available** — the checks
+  inside `elips_pairing` cost 2175 µs of 6033 µs — and are still not
+  implemented, deliberately. See below.
+
+### Deliberately not done, and the reason is the same each time
+
+**Fast subgroup membership tests.** Worth about a third of the pairing. Not
+built because their correctness conditions are exactly the kind of thing that is
+easy to get wrong, the literature has already had to correct one of those proofs
+once, and the full texts were not reachable from this session (the egress policy
+blocks `eprint.iacr.org`). The distinction that decided it:
+
+> A wrong cofactor chain computes a different multiple, so the RFC vectors stop
+> matching and it cannot ship. A wrong subgroup test accepts points it should
+> reject, and no vector notices.
+
+The first was built this session; the second was not. The Phase 6 task is to
+have `gen_params.py` derive and assert the conditions per curve — the way it
+already asserts that generators have order `r` — and only then switch it on.
+
+### Two Linux-only findings, again
+
+Not new defects, but worth recording that both surfaced only off macOS:
+
+- `tools/reference/gen_h2c_vectors.py` takes about a minute because the
+  reference does 462-bit scalar multiplications in pure Python. Memoising the
+  suites cut it from "times out" to 66 s.
+- The `-Wstringop-overflow` lesson from Phase 5 applied again while writing the
+  Horner evaluation over the isogeny tables: a table of `limb_t[n][2][FP_LIMBS]`
+  cannot be indexed generically by casting to the field type, because those are
+  array types. The template takes an `H2C_ELEM` macro from its includer instead.
+
+---
+
 # HAND-OFF — next session starts at Phase 6
 
-**Phases 0 to 5 are complete and their gates are met.** Phase 6 (assembly) is
-the next thing, and the plan makes it conditional on a profile showing that
-limb arithmetic is the bottleneck. That profile has not been taken on an x86-64
-machine with a comparable RELIC build, and taking it is the first task.
+**Phases 0 to 5b are complete.** Phase 6 (assembly) is next, and §10.10 of the
+plan changed its target: read that before starting.
 
 ## Where things stand
 
 Branch `claude/pairing-crypto-modernize-2faff2`.
-31 CTest targets green on Release, 23 on Asan and Ubsan, zero warnings on both
-gcc and clang.
+37 CTest targets green on Release, 27 on Asan and Ubsan (dudect is not
+registered under sanitizers), zero warnings on gcc and clang.
 
-| Curve | pairing value | serialized sizes (G1, G2) | GLV | generators |
+| Curve | pairing value | serialized G1/G2 | hash-to-curve | GLV |
 |---|---|---|---|---|
-| BLS12-381 | `e^3` | 48/96, 96/192 | yes | **from the specification** |
-| BLS12-461 | `e^3` | 58/116, 116/232 | yes | searched |
-| BN-462 | `e` exact | 59/118, 118/236 | no | searched |
+| BLS12-381 | `e^3` | 48/96 | RFC 9380 `SSWU_RO_`, **byte-exact** | G2 |
+| BLS12-461 | `e^3` | 58/116 | RFC 9380 `SVDW_RO_`, no registered suite | G2 |
+| BN-462 | `e` exact | 59/118 | RFC 9380 `SVDW_RO_`, no registered suite | none |
 
-The RELIC comparison in Phase 4 (BLS12-381 pairing within 1.23x, scalar
-multiplication within 1.41x) was taken on Apple Silicon with RELIC on its
-portable GMP backend, and still stands as the Phase 4 gate. It does not
-transfer to this x86-64 machine and was not re-run here.
+For BLS12-381 the generators, the point encodings and the hash-to-curve outputs
+are all pinned against published values. The other two curves have no standard,
+so their vectors pin self-consistency.
+
+`cmake -B build -DELIPS_CURVE=BLS12_381` selects the installed curve;
+`find_package(ELiPS)` gives `ELiPS::arith` and sets `ELiPS_CURVE`.
+
+## Start here
+
+1. **Read `MODERNIZATION_PLAN.md` §10.** Every open item now has a decision, a
+   citation and a status. §10.10 revises the Phase 6 assembly target and §10.3
+   is the largest available win.
+2. **Take a profile on an x86-64 machine.** Every measurement through Phase 4
+   was on Apple Silicon and Phase 5's on a slow VM. Phase 6 is conditional on a
+   profile and that profile has not been taken on the target architecture.
+
+## Ranked by value, from the survey
+
+| Work | Worth | Risk |
+|---|---|---|
+| Fast subgroup tests (§10.3) | ~1/3 of the pairing | conditions must be derived and asserted, not recalled |
+| AVX-512 IFMA on x86-64 (§10.10) | ~3x on that architecture | large, and needs the C fallback beside it |
+| Multi-pairing + fixed-argument precomputation (§10.6) | ~40% of a signature verification | low; it is bookkeeping over the existing loop |
+| Karabina compressed squaring (§10.5) | 10–15% of the final exponentiation | low |
+| GLV on G1, and on BN G2 (§10.4) | ~1.4x on those ladders | low; the constant-time decomposition already exists |
+| Retire the legacy layer (#17) | deletes A3, A4, closes #16 | mechanical, large diff |
 
 ## Three open issues worth reading first
 
-- **#17 retire the legacy mpz layer.** Still the largest single cleanup. It is
-  what deletes defects A3 and A4, and what closes #16.
-- **#16 final exponentiation exponent.** Resolved on the new layer; only the
-  legacy layer is affected, so it closes when #17 lands.
-- **#15 baseline measurements.** Superseded in practice by the RELIC
-  comparison.
+- **#17 retire the legacy mpz layer.** The modern layer now covers every entry
+  point it has, plus serialization and hash-to-curve, which it never had.
+- **#16 final exponentiation exponent.** Resolved on the modern layer; closes
+  with #17.
+- **#15 baseline measurements.** Superseded by the RELIC comparison.
 
 ## Things a fresh session should not re-derive
 
-Everything in the previous hand-off still holds. Added by Phase 5:
+Everything in the previous hand-offs still holds. Added by Phase 5b:
 
-- All three primes are `3 mod 4`, so square roots are one exponentiation by
-  `(p+1)/4` and Fp2 roots follow Adj and Rodriguez-Henriquez. No
-  Tonelli-Shanks anywhere, and `fp_sqrt` checks the congruence rather than
-  assuming it.
+- All three primes are `3 mod 4`; square roots are one exponentiation by
+  `(p+1)/4`, and Fp2 roots follow Adj and Rodríguez-Henríquez.
 - The serialized field width is `(FP_BITS + 3 + 7) / 8`, not `ceil(FP_BITS/8)`.
-  BN-462 needs the extra byte for its third flag bit.
-- BLS12-381's G2 generator is the published one and its encoding is pinned as a
+- BLS12-381's G2 generator is the published one and its encoding is a pinned
   known answer. **Do not regenerate it from a search.**
-- dudect must prepare every input before it times anything. Preparing inside
-  the timed loop measures the preparation and reports |t| near 100 on code with
-  no branch in it.
-- `-Wstringop-overflow` on a whole-`fp6` access to `f[0]` or `f[1]` inside a
-  function taking `fp12_t` is a GCC false positive. Pass the halves.
+- `h_eff` for BLS12 G1 is `1-x` and is **not** a multiple of the cofactor. That
+  is correct — `E(Fp)` is not cyclic there. Do not "fix" it.
+- The Budroni–Pintore G2 cofactor chain is verified against `[h_eff]` on random
+  points of the **twist**. Checking it on G2 points proves nothing.
+- dudect must prepare every input before it times anything.
+- A whole-`fp6` or whole-`fp2` access to an element of a nested array parameter
+  trips GCC's `-Wstringop-overflow`. Pass the halves, or take an element macro.
 
 ## Known limitations, stated plainly
 
-- Subgroup checks are full scalar multiplications and cost over a third of
-  `elips_pairing`. Correct, and slow.
-- The new API cannot be installed or consumed via `find_package`.
-- No hash-to-curve, so this is not yet a BLS signature library.
-- BN has no GLV and no compressed squaring.
+- Subgroup checks are full scalar multiplications: 2175 µs of `elips_pairing`'s
+  6033 µs on BLS12-381. Correct, and slow. §10.3 is the fix.
+- No multi-pairing, so a two-pairing product costs two final exponentiations.
+- BN-462 has no GLV and no fast G2 cofactor chain.
+- `hash_to_g2` rebuilds a window table for each of its two short ladders; a
+  shared table would help.
+- No signature layer. §10.8 explains why that line is where it is.
 - The legacy layer's RNG is seeded properly but is still a Mersenne Twister.
 - `docs/` is still tracked, 1280 files, because GitHub Pages serves from
   `master:/docs`. A workflow to publish from `gh-pages` exists; once Pages is
   repointed, `git rm -r --cached docs` drops the repo to ~126 tracked files.
+- The IACR survey behind §10 was done through search abstracts: the egress
+  policy blocks `eprint.iacr.org`, so no full text was read. Citations are
+  pointers, not sources of copied formulas.

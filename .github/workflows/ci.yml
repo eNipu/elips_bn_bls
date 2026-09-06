@@ -60,6 +60,27 @@ jobs:
             diff -q "test/kat/$f.vec" "/tmp/regen/$f.vec" \
               || { echo "::error::test/kat/$f.vec is stale"; exit 1; }
           done
+
+      # The hash-to-curve reference checks itself against the RFC 9380 vectors
+      # and proves the committed isogeny data really is an isogeny, so it has to
+      # pass before its vectors mean anything.
+      - name: Hash-to-curve reference self-test
+        run: python3 tools/reference/h2c_ref.py
+
+      - name: Committed hash-to-curve vectors match the generator
+        run: |
+          python3 tools/reference/gen_h2c_vectors.py /tmp/regen_h2c
+          for f in bn_462 bls12_461 bls12_381; do
+            diff -q "test/kat/h2c_$f.vec" "/tmp/regen_h2c/h2c_$f.vec" \
+              || { echo "::error::test/kat/h2c_$f.vec is stale"; exit 1; }
+          done
+
+      - name: Generated headers match their generators
+        run: |
+          python3 tools/reference/gen_params.py
+          python3 tools/reference/gen_h2c_params.py
+          git diff --exit-code -- include/elips/fp_params.h include/elips/h2c_params.h \
+            || { echo "::error::a generated header is stale"; exit 1; }
       - name: Final exponentiation exponents (documents issue #16)
         run: python3 tools/reference/trace_finalexp.py
 
@@ -81,16 +102,41 @@ jobs:
           cmake_minimum_required(VERSION 3.16)
           project(consumer C)
           find_package(ELiPS REQUIRED)
+          message(STATUS "ELiPS built for ${ELiPS_CURVE}")
           add_executable(consumer main.c)
-          target_link_libraries(consumer PRIVATE ELiPS::elips)
+          target_link_libraries(consumer PRIVATE ELiPS::arith ELiPS::elips)
+          target_compile_options(consumer PRIVATE -Wall -Wextra -Werror)
           EOC
           cat > main.c <<'EOC'
-          #include <ELiPS_bn_bls/bn_inits.h>
-          #include <ELiPS_bn_bls/curve_settings.h>
-          int main(void){ init_bn(); return mpz_sizeinbase(curve_parameters.prime,2)==462?0:1; }
+          #include <string.h>
+          #include "elips/hash_to_curve.h"
+          #include "elips/serialize.h"
+          #include "elips/pairing.h"
+          static const char DST[] = "CI-CONSUMER-V01-CS01-" ELIPS_H2C_SUITE_G1;
+          int main(void) {
+              ep_t P; ep2_t Q; fp12_t z;
+              elips_hash_to_g1(&P, (const uint8_t *)"ci", 2,
+                               (const uint8_t *)DST, sizeof DST - 1);
+              ep2_generator(&Q);
+              if (!ep_in_subgroup(&P)) return 1;
+              if (!elips_pairing(z, &P, &Q)) return 1;
+              uint8_t enc[EP_SER_COMPRESSED_BYTES];
+              ep_write_compressed(enc, &P);
+              ep_t back;
+              return ep_read_compressed(&back, enc) == ELIPS_SER_OK ? 0 : 1;
+          }
           EOC
           cmake -B b -DCMAKE_PREFIX_PATH=/tmp/prefix && cmake --build b
           ./b/consumer
+
+      - name: Every curve selection configures and installs
+        run: |
+          for cv in BLS12_381 BLS12_461 BN_462; do
+            cmake -B "/tmp/b-$cv" -DCMAKE_BUILD_TYPE=Release -DELIPS_BUILD_TESTS=OFF \
+                  -DELIPS_CURVE="$cv" -DCMAKE_INSTALL_PREFIX="/tmp/p-$cv"
+            cmake --build "/tmp/b-$cv" -j
+            cmake --install "/tmp/b-$cv"
+          done
 
 # Deliberately not running MemorySanitizer. MSan reports false positives unless
 # every dependency is also instrumented, and GMP is not. Running it against a

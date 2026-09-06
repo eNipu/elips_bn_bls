@@ -40,8 +40,16 @@ void ep2_curve_b(fp2_t b)
 void ep2_psi(ep2_t *r, const ep2_t *p)
 {
     /* psi(x, y) = (conj(x) * gamma^-2, conj(y) * gamma^-3) on affine
-     * coordinates. In Jacobian form the z coordinate conjugates too, because
-     * the map is applied coordinate-wise to (X : Y : Z) with x = X/Z^2. */
+     * coordinates.
+     *
+     * In the homogeneous projective form used here, x = X/Z and y = Y/Z, and
+     * conjugation is a field homomorphism, so conjugating all three coordinates
+     * already gives (conj(x), conj(y)); scaling X and Y by the two constants
+     * finishes it. No special case and no normalisation.
+     *
+     * (An earlier version of this comment described Jacobian coordinates with
+     * x = X/Z^2. The code was and is right for the homogeneous form the curve
+     * layer moved to in Phase 4; the comment was not.) */
     fp2_conj(r->x, p->x); fp2_mul(r->x, r->x, PSI_X);
     fp2_conj(r->y, p->y); fp2_mul(r->y, r->y, PSI_Y);
     fp2_conj(r->z, p->z);

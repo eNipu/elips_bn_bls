@@ -332,3 +332,10 @@ int fp_is_lex_largest(const fp_t a)
     }
     return (int)borrow;
 }
+
+int fp_sgn0(const fp_t a)
+{
+    limb_t plain[FP_LIMBS];
+    fp_to_limbs(plain, a);
+    return (int)(plain[0] & 1u);
+}

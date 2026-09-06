@@ -407,3 +407,24 @@ int fp2_is_lex_largest(const fp2_t a)
     int c0_big  = fp_is_lex_largest(a[0]);
     return c1_big | (c1_zero & c0_big);
 }
+
+int fp2_sgn0(const fp2_t a)
+{
+    /* Both halves are evaluated and combined with masks; nothing branches. */
+    int s0 = fp_sgn0(a[0]);
+    int z0 = fp_is_zero(a[0]);
+    int s1 = fp_sgn0(a[1]);
+    return s0 | (z0 & s1);
+}
+
+int fp2_is_square(const fp2_t a)
+{
+    /* norm(a0 + a1 u) = a0^2 + a1^2, and a is a square in Fp2 exactly when its
+     * norm is a square in Fp. fp_sqrt already reports that. */
+    fp_t n, t, root;
+    fp_sqr(n, a[0]);
+    fp_sqr(t, a[1]);
+    fp_add(n, n, t);
+    int ok = fp_sqrt(root, n);
+    return ok | fp_is_zero(n);
+}

@@ -1,11 +1,23 @@
-# Negative control for the vector runner: corrupt one expected result and
-# require a non-zero exit. Run by the kat.detects_corruption test.
-file(READ "${SRC}" _txt)
-string(REGEX REPLACE "(\nfp12_mul [^\n]*)= [0-9a-f]+" "\\1= deadbeef" _bad "${_txt}" )
-if(_bad STREQUAL _txt)
-  message(FATAL_ERROR "corruption harness failed to alter the vector file")
+# Negative control for a vector runner: corrupt one expected result and require
+# a non-zero exit. A test oracle that cannot fail is not an oracle, so every
+# vector file gets one of these.
+#
+#   RUNNER   the executable under test
+#   SRC      the vector file
+#   PATTERN  the record type to damage (default fp12_mul, the field runner's)
+if(NOT DEFINED PATTERN)
+  set(PATTERN "fp12_mul")
 endif()
-set(_tmp "${CMAKE_CURRENT_BINARY_DIR}/corrupted.vec")
+
+file(READ "${SRC}" _txt)
+string(REGEX REPLACE "(\n${PATTERN} [^\n]*)= [0-9a-f]+" "\\1= deadbeef" _bad "${_txt}")
+if(_bad STREQUAL _txt)
+  message(FATAL_ERROR
+    "corruption harness found no '${PATTERN}' record to alter in ${SRC}")
+endif()
+
+# The name carries the pattern so two of these can run concurrently.
+set(_tmp "${CMAKE_CURRENT_BINARY_DIR}/corrupted-${PATTERN}.vec")
 file(WRITE "${_tmp}" "${_bad}")
 execute_process(COMMAND "${RUNNER}" "${_tmp}" RESULT_VARIABLE _rc OUTPUT_QUIET ERROR_QUIET)
 file(REMOVE "${_tmp}")

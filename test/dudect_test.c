@@ -42,6 +42,7 @@
 
 #include "elips/pairing.h"
 #include "elips/random.h"
+#include "elips/hash_to_curve.h"
 
 /* ---------------------------------------------------------------- timing --- */
 
@@ -151,11 +152,14 @@ static double max_abs_t(const uint64_t *t, const uint8_t *cls, long n,
  * no branch in it at all. Preparing up front made the same test read 1.4.
  */
 
+#define H2C_MSG_LEN 48
+
 typedef struct {
-    fp_t   a, b;
-    limb_t k[ELIPS_ORDER_LIMBS];
-    ep_t   P;
-    ep2_t  Q;
+    fp_t    a, b;
+    limb_t  k[ELIPS_ORDER_LIMBS];
+    ep_t    P;
+    ep2_t   Q;
+    uint8_t msg[H2C_MSG_LEN];
 } input_t;
 
 static ep_t  g1;
@@ -217,6 +221,29 @@ static void run_pairing(const input_t *in)
     pairing_miller(sink_fp12, qx, qy, px, py);
 }
 
+/* The message hashed to a curve is not always public: an oblivious PRF or a
+ * password-authenticated exchange hashes a secret, and the header promises this
+ * path does not leak it. Class 0 is a fixed message, class 1 a random one, both
+ * the same length -- length is not a secret this can hide and padding it here
+ * would test the wrong thing. */
+static const uint8_t H2C_DST[] = "ELIPS-DUDECT-V01-CS01-" ELIPS_H2C_SUITE_G1;
+
+static void prep_h2c(input_t *in, int c)
+{
+    if (c) elips_random_bytes(in->msg, sizeof in->msg);
+    else   memset(in->msg, 0x5a, sizeof in->msg);
+}
+static void run_h2c_g1(const input_t *in)
+{
+    elips_hash_to_g1(&sink_ep, in->msg, sizeof in->msg,
+                     H2C_DST, sizeof H2C_DST - 1);
+}
+static void run_h2c_g2(const input_t *in)
+{
+    elips_hash_to_g2(&sink_ep2, in->msg, sizeof in->msg,
+                     H2C_DST, sizeof H2C_DST - 1);
+}
+
 typedef struct {
     const char *name;
     void (*prepare)(input_t *, int);
@@ -237,6 +264,8 @@ static const target_t TARGETS[] = {
     { "ep2_mul_glv", prep_scalar,  run_ep2_glv,      1,  2000, 0 },
 #endif
     { "miller",      prep_pairing, run_pairing,      1,  1000, 0 },
+    { "hash_to_g1",  prep_h2c,     run_h2c_g1,       1,  1000, 0 },
+    { "hash_to_g2",  prep_h2c,     run_h2c_g2,       1,   700, 0 },
     { "control_vartime", prep_fp_pair, run_fp_inv_vt, 1, 20000, 1 },
 };
 #define NTARGET ((int)(sizeof TARGETS / sizeof TARGETS[0]))
