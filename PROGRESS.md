@@ -720,3 +720,81 @@ no longer need to borrow points from it.
   to be unnecessary: the new layer's constants are compile-time, so it never had
   globals to remove.
 - **Windowing and GLV** for scalar multiplication — Phase 4.
+
+---
+
+## Phase 4 — optimization and the RELIC comparison (issue #5)
+
+Three of this phase's six items had already landed in Phase 3 (projective
+coordinates, sparse multiplication). This round added the rest bar GLV.
+
+### Cyclotomic squaring and a dedicated fp6 squaring
+
+`fp6_sqr` no longer delegates to `fp6_mul`. Taking each doubled cross term from
+a squaring via `2ab = (a+b)^2 - a^2 - b^2` costs six fp2 squarings where the
+multiplication path costs six fp2 multiplications.
+
+`fp12_sqr_cyc` uses the defining property of the cyclotomic subgroup. There
+`conj(a) = a^-1`, so `d0^2 - v*d1^2 = 1`, and the `d0^2 + v*d1^2` that squaring
+needs rewrites as `2*d0^2 - 1`:
+
+```
+a^2 = (2*d0^2 - 1) + (2*d0*d1) w
+```
+
+Derived here rather than transcribed, so the tower's own conventions apply and
+there is no index mapping to get wrong. Valid only inside the subgroup, and the
+test asserts that the easy part really lands there rather than assuming it.
+
+| whole pairing | before | after |
+|---|---|---|
+| BLS12-461 | 2447 us | **2014 us** (3.91x vs legacy) |
+| BN-462 | 2786 us | **2450 us** (3.51x vs legacy) |
+
+### Constant-time fixed-window scalar multiplication
+
+Replaces double-and-add-always. A 4-bit window does 256 doublings and 64
+additions on a 256-bit scalar where the old routine did 256 of each. The table
+lookup scans all 16 entries under a mask, so no address depends on the scalar.
+
+### Head to head with RELIC, BLS12-381
+
+Same machine, same compiler, RELIC built from its `gmp-pbc-bls381` preset.
+
+| | RELIC | ELiPS | ratio |
+|---|---|---|---|
+| pairing | 955.5 us | **1145.2 us** | 1.20x slower |
+| G1 scalar mult | 128.1 us | 181.1 us | 1.41x slower |
+| G2 scalar mult | 204.5 us | 467.1 us | 2.28x slower |
+
+Our breakdown: Miller loop 441.6 us, final exponentiation 719.1 us.
+
+**Three caveats, all of which matter for reading those numbers.**
+
+1. RELIC is using `ARITH=gmp`, its portable backend. Its fastest configurations
+   are x86-64 assembly (`x64-asm-6l` for this curve) and cannot run on this
+   AArch64 machine. So this is portable-C against portable-C, and on x86-64
+   with assembly RELIC would pull further ahead. That gap is what Phase 6 exists
+   to close.
+2. RELIC's `g1_mul`/`g2_mul` defaults are not necessarily constant time and
+   likely use GLV endomorphisms and wNAF. Ours is constant-time fixed-window.
+   Some of the scalar multiplication gap is that choice, not implementation
+   quality — but not all of it, and G2 at 2.28x is the clear weak point.
+3. RELIC's BLS12 pairing uses the same standard chain, so it also returns `e^3`.
+   Like for like on that point.
+
+**Reading it plainly:** within 20% of RELIC on the pairing, from a library that
+was roughly nine times slower than that and did not support BLS12-381 at all.
+"Comparable to RELIC" is a fair description on this hardware and configuration.
+It is not yet true against RELIC's assembly builds.
+
+### Remaining in Phase 4
+
+- [ ] GLV / split-scalar decomposition, constant-time. The obvious next target:
+      G2 scalar multiplication is the worst gap at 2.28x, and GLV with the
+      psi endomorphism is exactly what closes it.
+- [ ] Compressed squaring for the `f^x` chains
+- [ ] Revisit the >= 8x gate. Against the legacy layer we are at 3.9x; the gate
+      as written is not met, and the RELIC comparison suggests the remaining
+      headroom on portable C is modest. Worth deciding whether 8x was the right
+      target or whether "within X% of RELIC" is the more meaningful gate.
