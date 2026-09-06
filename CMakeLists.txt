@@ -81,9 +81,11 @@ endif()
 # replace the heap mpz_t field layer; see include/elips/fp.h.
 set(ELIPS_CURVES BLS12_381 BLS12_461 BN_462)
 foreach(_cv IN LISTS ELIPS_CURVES)
-  add_library(elips_arith_${_cv} STATIC src/arith/fp.c)
+  add_library(elips_arith_${_cv} STATIC
+    src/arith/fp.c src/arith/fpx.c src/arith/ec.c)
   target_include_directories(elips_arith_${_cv} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>)
   target_compile_definitions(elips_arith_${_cv} PUBLIC ELIPS_CURVE_${_cv})
   target_link_libraries(elips_arith_${_cv} PUBLIC GMP::GMP)
   target_compile_options(elips_arith_${_cv} PRIVATE -Wall -Wextra)
@@ -137,6 +139,28 @@ if(ELIPS_BUILD_TESTS)
     add_test(NAME fp.diff.${_cv} COMMAND fp_difftest_${_cv} 20000)
     set_tests_properties(fp.diff.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
+
+  # The Phase 0 vectors run against the NEW layer too, so both implementations
+  # are checked against the same independent oracle rather than against each
+  # other. Vector file and compiled curve must match; the runner enforces it.
+  set(_vec_BLS12_381 bls12_381)
+  set(_vec_BLS12_461 bls12_461)
+  set(_vec_BN_462    bn_462)
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(kat_new_${_cv} test/kat_runner_new.c)
+    target_link_libraries(kat_new_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    add_test(NAME kat.new.${_cv}
+             COMMAND kat_new_${_cv}
+                     "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/${_vec_${_cv}}.vec")
+    set_tests_properties(kat.new.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
+
+  # Group-law properties. Only the BLS12-461 build: the test borrows a genuine
+  # G2 point from the legacy layer, which initialises that curve at runtime.
+  add_executable(ec_test test/ec_test.c)
+  target_link_libraries(ec_test PRIVATE elips_arith_BLS12_461 elips GMP::GMP)
+  add_test(NAME ec.properties COMMAND ec_test)
+  set_tests_properties(ec.properties PROPERTIES TIMEOUT 900)
 
   set_tests_properties(kat.bn_462 kat.bls12_461 kat.bls12_381
                        property.bn property.bls12
