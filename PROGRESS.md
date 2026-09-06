@@ -555,6 +555,62 @@ unintentional.** Nothing here changes that half of the issue.
 | Sanitizers clean | yes |
 | **Speedup >= 3x** | **3.53x on the whole pairing** |
 
-Caveat worth keeping visible: the pairing is complete for the BLS12 families
-only. BN still needs the two post-loop correction lines and the skew Frobenius
-on the twist, and is excluded from the build rather than compiled untested.
+BN landed shortly after; see part 5.
+
+
+---
+
+## Phase 3, part 5 — BN support
+
+**Status: all three curves now have a working, verified pairing on the new
+stack.**
+
+BN's optimal ate needs two correction lines after the loop, and those need the
+skew Frobenius on the twist:
+
+```
+psi(x, y) = (conj(x) * gamma^-2, conj(y) * gamma^-3)
+```
+
+with `psi^2` multiplying by the Fp2 norms of those. The generator asserts their
+imaginary parts are zero, which is what the derivation predicts — a cheap
+independent check that it was done right.
+
+The new BN pairing matched the reference coefficient by coefficient on the first
+run, as BLS12 had.
+
+| | legacy | new | speedup |
+|---|---|---|---|
+| BN-462 Miller loop | 4077.9 us | 1326.8 us | **3.07x** |
+
+### No fast final exponentiation for BN, on purpose
+
+The identity the BLS12 chain rests on is specific to that family. Applying it to
+BN gives a wrong exponent, which the suite caught the moment BN was wired in.
+BN has its own standard chain and it is simply not written yet, so BN callers
+get the exact slow path or nothing.
+
+Declining to provide one is a deliberate choice, not an oversight. The legacy
+library ships a BN "optimal" final exponentiation that raises to roughly
+`12*X^3` times the correct exponent, and nothing noticed for years because the
+result is still bilinear. **A missing function fails better than a plausible
+wrong one.**
+
+### Current state of the new stack
+
+| Curve | field | curve | Miller | final exp (exact) | final exp (fast) |
+|---|---|---|---|---|---|
+| BLS12-381 | yes | yes | yes | yes | yes |
+| BLS12-461 | yes | yes | yes | yes | yes |
+| BN-462 | yes | yes | yes | yes | **not written** |
+
+17 CTest targets green, ASan and UBSan clean, zero warnings on a clean build.
+
+### Remaining in Phase 3
+
+- [ ] BN fast final exponentiation chain
+- [ ] Cyclotomic squaring, a further cut for both families
+- [ ] Retire the legacy layer, which is what actually deletes the globals and
+      defects A3 and A4. The new layer never had them: its constants are
+      compile-time, so the planned "curve context struct" turned out to be
+      unnecessary rather than merely deferred.
