@@ -9,12 +9,11 @@
 # Sanitizer builds:
 #   cmake -B build-asan -DCMAKE_BUILD_TYPE=Asan
 #
-# Note on curve selection: the plan (section 1.5) calls for compile-time curve
-# selection via -DELIPS_CURVE, so that FP_LIMBS becomes a constant. That only
-# becomes meaningful in Phase 3, when field elements stop being heap mpz_t.
-# Today the library selects its curve at runtime through init_bn() /
-# bls12_inits(), so adding the switch now would be scaffolding with nothing
-# behind it. Deferred to Phase 3 deliberately.
+# Curve selection: the Phase 3 arithmetic in src/arith is compiled per curve,
+# because FP_LIMBS has to be a compile-time constant for the loops to unroll and
+# for the Phase 6 assembly to target a known width (plan section 1.5). The
+# legacy mpz layer in src/*.c still picks its curve at runtime, so the two
+# coexist until the migration finishes.
 
 cmake_minimum_required(VERSION 3.16)
 project(elips
@@ -77,6 +76,20 @@ if(ELIPS_WERROR)
   target_compile_options(elips PRIVATE -Werror)
 endif()
 
+# ------------------------------------------------- Phase 3 arithmetic (new)
+# Built once per curve. These are the fixed-width Montgomery routines that
+# replace the heap mpz_t field layer; see include/elips/fp.h.
+set(ELIPS_CURVES BLS12_381 BLS12_461 BN_462)
+foreach(_cv IN LISTS ELIPS_CURVES)
+  add_library(elips_arith_${_cv} STATIC src/arith/fp.c)
+  target_include_directories(elips_arith_${_cv} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  target_compile_definitions(elips_arith_${_cv} PUBLIC ELIPS_CURVE_${_cv})
+  target_link_libraries(elips_arith_${_cv} PUBLIC GMP::GMP)
+  target_compile_options(elips_arith_${_cv} PRIVATE -Wall -Wextra)
+  set_target_properties(elips_arith_${_cv} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+endforeach()
+
 # --------------------------------------------------------------------- tests
 if(ELIPS_BUILD_TESTS)
   enable_testing()
@@ -114,6 +127,15 @@ if(ELIPS_BUILD_TESTS)
   foreach(_c bn bls12)
     add_test(NAME finalexp.agreement.${_c} COMMAND finalexp_agreement ${_c})
     set_tests_properties(finalexp.agreement.${_c} PROPERTIES WILL_FAIL TRUE)
+  endforeach()
+
+  # Differential test: the new Montgomery layer against GMP's mpz, on random
+  # inputs plus the boundary values that Montgomery code actually gets wrong.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(fp_difftest_${_cv} test/fp_difftest.c)
+    target_link_libraries(fp_difftest_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    add_test(NAME fp.diff.${_cv} COMMAND fp_difftest_${_cv} 20000)
+    set_tests_properties(fp.diff.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
 
   set_tests_properties(kat.bn_462 kat.bls12_461 kat.bls12_381

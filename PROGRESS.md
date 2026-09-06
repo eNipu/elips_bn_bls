@@ -251,3 +251,108 @@ CTest keeps it visible.
 Phase 3 (issue #4) — fixed-width `mpn` representation and Montgomery arithmetic.
 This is the phase that has to deliver a measured 3x or the plan's model of where
 time goes is wrong.
+
+---
+
+## Phase 3 — Fixed-width mpn representation and Montgomery arithmetic (issue #4)
+
+**Status: foundation complete and measured. The rest is blocked on a plan
+correction, described below. Exit gate NOT yet evaluable.**
+
+### What exists now
+
+| Artifact | Purpose |
+|---|---|
+| `include/elips/fp_params.h` | Generated Montgomery parameters for all three curves |
+| `include/elips/fp.h` | The new field API |
+| `src/arith/fp.c` | CIOS Montgomery multiply, constant-time add/sub/select, inversion |
+| `tools/reference/gen_params.py` | Emits the parameters; hand-typing an `R^2` limb is not survivable |
+| `test/fp_difftest.c` | Differential test against GMP's mpz |
+
+Built once per curve in CMake (`elips_arith_BLS12_381` and friends) with a
+`fp.diff.<curve>` test each, so all three are exercised on every CI run.
+
+### Correctness
+
+1,204,813 checks per curve, zero failures, on BLS12-381, BLS12-461 and BN-462.
+Includes the boundary values Montgomery code actually gets wrong: 0, 1, `p-1`,
+`p-2`, `p/2`, every pairing of those, and the Montgomery round-trip identity.
+ASan and UBSan clean.
+
+### Measured, BLS12-461, Apple Silicon, clang -O2
+
+| Operation | old mpz | new Montgomery | change |
+|---|---|---|---|
+| multiply | 0.1527 us | 0.0716 us | **2.13x faster** |
+| add | 0.0425 us | 0.0062 us | **6.90x faster** |
+| inverse | 1.4462 us | 26.7978 us | **19x slower** |
+| `Fp_init`+`Fp_clear` | 0.0028 us | none | eliminated |
+| `Fp12_init`+`Fp12_clear` | 0.0361 us | none | eliminated |
+
+### Two corrections to the plan, both from measurement
+
+**1. Constant-time inversion is not affordable in an affine Miller loop.**
+
+Three inversion strategies, measured rather than assumed:
+
+| Method | Time | Constant time |
+|---|---|---|
+| `mpz_invert` | 1.4 us | no |
+| `mpn_sec_invert` | 26.4 us | yes |
+| `a^(p-2)` Fermat chain | 76.3 us | yes |
+
+The plan (Appendix B) said to start with the Fermat chain and only reach for
+something better if a measurement demanded it. The measurement demands it: the
+chain is the worst of the three, and GMP's `mpn_sec_invert` is both faster and a
+tenth of the code, so `fp_inv` uses that.
+
+The ordering consequence is the real point. The BLS12 Miller loop performs about
+79 inversions, one per iteration plus the correction steps. At 26.8 us each that
+is **2.1 ms of inversion alone**, against a current whole-Miller-loop cost of
+2.49 ms. Turning on constant-time inversion before inversions leave the loop
+would roughly double the pairing time, not improve it.
+
+So **Phase 4's projective coordinates are a prerequisite for Phase 3's gate, not
+a follow-on.** The plan has them in the wrong order. Recommended fix: pull
+projective coordinates into Phase 3, or explicitly allow `fp_inv_vartime` in the
+Miller loop until Phase 4 lands. `fp_inv_vartime` exists and is documented as
+never-for-secrets.
+
+**2. The Phase 0 model over-weighted inversion.**
+
+Section 3 of the plan estimated modular inversion at 20-25% of pairing runtime.
+Measured: 79 inversions x 1.45 us is about 115 us against a 2490 us Miller loop,
+so roughly **5%**. The estimate was out by a factor of four or five.
+
+Allocation and raw multiply count dominate instead, which is consistent with the
+2.13x and 6.90x above and with allocation disappearing entirely. The direction
+of the plan is unaffected; the attribution was wrong.
+
+### Projection for the gate
+
+An Fp12 multiplication is roughly 54 Fp multiplies and 100 Fp additions.
+
+| | old | new |
+|---|---|---|
+| 54 multiplies | 8.25 us | 3.87 us |
+| 100 additions | 4.25 us | 0.62 us |
+| total | 12.50 us | 4.49 us |
+
+That is **2.8x from arithmetic alone**, before counting eliminated allocation or
+lazy reduction, neither of which is implemented yet. The >= 3x gate looks
+reachable but is not comfortable, and it depends on lazy reduction actually
+delivering. This is exactly the situation the gate was written for: do not
+assume, measure, and stop if it comes in under.
+
+### Remaining in Phase 3
+
+- [ ] Fp2, Fp6, Fp12 on `fp_t`, with lazy reduction
+- [ ] Curve parameters into a context struct; deletes globals and with them A3, A4
+- [ ] Merge the BN and BLS12 Miller loops into one parameterised implementation
+- [ ] Re-measure the full pairing against the >= 3x gate
+
+### Next
+
+Decide the ordering question above before continuing. Building Fp2/Fp6/Fp12 is
+mechanical once that is settled; building them and only then discovering the
+inversion problem would waste the work.
