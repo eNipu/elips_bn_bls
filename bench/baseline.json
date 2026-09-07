@@ -1,0 +1,32 @@
+{
+  "_comment": "Phase 0 baseline (issue #15). Single-sample numbers taken from the timing code currently embedded inside the library; Phase 1 extracts that into a real harness with repetitions and spread.",
+  "machine": "Apple Silicon arm64",
+  "compiler": "Apple clang 21.0.0",
+  "cflags": "-O2",
+  "gmp": "6.3.0",
+  "commit": "phase0-reference",
+  "date": "2026-09-05",
+  "units": "milliseconds",
+  "samples": 1,
+  "curves": {
+    "BN-462": {
+      "miller_opt_ate": 3.85,
+      "miller_x_ate": 3.76,
+      "final_exp_optimal": 5.07,
+      "pairing_total": 8.92
+    },
+    "BLS12-461": {
+      "miller_opt_ate": 2.49,
+      "final_exp_optimal": 5.92,
+      "pairing_total": 8.41,
+      "g1_scm_plain": 1.42,
+      "g1_scm_2split": 0.82,
+      "g2_scm_plain": 2.97,
+      "g2_scm_2split": 1.70,
+      "g2_scm_4split": 1.03,
+      "g3_exp_plain": 7.68,
+      "g3_exp_2split": 5.99,
+      "g3_exp_4split": 3.49
+    }
+  }
+}

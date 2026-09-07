@@ -1,0 +1,656 @@
+/*
+ * Extension field tower. See include/elips/fpx.h.
+ *
+ * Karatsuba throughout, matching the formulas the Phase 0 reference uses, so
+ * the committed known-answer vectors validate this code directly.
+ *
+ * ponytail: no lazy reduction yet. Proper lazy reduction needs double-width
+ * accumulators threaded through every routine, and the measured projection said
+ * plain Karatsuba over the new fp_t already gets close to the gate. Add it only
+ * if the measurement at the end of the phase falls short -- the ceiling is one
+ * Montgomery reduction per fp_t operation instead of one per fp2/fp6 operation.
+ */
+#include "elips/fpx.h"
+
+/* ============================== fp2 ==================================== */
+
+void fp2_set_zero(fp2_t r) { fp_set_zero(r[0]); fp_set_zero(r[1]); }
+void fp2_set_one(fp2_t r)  { fp_set_one(r[0]);  fp_set_zero(r[1]); }
+void fp2_copy(fp2_t r, const fp2_t a) { fp_copy(r[0], a[0]); fp_copy(r[1], a[1]); }
+void fp2_add(fp2_t r, const fp2_t a, const fp2_t b)
+{ fp_add(r[0], a[0], b[0]); fp_add(r[1], a[1], b[1]); }
+void fp2_sub(fp2_t r, const fp2_t a, const fp2_t b)
+{ fp_sub(r[0], a[0], b[0]); fp_sub(r[1], a[1], b[1]); }
+void fp2_neg(fp2_t r, const fp2_t a) { fp_neg(r[0], a[0]); fp_neg(r[1], a[1]); }
+void fp2_conj(fp2_t r, const fp2_t a) { fp_copy(r[0], a[0]); fp_neg(r[1], a[1]); }
+void fp2_mul_fp(fp2_t r, const fp2_t a, const fp_t b)
+{ fp_mul(r[0], a[0], b); fp_mul(r[1], a[1], b); }
+void fp2_cselect(fp2_t r, const fp2_t a, const fp2_t b, limb_t mask)
+{ fp_cselect(r[0], a[0], b[0], mask); fp_cselect(r[1], a[1], b[1], mask); }
+int fp2_is_zero(const fp2_t a) { return fp_is_zero(a[0]) & fp_is_zero(a[1]); }
+int fp2_eq(const fp2_t a, const fp2_t b) { return fp_eq(a[0], b[0]) & fp_eq(a[1], b[1]); }
+
+void fp2_mul(fp2_t r, const fp2_t a, const fp2_t b)
+{
+    /* (a0 + a1 u)(b0 + b1 u) = (a0b0 - a1b1) + ((a0+a1)(b0+b1) - a0b0 - a1b1) u,
+     * using u^2 = -1. Three multiplies rather than four. */
+    fp_t t0, t1, s, t;
+    fp_mul(t0, a[0], b[0]);
+    fp_mul(t1, a[1], b[1]);
+    fp_add(s, a[0], a[1]);
+    fp_add(t, b[0], b[1]);
+    fp_mul(s, s, t);
+    fp_sub(s, s, t0);
+    fp_sub(s, s, t1);
+    fp_sub(r[0], t0, t1);
+    fp_copy(r[1], s);
+}
+
+void fp2_sqr(fp2_t r, const fp2_t a)
+{
+    /* (a0 + a1 u)^2 = (a0+a1)(a0-a1) + 2 a0 a1 u */
+    fp_t s, d, m;
+    fp_add(s, a[0], a[1]);
+    fp_sub(d, a[0], a[1]);
+    fp_mul(m, a[0], a[1]);
+    fp_mul(r[0], s, d);
+    fp_add(r[1], m, m);
+}
+
+void fp2_mul_xi(fp2_t r, const fp2_t a)
+{
+    /* multiply by xi = 1 + u: (a0 + a1 u)(1 + u) = (a0 - a1) + (a0 + a1) u */
+    fp_t s, d;
+    fp_sub(d, a[0], a[1]);
+    fp_add(s, a[0], a[1]);
+    fp_copy(r[0], d);
+    fp_copy(r[1], s);
+}
+
+void fp2_inv(fp2_t r, const fp2_t a)
+{
+    /* conjugate over the norm; the norm a0^2 + a1^2 lives in Fp */
+    fp_t n, t;
+    fp_sqr(n, a[0]);
+    fp_sqr(t, a[1]);
+    fp_add(n, n, t);
+    fp_inv(n, n);
+    fp_mul(r[0], a[0], n);
+    fp_mul(t, a[1], n);
+    fp_neg(r[1], t);
+}
+
+/* ============================== fp6 ==================================== */
+
+void fp6_set_zero(fp6_t r) { fp2_set_zero(r[0]); fp2_set_zero(r[1]); fp2_set_zero(r[2]); }
+void fp6_set_one(fp6_t r)  { fp2_set_one(r[0]);  fp2_set_zero(r[1]); fp2_set_zero(r[2]); }
+void fp6_copy(fp6_t r, const fp6_t a)
+{ fp2_copy(r[0], a[0]); fp2_copy(r[1], a[1]); fp2_copy(r[2], a[2]); }
+void fp6_add(fp6_t r, const fp6_t a, const fp6_t b)
+{ fp2_add(r[0],a[0],b[0]); fp2_add(r[1],a[1],b[1]); fp2_add(r[2],a[2],b[2]); }
+void fp6_sub(fp6_t r, const fp6_t a, const fp6_t b)
+{ fp2_sub(r[0],a[0],b[0]); fp2_sub(r[1],a[1],b[1]); fp2_sub(r[2],a[2],b[2]); }
+void fp6_neg(fp6_t r, const fp6_t a)
+{ fp2_neg(r[0],a[0]); fp2_neg(r[1],a[1]); fp2_neg(r[2],a[2]); }
+int fp6_is_zero(const fp6_t a)
+{ return fp2_is_zero(a[0]) & fp2_is_zero(a[1]) & fp2_is_zero(a[2]); }
+int fp6_eq(const fp6_t a, const fp6_t b)
+{ return fp2_eq(a[0],b[0]) & fp2_eq(a[1],b[1]) & fp2_eq(a[2],b[2]); }
+
+void fp6_mul_v(fp6_t r, const fp6_t a)
+{
+    /* v*(c0 + c1 v + c2 v^2) = c2*xi + c0 v + c1 v^2, since v^3 = xi */
+    fp2_t t;
+    fp2_mul_xi(t, a[2]);
+    fp2_t c0, c1;
+    fp2_copy(c0, a[0]);
+    fp2_copy(c1, a[1]);
+    fp2_copy(r[0], t);
+    fp2_copy(r[1], c0);
+    fp2_copy(r[2], c1);
+}
+
+void fp6_mul(fp6_t r, const fp6_t a, const fp6_t b)
+{
+    fp2_t t0, t1, t2, s, t, e0, e1, e2;
+    fp2_mul(t0, a[0], b[0]);
+    fp2_mul(t1, a[1], b[1]);
+    fp2_mul(t2, a[2], b[2]);
+
+    fp2_add(s, a[1], a[2]); fp2_add(t, b[1], b[2]); fp2_mul(s, s, t);
+    fp2_sub(s, s, t1); fp2_sub(s, s, t2); fp2_mul_xi(s, s); fp2_add(e0, s, t0);
+
+    fp2_add(s, a[0], a[1]); fp2_add(t, b[0], b[1]); fp2_mul(s, s, t);
+    fp2_sub(s, s, t0); fp2_sub(s, s, t1); fp2_mul_xi(t, t2); fp2_add(e1, s, t);
+
+    fp2_add(s, a[0], a[2]); fp2_add(t, b[0], b[2]); fp2_mul(s, s, t);
+    fp2_sub(s, s, t0); fp2_sub(s, s, t2); fp2_add(e2, s, t1);
+
+    fp2_copy(r[0], e0); fp2_copy(r[1], e1); fp2_copy(r[2], e2);
+}
+
+void fp6_sqr(fp6_t r, const fp6_t a)
+{
+    /* (a0 + a1 v + a2 v^2)^2 with v^3 = xi expands to
+     *   c0 = a0^2 + 2*xi*a1*a2
+     *   c1 = 2*a0*a1 + xi*a2^2
+     *   c2 = a1^2 + 2*a0*a2
+     * Each doubled cross term comes from a squaring rather than a
+     * multiplication, via 2ab = (a+b)^2 - a^2 - b^2, so this costs six fp2
+     * squarings instead of six fp2 multiplications. */
+    fp2_t s0, s1, s2, t01, t12, t02, c0, c1, c2, t;
+
+    fp2_sqr(s0, a[0]);
+    fp2_sqr(s1, a[1]);
+    fp2_sqr(s2, a[2]);
+
+    fp2_add(t, a[0], a[1]); fp2_sqr(t01, t);
+    fp2_sub(t01, t01, s0); fp2_sub(t01, t01, s1);   /* 2 a0 a1 */
+    fp2_add(t, a[1], a[2]); fp2_sqr(t12, t);
+    fp2_sub(t12, t12, s1); fp2_sub(t12, t12, s2);   /* 2 a1 a2 */
+    fp2_add(t, a[0], a[2]); fp2_sqr(t02, t);
+    fp2_sub(t02, t02, s0); fp2_sub(t02, t02, s2);   /* 2 a0 a2 */
+
+    fp2_mul_xi(t, t12);  fp2_add(c0, s0, t);
+    fp2_mul_xi(t, s2);   fp2_add(c1, t01, t);
+    fp2_add(c2, s1, t02);
+
+    fp2_copy(r[0], c0); fp2_copy(r[1], c1); fp2_copy(r[2], c2);
+}
+
+void fp6_inv(fp6_t r, const fp6_t a)
+{
+    /* A = c0^2 - xi c1 c2, B = xi c2^2 - c0 c1, C = c1^2 - c0 c2,
+     * F = xi (c2 B + c1 C) + c0 A, inverse = (A,B,C) / F */
+    fp2_t A, B, C, F, t;
+    fp2_sqr(A, a[0]); fp2_mul(t, a[1], a[2]); fp2_mul_xi(t, t); fp2_sub(A, A, t);
+    fp2_sqr(B, a[2]); fp2_mul_xi(B, B); fp2_mul(t, a[0], a[1]); fp2_sub(B, B, t);
+    fp2_sqr(C, a[1]); fp2_mul(t, a[0], a[2]); fp2_sub(C, C, t);
+
+    fp2_mul(F, a[2], B);
+    fp2_mul(t, a[1], C);
+    fp2_add(F, F, t);
+    fp2_mul_xi(F, F);
+    fp2_mul(t, a[0], A);
+    fp2_add(F, F, t);
+    fp2_inv(F, F);
+
+    fp2_mul(r[0], A, F);
+    fp2_mul(r[1], B, F);
+    fp2_mul(r[2], C, F);
+}
+
+/* ============================== fp12 =================================== */
+
+void fp12_set_zero(fp12_t r) { fp6_set_zero(r[0]); fp6_set_zero(r[1]); }
+void fp12_set_one(fp12_t r)  { fp6_set_one(r[0]);  fp6_set_zero(r[1]); }
+void fp12_copy(fp12_t r, const fp12_t a) { fp6_copy(r[0], a[0]); fp6_copy(r[1], a[1]); }
+void fp12_add(fp12_t r, const fp12_t a, const fp12_t b)
+{ fp6_add(r[0],a[0],b[0]); fp6_add(r[1],a[1],b[1]); }
+void fp12_sub(fp12_t r, const fp12_t a, const fp12_t b)
+{ fp6_sub(r[0],a[0],b[0]); fp6_sub(r[1],a[1],b[1]); }
+void fp12_neg(fp12_t r, const fp12_t a) { fp6_neg(r[0],a[0]); fp6_neg(r[1],a[1]); }
+void fp12_conj(fp12_t r, const fp12_t a) { fp6_copy(r[0],a[0]); fp6_neg(r[1],a[1]); }
+int fp12_is_zero(const fp12_t a) { return fp6_is_zero(a[0]) & fp6_is_zero(a[1]); }
+int fp12_eq(const fp12_t a, const fp12_t b)
+{ return fp6_eq(a[0],b[0]) & fp6_eq(a[1],b[1]); }
+
+void fp12_mul(fp12_t r, const fp12_t a, const fp12_t b)
+{
+    /* (d0 + d1 w)(e0 + e1 w) = (d0e0 + v d1e1)
+     *                        + ((d0+d1)(e0+e1) - d0e0 - d1e1) w,  w^2 = v */
+    fp6_t t0, t1, s, t;
+    fp6_mul(t0, a[0], b[0]);
+    fp6_mul(t1, a[1], b[1]);
+    fp6_add(s, a[0], a[1]);
+    fp6_add(t, b[0], b[1]);
+    fp6_mul(s, s, t);
+    fp6_sub(s, s, t0);
+    fp6_sub(s, s, t1);
+    fp6_mul_v(t, t1);
+    fp6_add(r[0], t0, t);
+    fp6_copy(r[1], s);
+}
+
+void fp12_sqr(fp12_t r, const fp12_t a)
+{
+    /* Complex squaring: two fp6 multiplications rather than three.
+     *   (d0 + d1 w)^2 = (d0^2 + v d1^2) + 2 d0 d1 w
+     * and (d0+d1)(d0 + v d1) - d0d1 - v d0d1 = d0^2 + v d1^2, so the whole
+     * thing costs one product of sums plus one d0*d1. */
+    fp6_t s, u, m, t;
+    fp6_add(s, a[0], a[1]);
+    fp6_mul_v(u, a[1]);
+    fp6_add(u, u, a[0]);
+    fp6_mul(m, a[0], a[1]);
+    fp6_mul(s, s, u);
+    fp6_sub(s, s, m);
+    fp6_mul_v(t, m);
+    fp6_sub(s, s, t);
+    fp6_add(r[1], m, m);
+    fp6_copy(r[0], s);
+}
+
+/* Frobenius.
+ *
+ * In fp12 = fp6[w] with w^2 = v and v^3 = xi, an element is
+ *     c0 + c3 w + c1 w^2 + c4 w^3 + c2 w^4 + c5 w^5
+ * where the storage is d0 = (c0,c1,c2) and d1 = (c3,c4,c5). Raising to the
+ * p^k power conjugates each fp2 coefficient (for odd k) and multiplies the
+ * coefficient of w^i by gamma^i, with gamma = w^(p^k - 1) = xi^((p^k-1)/6).
+ * The gamma powers are generated into fp_params.h already in Montgomery form,
+ * so this needs no setup and no global state. */
+void fp12_frobenius(fp12_t r, const fp12_t a, int k)
+{
+    const limb_t (*g[5])[FP_LIMBS];
+    int odd;
+    switch (k) {
+        case 1: g[0]=FROB_P1_1; g[1]=FROB_P1_2; g[2]=FROB_P1_3;
+                g[3]=FROB_P1_4; g[4]=FROB_P1_5; odd = 1; break;
+        case 2: g[0]=FROB_P2_1; g[1]=FROB_P2_2; g[2]=FROB_P2_3;
+                g[3]=FROB_P2_4; g[4]=FROB_P2_5; odd = 0; break;
+        case 3: g[0]=FROB_P3_1; g[1]=FROB_P3_2; g[2]=FROB_P3_3;
+                g[3]=FROB_P3_4; g[4]=FROB_P3_5; odd = 1; break;
+        case 6: fp12_conj(r, a); return;
+        default: fp12_copy(r, a); return;      /* k = 0 or 12 */
+    }
+
+    /* coefficient of w^i, in storage order */
+    fp12_t out;
+    fp2_copy(out[0][0], a[0][0]);              /* w^0, gamma^0 = 1 */
+    fp2_copy(out[1][0], a[1][0]);              /* w^1 */
+    fp2_copy(out[0][1], a[0][1]);              /* w^2 */
+    fp2_copy(out[1][1], a[1][1]);              /* w^3 */
+    fp2_copy(out[0][2], a[0][2]);              /* w^4 */
+    fp2_copy(out[1][2], a[1][2]);              /* w^5 */
+
+    if (odd) {
+        fp2_conj(out[0][0], out[0][0]); fp2_conj(out[1][0], out[1][0]);
+        fp2_conj(out[0][1], out[0][1]); fp2_conj(out[1][1], out[1][1]);
+        fp2_conj(out[0][2], out[0][2]); fp2_conj(out[1][2], out[1][2]);
+    }
+    fp2_mul(out[1][0], out[1][0], g[0]);       /* w^1 * gamma^1 */
+    fp2_mul(out[0][1], out[0][1], g[1]);       /* w^2 * gamma^2 */
+    fp2_mul(out[1][1], out[1][1], g[2]);       /* w^3 * gamma^3 */
+    fp2_mul(out[0][2], out[0][2], g[3]);       /* w^4 * gamma^4 */
+    fp2_mul(out[1][2], out[1][2], g[4]);       /* w^5 * gamma^5 */
+    fp12_copy(r, out);
+}
+
+/* One squaring in Fp4 = Fp2[s]/(s^2 - xi):
+ *
+ *     (a + b s)^2 = (a^2 + xi b^2) + 2ab s
+ *
+ * with 2ab taken as (a+b)^2 - a^2 - b^2 so the routine uses three Fp2 squarings
+ * and no Fp2 multiplication. That is worth doing here because fp2_sqr costs
+ * 271 ns against fp2_mul's 421: the Karatsuba form (two multiplications) and
+ * the direct form (two squarings and a multiplication) both measure slower. */
+static void fp4_sqr(fp2_t r0, fp2_t r1, const fp2_t a, const fp2_t b)
+{
+    fp2_t aa, bb, t;
+    fp2_sqr(aa, a);
+    fp2_sqr(bb, b);
+    fp2_add(t, a, b);
+    fp2_sqr(t, t);
+    fp2_sub(t, t, aa);
+    fp2_sub(t, t, bb);                /* 2ab */
+    fp2_mul_xi(bb, bb);
+    fp2_add(r0, aa, bb);              /* a^2 + xi b^2 */
+    fp2_copy(r1, t);
+}
+
+/* r = 3a - 2b and r = 3a + 2b, as 2(a -+ b) + a: three additions, not four.
+ * With six of these per squaring and an addition costing a ninth of a
+ * multiplication, the saved operation is not noise. */
+static void fp2_3a_sub2b(fp2_t r, const fp2_t a, const fp2_t b)
+{
+    fp2_t t;
+    fp2_sub(t, a, b);
+    fp2_add(t, t, t);
+    fp2_add(r, t, a);
+}
+
+static void fp2_3a_add2b(fp2_t r, const fp2_t a, const fp2_t b)
+{
+    fp2_t t;
+    fp2_add(t, a, b);
+    fp2_add(t, t, t);
+    fp2_add(r, t, a);
+}
+
+void fp12_sqr_cyc(fp12_t r, const fp12_t a)
+{
+    /* Granger and Scott, "Faster squaring in the cyclotomic subgroup of sixth
+     * degree extensions" (PKC 2010).
+     *
+     * View Fp12 as Fp4[w]/(w^3 - s) with Fp4 = Fp2[s]/(s^2 - xi) and s = w^3.
+     * Writing the element by powers of w as g0 .. g5, the three Fp4 coordinates
+     * are c0 = (g0, g3), c1 = (g1, g4), c2 = (g2, g5), and squaring a
+     * cyclotomic element is
+     *
+     *     h0 = 3 c0^2   - 2 conj(c0)
+     *     h1 = 3 s c2^2 + 2 conj(c1)
+     *     h2 = 3 c1^2   - 2 conj(c2)
+     *
+     * where conj negates the s coefficient, and s (x + y s) = xi y + x s.
+     *
+     * This replaces a routine that used conj(a) = a^-1 to write
+     * a^2 = (2 d0^2 - 1) + 2 d0 d1 w, one fp6 squaring plus one fp6
+     * multiplication. Worth the change because fp12_sqr_cyc is 87% of the final
+     * exponentiation: a BLS12-381 final exponentiation runs about 321 of them.
+     *
+     * Valid only inside the cyclotomic subgroup; fp12_sqr remains for
+     * everything else. tools/reference/selftest.py checks these formulas
+     * against full Fp12 squaring on random cyclotomic elements, and checks that
+     * they do NOT hold off the subgroup -- otherwise the check would pass for a
+     * routine that had quietly become the general one.
+     *
+     * Storage note: a[0] holds (g0, g2, g4) and a[1] holds (g1, g3, g5), so the
+     * Fp4 coordinates are split across the two halves. Results go through
+     * locals so the routine tolerates r aliasing a. */
+    fp2_t t0a, t0b, t1a, t1b, t2a, t2b, xt;
+    fp2_t o0a, o0b, o1a, o1b, o2a, o2b;
+
+    fp4_sqr(t0a, t0b, a[0][0], a[1][1]);      /* c0^2 = (g0, g3)^2 */
+    fp4_sqr(t1a, t1b, a[1][0], a[0][2]);      /* c1^2 = (g1, g4)^2 */
+    fp4_sqr(t2a, t2b, a[0][1], a[1][2]);      /* c2^2 = (g2, g5)^2 */
+
+    /* h0 = 3 c0^2 - 2 conj(c0); conj negates the s part, hence the sign flip */
+    fp2_3a_sub2b(o0a, t0a, a[0][0]);
+    fp2_3a_add2b(o0b, t0b, a[1][1]);
+
+    /* h1 = 3 s c2^2 + 2 conj(c1) */
+    fp2_mul_xi(xt, t2b);
+    fp2_3a_add2b(o1a, xt,  a[1][0]);
+    fp2_3a_sub2b(o1b, t2a, a[0][2]);
+
+    /* h2 = 3 c1^2 - 2 conj(c2) */
+    fp2_3a_sub2b(o2a, t1a, a[0][1]);
+    fp2_3a_add2b(o2b, t1b, a[1][2]);
+
+    fp2_copy(r[0][0], o0a); fp2_copy(r[1][1], o0b);
+    fp2_copy(r[1][0], o1a); fp2_copy(r[0][2], o1b);
+    fp2_copy(r[0][1], o2a); fp2_copy(r[1][2], o2b);
+}
+
+/* ------------------------------------------ Karabina compression -------
+ *
+ * Karabina, "Squaring in cyclotomic subgroups" (Math. Comp. 82, 2013). An
+ * element of the cyclotomic subgroup is determined by four of its six Fp2
+ * coordinates, and squaring in that form is cheaper than Granger-Scott: six
+ * Fp2 squarings and no multiplication, measured 1759 ns against 2902 on
+ * BLS12-381.
+ *
+ * The catch is that a multiplication needs the full element back, and getting
+ * it back costs one Fp2 inversion. So compression pays only across a run of
+ * squarings long enough to amortise that. With the divstep inversion (§10.7)
+ * the break-even is about 6 squarings; before it, it was about 48, which is
+ * why this was measured and declined once before being built.
+ *
+ * FORMULAS. Keeping (g1, g2, g4, g5) -- in the Fp4 view, the two coordinates
+ * c1 and c2, with c0 = (g0, g3) dropped:
+ *
+ *   h1 = 2 g1 + 6 xi g2 g5          h2 = 3 g1^2 + 3 xi g4^2 - 2 g2
+ *   h5 = 2 g5 + 6 g1 g4             h4 = 3 g2^2 + 3 xi g5^2 - 2 g4
+ *
+ * Both cross products come from squarings already needed, via
+ * 2ab = (a+b)^2 - a^2 - b^2, so the routine uses six squarings and no multiply.
+ *
+ * DECOMPRESSION has two relations for g3, and this is where the care goes:
+ *
+ *   4 g1 g3    = 3 g2^2 + xi g5^2 - 2 g4
+ *   4 xi g5 g3 = g1^2 - 2 g2 + 3 xi g4^2
+ *
+ * The first divides by g1, the second by g5, so one serves when the other
+ * degenerates. They cannot both degenerate except at the identity: g1 = g5 = 0
+ * forces g2^3 = 8/(27 xi), and gen_params.py asserts that this is NOT a cube in
+ * Fp2 for every curve shipped. At the identity all four kept coordinates are
+ * zero, both denominators are zero, fp2_inv(0) is 0 by contract, and g3 = 0 and
+ * g0 = 1 come out right anyway.
+ *
+ * The choice between the two is a select on whether g1 is zero, not a branch:
+ * the operand is secret.
+ *
+ * Then g0 = 1 + xi (g1 g5 - 3 g2 g4 + 2 g3^2).
+ *
+ * All of this was fitted from the arithmetic rather than recalled -- see
+ * tools/reference/karabina_ref.py, which solves for the coefficients and checks
+ * them on held-out samples. */
+
+typedef struct { fp2_t g1, g2, g4, g5; } fp12_comp_t;
+
+/* a[0] holds (g0, g2, g4) and a[1] holds (g1, g3, g5). */
+static void fp12_compress(fp12_comp_t *c, const fp12_t a)
+{
+    fp2_copy(c->g1, a[1][0]);
+    fp2_copy(c->g2, a[0][1]);
+    fp2_copy(c->g4, a[0][2]);
+    fp2_copy(c->g5, a[1][2]);
+}
+
+static void fp12_comp_sqr(fp12_comp_t *r, const fp12_comp_t *a)
+{
+    fp2_t s1, s2, s4, s5, t25, t14, u, w;
+
+    fp2_sqr(s1, a->g1); fp2_sqr(s2, a->g2);
+    fp2_sqr(s4, a->g4); fp2_sqr(s5, a->g5);
+    fp2_add(w, a->g2, a->g5); fp2_sqr(t25, w);
+    fp2_sub(t25, t25, s2); fp2_sub(t25, t25, s5);      /* 2 g2 g5 */
+    fp2_add(w, a->g1, a->g4); fp2_sqr(t14, w);
+    fp2_sub(t14, t14, s1); fp2_sub(t14, t14, s4);      /* 2 g1 g4 */
+
+    /* h1 = 2 g1 + 3 xi (2 g2 g5) */
+    fp2_mul_xi(u, t25);
+    fp2_add(w, u, u); fp2_add(u, w, u);
+    fp2_add(u, u, a->g1); fp2_add(u, u, a->g1);
+    /* h5 = 2 g5 + 3 (2 g1 g4) */
+    fp2_t h5;
+    fp2_add(w, t14, t14); fp2_add(h5, w, t14);
+    fp2_add(h5, h5, a->g5); fp2_add(h5, h5, a->g5);
+    /* h2 = 3 (g1^2 + xi g4^2) - 2 g2 */
+    fp2_t h2;
+    fp2_mul_xi(h2, s4); fp2_add(h2, h2, s1);
+    fp2_add(w, h2, h2); fp2_add(h2, w, h2);
+    fp2_sub(h2, h2, a->g2); fp2_sub(h2, h2, a->g2);
+    /* h4 = 3 (g2^2 + xi g5^2) - 2 g4 */
+    fp2_t h4;
+    fp2_mul_xi(h4, s5); fp2_add(h4, h4, s2);
+    fp2_add(w, h4, h4); fp2_add(h4, w, h4);
+    fp2_sub(h4, h4, a->g4); fp2_sub(h4, h4, a->g4);
+
+    fp2_copy(r->g1, u); fp2_copy(r->g2, h2);
+    fp2_copy(r->g4, h4); fp2_copy(r->g5, h5);
+}
+
+static void fp12_decompress(fp12_t r, const fp12_comp_t *c)
+{
+    fp2_t n1, n2, d1, d2, n, d, g3, g0, t, xi_one, one;
+
+    /* n1 = 3 g2^2 + xi g5^2 - 2 g4 ;  d1 = 4 g1 */
+    fp2_sqr(n1, c->g2);
+    fp2_add(t, n1, n1); fp2_add(n1, t, n1);
+    fp2_sqr(t, c->g5); fp2_mul_xi(t, t); fp2_add(n1, n1, t);
+    fp2_sub(n1, n1, c->g4); fp2_sub(n1, n1, c->g4);
+    fp2_add(d1, c->g1, c->g1); fp2_add(d1, d1, d1);
+
+    /* n2 = g1^2 - 2 g2 + 3 xi g4^2 ; d2 = 4 xi g5 */
+    fp2_sqr(n2, c->g1);
+    fp2_sub(n2, n2, c->g2); fp2_sub(n2, n2, c->g2);
+    fp2_sqr(t, c->g4); fp2_mul_xi(t, t);
+    fp2_add(g3, t, t); fp2_add(t, g3, t);
+    fp2_add(n2, n2, t);
+    fp2_mul_xi(d2, c->g5);
+    fp2_add(d2, d2, d2); fp2_add(d2, d2, d2);
+
+    /* Select, do not branch: which relation is usable depends on the operand. */
+    fp2_set_zero(t);
+    limb_t use2 = (limb_t)0 - (limb_t)fp2_eq(c->g1, t);
+    fp2_cselect(n, n2, n1, use2);
+    fp2_cselect(d, d2, d1, use2);
+
+    fp2_inv(d, d);              /* fp2_inv(0) == 0, which the identity needs */
+    fp2_mul(g3, n, d);
+
+    /* g0 = 1 + xi (g1 g5 - 3 g2 g4 + 2 g3^2) */
+    fp2_mul(g0, c->g1, c->g5);
+    fp2_mul(t, c->g2, c->g4);
+    fp2_add(xi_one, t, t); fp2_add(t, xi_one, t);
+    fp2_sub(g0, g0, t);
+    fp2_sqr(t, g3); fp2_add(g0, g0, t); fp2_add(g0, g0, t);
+    fp2_mul_xi(g0, g0);
+    fp2_set_one(one);
+    fp2_add(g0, g0, one);
+
+    fp2_copy(r[0][0], g0);   fp2_copy(r[0][1], c->g2); fp2_copy(r[0][2], c->g4);
+    fp2_copy(r[1][0], c->g1); fp2_copy(r[1][1], g3);   fp2_copy(r[1][2], c->g5);
+}
+
+void fp12_sqr_cyc_run(fp12_t r, const fp12_t a, int n)
+{
+    if (n <= 0) { fp12_copy(r, a); return; }
+    fp12_comp_t c;
+    fp12_compress(&c, a);
+    for (int i = 0; i < n; i++) fp12_comp_sqr(&c, &c);
+    fp12_decompress(r, &c);
+}
+
+void fp12_exp(fp12_t r, const fp12_t a, const limb_t *e, int ebits)
+{
+    fp12_t acc;
+    fp12_set_one(acc);
+    for (int i = ebits - 1; i >= 0; i--) {
+        fp12_sqr(acc, acc);
+        if ((e[i / 64] >> (i % 64)) & 1) fp12_mul(acc, acc, a);
+    }
+    fp12_copy(r, acc);
+}
+
+void fp12_inv(fp12_t r, const fp12_t a)
+{
+    /* (d0 + d1 w)^-1 = (d0 - d1 w) / (d0^2 - v d1^2) */
+    fp6_t f, t;
+    fp6_sqr(f, a[0]);
+    fp6_sqr(t, a[1]);
+    fp6_mul_v(t, t);
+    fp6_sub(f, f, t);
+    fp6_inv(f, f);
+    fp6_mul(r[0], a[0], f);
+    fp6_mul(t, a[1], f);
+    fp6_neg(r[1], t);
+}
+
+/* --- fp2 exponentiation and square roots ----------------------------------
+ *
+ * Needed by point decompression: a compressed point carries x and one bit of y,
+ * and recovering y means taking a square root of x^3 + b in Fp (for G1) or in
+ * Fp2 (for G2).
+ */
+
+void fp2_mul_u(fp2_t r, const fp2_t a)
+{
+    /* (c0 + c1 u) * u = -c1 + c0 u, since u^2 = -1. */
+    fp_t t;
+    fp_copy(t, a[0]);
+    fp_neg(r[0], a[1]);
+    fp_copy(r[1], t);
+}
+
+void fp2_exp(fp2_t r, const fp2_t a, const limb_t *e, int ebits)
+{
+    fp2_t acc;
+    fp2_set_one(acc);
+    for (int i = ebits - 1; i >= 0; i--) {
+        fp2_sqr(acc, acc);
+        if ((e[i / 64] >> (i % 64)) & 1) fp2_mul(acc, acc, a);
+    }
+    fp2_copy(r, acc);
+}
+
+/* Adj and Rodriguez-Henriquez, "Square root computation over even extension
+ * fields", Algorithm 9, for q = p = 3 (mod 4):
+ *
+ *   a1    = a^((p-3)/4)
+ *   alpha = a1^2 * a
+ *   x0    = a1 * a
+ *   x     = i * x0                    if alpha == -1
+ *         = (1 + alpha)^((p-1)/2) * x0  otherwise
+ *
+ * The alpha == -1 case is genuinely value-dependent, so it is resolved with a
+ * masked select over both candidates rather than a branch. Both candidates are
+ * computed either way; that costs one extra exponentiation and buys a routine
+ * whose timing does not reveal which case an input fell into.
+ *
+ * Rather than Algorithm 9's separate norm test for non-residues, the result is
+ * squared and compared. Same decision, one fewer exponentiation, and it also
+ * catches any arithmetic slip in the chain above it.
+ */
+int fp2_sqrt(fp2_t r, const fp2_t a)
+{
+    limb_t e_quarter[FP_LIMBS], e_half[FP_LIMBS];
+    fp_exp_constants(NULL, e_half, e_quarter);
+
+    fp2_t a1, alpha, x0, one, negone, cand_i, cand_b, b, chk, zero;
+
+    fp2_exp(a1, a, e_quarter, FP_BITS);       /* a^((p-3)/4) */
+    fp2_sqr(alpha, a1);
+    fp2_mul(alpha, alpha, a);                 /* a^((p-1)/2) */
+    fp2_mul(x0, a1, a);                       /* a^((p+1)/4) */
+
+    fp2_set_one(one);
+    fp2_neg(negone, one);
+
+    fp2_mul_u(cand_i, x0);                    /* the alpha == -1 branch */
+
+    fp2_add(b, one, alpha);
+    fp2_exp(b, b, e_half, FP_BITS);
+    fp2_mul(cand_b, b, x0);                   /* the ordinary branch */
+
+    limb_t mask = (limb_t)0 - (limb_t)fp2_eq(alpha, negone);
+    fp2_t root;
+    fp2_cselect(root, cand_i, cand_b, mask);
+
+    /* Everything above accumulates into locals, and r is written only once, at
+     * the end. Writing r earlier and then verifying against a would be correct
+     * only while the two do not alias -- and every routine in this header
+     * promises they may. The earlier version did exactly that: it selected into
+     * r, then compared r^2 against a, which by then was the same storage. No
+     * caller in the library aliases these, which is why nothing caught it until
+     * the aliasing cases in test/edge_test.c went looking. */
+    fp2_sqr(chk, root);
+    int ok = fp2_eq(chk, a);
+    fp2_set_zero(zero);
+    fp2_cselect(r, root, zero, (limb_t)0 - (limb_t)ok);
+    return ok;
+}
+
+int fp2_is_lex_largest(const fp2_t a)
+{
+    /* Order by the imaginary part first, then the real part -- the rule the
+     * BLS12-381 compressed encodings use. Both halves are evaluated and
+     * combined with masks, so nothing branches on a. */
+    int c1_big  = fp_is_lex_largest(a[1]);
+    int c1_zero = fp_is_zero(a[1]);
+    int c0_big  = fp_is_lex_largest(a[0]);
+    return c1_big | (c1_zero & c0_big);
+}
+
+int fp2_sgn0(const fp2_t a)
+{
+    /* Both halves are evaluated and combined with masks; nothing branches. */
+    int s0 = fp_sgn0(a[0]);
+    int z0 = fp_is_zero(a[0]);
+    int s1 = fp_sgn0(a[1]);
+    return s0 | (z0 & s1);
+}
+
+int fp2_is_square(const fp2_t a)
+{
+    /* norm(a0 + a1 u) = a0^2 + a1^2, and a is a square in Fp2 exactly when its
+     * norm is a square in Fp. fp_sqrt already reports that. */
+    fp_t n, t, root;
+    fp_sqr(n, a[0]);
+    fp_sqr(t, a[1]);
+    fp_add(n, n, t);
+    int ok = fp_sqrt(root, n);
+    return ok | fp_is_zero(n);
+}

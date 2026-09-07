@@ -1,0 +1,33 @@
+name: Documentation
+
+# Regenerates the Doxygen site and publishes it to the gh-pages branch.
+#
+# The repository currently serves GitHub Pages from master:/docs, which is why
+# 1280 generated HTML files are still tracked. Once this workflow has run and
+# Pages is switched to the gh-pages branch, docs/ can be untracked and the
+# repository drops to ~126 tracked files.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+      - name: Generate
+        run: |
+          sed -e 's|^OUTPUT_DIRECTORY.*|OUTPUT_DIRECTORY = doxygen-out|' \
+              -e 's|^HTML_OUTPUT.*|HTML_OUTPUT = html|' Doxyfile_101 > Doxyfile.ci
+          doxygen Doxyfile.ci
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./doxygen-out/html
