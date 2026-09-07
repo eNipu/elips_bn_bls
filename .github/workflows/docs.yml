@@ -51,12 +51,30 @@ jobs:
           echo "generated $n HTML pages"
           test "$n" -gt 10 || { echo "::error::only $n pages, the generator found nothing"; exit 1; }
 
-      # enablement: true switches the Pages build type from the legacy Jekyll
-      # builder to this workflow, through the API, using the token below. It is
-      # the settings change, made from the repository.
-      - uses: actions/configure-pages@v5
-        with:
-          enablement: true
+      # Switch Pages from the legacy Jekyll builder to this workflow.
+      #
+      # actions/configure-pages with enablement: true does NOT do this. Its
+      # enablement only creates a Pages site that does not exist yet; against an
+      # already-enabled site it leaves build_type alone, and the legacy builder
+      # goes on triggering on every push to master and failing. That was
+      # observed here, twice, before this step existed.
+      #
+      # PUT sets build_type on an existing site; POST covers a repository where
+      # Pages has never been enabled. Neither is allowed to fail the build:
+      # deploy-pages below publishes the site either way, and losing the
+      # deployment because a settings call was refused would be a worse outcome
+      # than the setting staying wrong. The resulting state is printed instead,
+      # so it is visible rather than assumed.
+      - name: Deploy from this workflow, not from a branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
+            || gh api -X POST "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
+            || echo "::warning::could not set build_type; the legacy builder may still run"
+          got=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || echo unknown)
+          echo "Pages build_type is now: $got"
+          [ "$got" = "workflow" ] || echo "::warning::build_type is '$got', expected 'workflow'"
 
       - uses: actions/upload-pages-artifact@v3
         with:
