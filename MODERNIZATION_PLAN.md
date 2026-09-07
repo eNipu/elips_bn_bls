@@ -873,7 +873,7 @@ The decomposition must stay constant time. This library already has a restoring,
 mask-driven division for the BLS12 G2 case at 1.6% overhead; reuse it rather
 than reaching for GMP.
 
-### 10.5 Compressed squaring and the final exponentiation — SCHEDULED, Phase 6
+### 10.5 Cyclotomic squaring — Granger-Scott DONE; Karabina still open
 
 **Algorithm of record: Karabina, "Squaring in cyclotomic subgroups"
 (Math. Comp. 82, 2013)**, whose compressed squaring costs about **four Fp2
@@ -891,7 +891,57 @@ Also worth reading before starting:
 - **"Fast Final Exponentiation on BW and BLS Curves with Even Embedding
   Degrees" (ePrint 2025/1387)** — newer, and directly on this curve family.
 
-Expected 10–15% on the final exponentiation, which is roughly 60% of a pairing.
+**The premise was wrong, and the correction was worth more than the item.** This
+section assumed Granger-Scott was "already implemented in Phase 4". It was not.
+`fp12_sqr_cyc` used the weaker identity `conj(a) = a^-1`, giving
+`a^2 = (2 d0^2 - 1) + 2 d0 d1 w` — one `fp6` squaring plus one `fp6`
+multiplication, about eleven `Fp2` multiplications.
+
+Profiling first is what found it. A BLS12-381 final exponentiation runs about
+**321** cyclotomic squarings, which measured as **87% of the final
+exponentiation**. So the routine to fix was the one the section took for granted.
+
+Granger-Scott now: view `Fp12` as `Fp4[w]/(w^3 - s)` with
+`Fp4 = Fp2[s]/(s^2 - xi)` and `s = w^3`. With `c0 = (g0,g3)`, `c1 = (g1,g4)`,
+`c2 = (g2,g5)`,
+
+```
+h0 = 3 c0² − 2 conj(c0)      h1 = 3 s c2² + 2 conj(c1)      h2 = 3 c1² − 2 conj(c2)
+```
+
+Three `Fp4` squarings. Each is done as three `Fp2` squarings, taking `2ab` as
+`(a+b)² − a² − b²`, because `fp2_sqr` measures 271 ns against `fp2_mul`'s 421.
+The `3t ± 2c` combinations are `2(t ± c) + t`, three additions rather than four —
+at 45 ns an addition against 421 for a multiplication, and six of them per
+squaring, that is not noise.
+
+**Measured, controlled: both versions built and timed back to back.**
+
+| curve | `fp12_sqr_cyc` | final exp | pairing |
+|---|---|---|---|
+| BLS12-381 | 5819 → 3857 ns (1.51x) | 2298 → 1724 µs (−25%) | 4680 → 4027 µs (−14%) |
+| BLS12-461 | 8626 → 5597 ns (1.54x) | 3753 → 2611 µs (−30%) | 8087 → 6750 µs (−17%) |
+| BN-462 | 8678 → 5900 ns (1.47x) | 3775 → 2630 µs (−30%) | 10821 → 9351 µs (−14%) |
+
+Against the section's estimate of 10–15% of the final exponentiation, the
+measured figure is 25–30%, because the baseline was worse than assumed.
+
+The formulas are checked by `tools/reference/selftest.py` against full `Fp12`
+squaring on random cyclotomic elements, and — as importantly — checked NOT to
+hold off the subgroup, since a routine that agreed everywhere would just be the
+general squaring with an imaginary speedup. `test/edge_test.c` repeats both
+checks in C, and a sign sabotage in `h1` was confirmed to fail there and in the
+pairing vectors.
+
+**Karabina compression is still open, and the headroom is now smaller.**
+Compressed squaring costs four `Fp2` squarings, so roughly 1800 ns against
+Granger-Scott's 3857. Over the 64 squarings of one `fp12_exp_param` that is
+about 130 µs saved, but decompression costs one `fp2_inv` at **52 µs** — the
+single most expensive primitive in the library — so it only pays across a long
+uninterrupted run of squarings. Estimated net after the change above: roughly
+400 µs of a 1724 µs final exponentiation, and it brings exceptional cases
+(`g2 = 0`) that the current routine does not have. Worth doing, no longer
+urgent.
 
 ### 10.6 Multi-pairing and fixed-argument precomputation — DONE
 

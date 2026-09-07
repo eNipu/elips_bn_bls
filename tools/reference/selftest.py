@@ -87,6 +87,37 @@ for cname, cv in CURVES.items():
         cyc = a.frob(6) * a.inv()          # norm-1 element
         check(cyc.conj() == cyc.inv(),     "conj == inverse on cyclotomic subgroup")
 
+    # Granger-Scott cyclotomic squaring, the formulas src/arith/fpx.c uses.
+    #
+    # This routine is 87% of the final exponentiation, so it is worth checking
+    # here and not only through the pairing vectors. The second check matters as
+    # much as the first: if the formulas held off the subgroup too, they would
+    # be the general squaring and the speedup would be imaginary.
+    def gs_sqr(g):
+        """h0 = 3c0^2 - 2conj(c0), h1 = 3s c2^2 + 2conj(c1), h2 = 3c1^2 - 2conj(c2)
+        over Fp4 = Fp2[s]/(s^2 - xi) with s = w^3, c_i = (g_i, g_{i+3})."""
+        x = Fp2(p, 1, 1)
+        def sq(A):
+            a, b = A
+            return (a.sqr() + b.sqr() * x, (a * b).mul_int(2))
+        def cj(A):    return (A[0], -A[1])
+        def mul_s(A): return (A[1] * x, A[0])
+        def comb(T, C, sign):
+            return tuple(t.mul_int(3) + c.mul_int(2 * sign) for t, c in zip(T, C))
+        c = [(g.d0.c0, g.d1.c1), (g.d1.c0, g.d0.c2), (g.d0.c1, g.d1.c2)]
+        t = [sq(ci) for ci in c]
+        h0 = comb(t[0],          cj(c[0]), -1)
+        h1 = comb(mul_s(t[2]),   cj(c[1]), +1)
+        h2 = comb(t[1],          cj(c[2]), -1)
+        return Fp12(Fp6(h0[0], h2[0], h1[1]), Fp6(h1[0], h0[1], h2[1]))
+
+    for _ in range(3):
+        a = rnd_fp12(p, rng)
+        g = a.frob(6) * a.inv()
+        g = g.frob(2) * g                  # now in the cyclotomic subgroup
+        check(gs_sqr(g) == g.sqr(), "Granger-Scott squaring on the cyclotomic subgroup")
+        check(gs_sqr(a) != a.sqr(), "Granger-Scott squaring does NOT hold off it")
+
     # flat coordinate round-trip must be exact
     for _ in range(10):
         a = rnd_fp12(p, rng)

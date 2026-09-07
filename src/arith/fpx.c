@@ -277,23 +277,100 @@ void fp12_frobenius(fp12_t r, const fp12_t a, int k)
     fp12_copy(r, out);
 }
 
+/* One squaring in Fp4 = Fp2[s]/(s^2 - xi):
+ *
+ *     (a + b s)^2 = (a^2 + xi b^2) + 2ab s
+ *
+ * with 2ab taken as (a+b)^2 - a^2 - b^2 so the routine uses three Fp2 squarings
+ * and no Fp2 multiplication. That is worth doing here because fp2_sqr costs
+ * 271 ns against fp2_mul's 421: the Karatsuba form (two multiplications) and
+ * the direct form (two squarings and a multiplication) both measure slower. */
+static void fp4_sqr(fp2_t r0, fp2_t r1, const fp2_t a, const fp2_t b)
+{
+    fp2_t aa, bb, t;
+    fp2_sqr(aa, a);
+    fp2_sqr(bb, b);
+    fp2_add(t, a, b);
+    fp2_sqr(t, t);
+    fp2_sub(t, t, aa);
+    fp2_sub(t, t, bb);                /* 2ab */
+    fp2_mul_xi(bb, bb);
+    fp2_add(r0, aa, bb);              /* a^2 + xi b^2 */
+    fp2_copy(r1, t);
+}
+
+/* r = 3a - 2b and r = 3a + 2b, as 2(a -+ b) + a: three additions, not four.
+ * With six of these per squaring and an addition costing a ninth of a
+ * multiplication, the saved operation is not noise. */
+static void fp2_3a_sub2b(fp2_t r, const fp2_t a, const fp2_t b)
+{
+    fp2_t t;
+    fp2_sub(t, a, b);
+    fp2_add(t, t, t);
+    fp2_add(r, t, a);
+}
+
+static void fp2_3a_add2b(fp2_t r, const fp2_t a, const fp2_t b)
+{
+    fp2_t t;
+    fp2_add(t, a, b);
+    fp2_add(t, t, t);
+    fp2_add(r, t, a);
+}
+
 void fp12_sqr_cyc(fp12_t r, const fp12_t a)
 {
-    /* An element of the cyclotomic subgroup satisfies conj(a) = a^-1, so
-     *     (d0 + d1 w)(d0 - d1 w) = d0^2 - v*d1^2 = 1.
-     * Squaring normally needs d0^2 + v*d1^2, and the constraint rewrites that
-     * as 2*d0^2 - 1, so one squaring and one multiplication suffice where the
-     * generic routine needs two multiplications:
-     *     a^2 = (2*d0^2 - 1) + (2*d0*d1) w
-     * Only valid inside the subgroup; fp12_sqr remains for everything else. */
-    fp6_t s, m, one;
-    fp6_sqr(s, a[0]);
-    fp6_mul(m, a[0], a[1]);
-    fp6_add(s, s, s);
-    fp6_set_one(one);
-    fp6_sub(s, s, one);
-    fp6_add(r[1], m, m);
-    fp6_copy(r[0], s);
+    /* Granger and Scott, "Faster squaring in the cyclotomic subgroup of sixth
+     * degree extensions" (PKC 2010).
+     *
+     * View Fp12 as Fp4[w]/(w^3 - s) with Fp4 = Fp2[s]/(s^2 - xi) and s = w^3.
+     * Writing the element by powers of w as g0 .. g5, the three Fp4 coordinates
+     * are c0 = (g0, g3), c1 = (g1, g4), c2 = (g2, g5), and squaring a
+     * cyclotomic element is
+     *
+     *     h0 = 3 c0^2   - 2 conj(c0)
+     *     h1 = 3 s c2^2 + 2 conj(c1)
+     *     h2 = 3 c1^2   - 2 conj(c2)
+     *
+     * where conj negates the s coefficient, and s (x + y s) = xi y + x s.
+     *
+     * This replaces a routine that used conj(a) = a^-1 to write
+     * a^2 = (2 d0^2 - 1) + 2 d0 d1 w, one fp6 squaring plus one fp6
+     * multiplication. Worth the change because fp12_sqr_cyc is 87% of the final
+     * exponentiation: a BLS12-381 final exponentiation runs about 321 of them.
+     *
+     * Valid only inside the cyclotomic subgroup; fp12_sqr remains for
+     * everything else. tools/reference/selftest.py checks these formulas
+     * against full Fp12 squaring on random cyclotomic elements, and checks that
+     * they do NOT hold off the subgroup -- otherwise the check would pass for a
+     * routine that had quietly become the general one.
+     *
+     * Storage note: a[0] holds (g0, g2, g4) and a[1] holds (g1, g3, g5), so the
+     * Fp4 coordinates are split across the two halves. Results go through
+     * locals so the routine tolerates r aliasing a. */
+    fp2_t t0a, t0b, t1a, t1b, t2a, t2b, xt;
+    fp2_t o0a, o0b, o1a, o1b, o2a, o2b;
+
+    fp4_sqr(t0a, t0b, a[0][0], a[1][1]);      /* c0^2 = (g0, g3)^2 */
+    fp4_sqr(t1a, t1b, a[1][0], a[0][2]);      /* c1^2 = (g1, g4)^2 */
+    fp4_sqr(t2a, t2b, a[0][1], a[1][2]);      /* c2^2 = (g2, g5)^2 */
+
+    /* h0 = 3 c0^2 - 2 conj(c0); conj negates the s part, hence the sign flip */
+    fp2_3a_sub2b(o0a, t0a, a[0][0]);
+    fp2_3a_add2b(o0b, t0b, a[1][1]);
+
+    /* h1 = 3 s c2^2 + 2 conj(c1) */
+    fp2_mul_xi(xt, t2b);
+    fp2_3a_add2b(o1a, xt,  a[1][0]);
+    fp2_3a_sub2b(o1b, t2a, a[0][2]);
+
+    /* h2 = 3 c1^2 - 2 conj(c2) */
+    fp2_3a_sub2b(o2a, t1a, a[0][1]);
+    fp2_3a_add2b(o2b, t1b, a[1][2]);
+
+    fp2_copy(r[0][0], o0a); fp2_copy(r[1][1], o0b);
+    fp2_copy(r[1][0], o1a); fp2_copy(r[0][2], o1b);
+    fp2_copy(r[0][1], o2a); fp2_copy(r[1][2], o2b);
 }
 
 void fp12_exp(fp12_t r, const fp12_t a, const limb_t *e, int ebits)

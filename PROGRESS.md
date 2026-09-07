@@ -1872,6 +1872,70 @@ under each sanitizer, no warnings under `-Werror`.
 
 ---
 
+## Phase 6 — Granger-Scott cyclotomic squaring (plan §10.5)
+
+**The plan's premise was wrong, and finding that out was worth more than the
+item as written.** §10.5 assumed Granger-Scott was "already implemented in
+Phase 4" and scheduled Karabina compression on top of it for a 10 to 15 percent
+gain. Granger-Scott was not implemented. `fp12_sqr_cyc` used the weaker identity
+`conj(a) = a^-1` to write `a^2 = (2 d0^2 - 1) + 2 d0 d1 w`: one `fp6` squaring
+plus one `fp6` multiplication, about eleven `Fp2` multiplications.
+
+Profiling before implementing is what caught it. A BLS12-381 final
+exponentiation runs about **321** cyclotomic squarings, and at 5819 ns each that
+is **87% of the final exponentiation**. The routine the section took for granted
+was the one worth fixing.
+
+**What it is now.** View `Fp12` as `Fp4[w]/(w^3 - s)` with
+`Fp4 = Fp2[s]/(s^2 - xi)` and `s = w^3`. With `c0 = (g0,g3)`, `c1 = (g1,g4)`,
+`c2 = (g2,g5)`:
+
+    h0 = 3 c0^2   - 2 conj(c0)
+    h1 = 3 s c2^2 + 2 conj(c1)
+    h2 = 3 c1^2   - 2 conj(c2)
+
+Two details that were measured rather than assumed. Each `Fp4` squaring uses
+three `Fp2` squarings, taking `2ab` as `(a+b)^2 - a^2 - b^2`, because `fp2_sqr`
+is 271 ns against `fp2_mul`'s 421 — the Karatsuba form and the direct form both
+timed slower. And `3t +- 2c` is done as `2(t +- c) + t`, three additions instead
+of four; at 45 ns an addition against 421 a multiplication, with six per
+squaring, that is a real 6 percent of the routine.
+
+**Derived against the oracle, not recalled.** The formulas were written in
+Python first and checked against full `Fp12` squaring on random cyclotomic
+elements for both families before any C was written. That check is now a
+permanent part of `selftest.py`, together with the one that matters just as
+much: they must **not** hold off the subgroup. A routine that agreed everywhere
+would simply be the general squaring, and the speedup would be imaginary.
+`test/edge_test.c` repeats both in C and adds an aliasing check.
+
+**Confirmed it can fail.** Flipping one conjugate sign in `h1` failed the direct
+comparison in `edge_test`, its aliasing companion, and 15 checks across the
+pairing vectors.
+
+**Measured, controlled: both versions built and timed back to back.**
+
+| curve | `fp12_sqr_cyc` | final exp | whole pairing |
+|---|---|---|---|
+| BLS12-381 | 5819 → 3857 ns (1.51x) | 2298 → 1724 µs (−25%) | 4680 → 4027 µs (−14%) |
+| BLS12-461 | 8626 → 5597 ns (1.54x) | 3753 → 2611 µs (−30%) | 8087 → 6750 µs (−17%) |
+| BN-462 | 8678 → 5900 ns (1.47x) | 3775 → 2630 µs (−30%) | 10821 → 9351 µs (−14%) |
+
+25 to 30 percent of the final exponentiation, against the section's estimated
+10 to 15 — because the baseline was worse than the plan believed.
+
+**Karabina compression is still open and is now a smaller prize.** Four `Fp2`
+squarings puts compressed squaring near 1800 ns against 3857, but decompression
+costs one `fp2_inv` at **52 µs**, the most expensive primitive in the library,
+so it only pays across a long uninterrupted run. Estimated net now: roughly
+400 µs of a 1724 µs final exponentiation, and it brings exceptional cases
+(`g2 = 0`) this routine does not have.
+
+87 checks in edge_test, up from 84. 43 CTest on Release, 32 under each
+sanitizer, no warnings under `-Werror`.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6

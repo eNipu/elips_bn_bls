@@ -203,6 +203,33 @@ static void test_aliasing(void)
         ok(fp12_eq(aa, rr), "fp12_sqr tolerates r == a");
         fp12_inv(rr, f); fp12_copy(aa, f); fp12_inv(aa, aa);
         ok(fp12_eq(aa, rr), "fp12_inv tolerates r == a");
+
+        /* Cyclotomic squaring. Granger-Scott is valid only inside the
+         * subgroup, so put f there first: f^(p^6-1) then ^(p^2+1).
+         *
+         * The pairing vectors already exercise this routine 321 times per
+         * final exponentiation, but only through a value the oracle checks at
+         * the end. Comparing directly against fp12_sqr localises a failure to
+         * this routine instead of to the whole chain. */
+        fp12_t cyc, t0, t1;
+        fp12_conj(t0, f);
+        fp12_inv(t1, f);
+        fp12_mul(t0, t0, t1);
+        fp12_frobenius(t1, t0, 2);
+        fp12_mul(cyc, t1, t0);
+
+        fp12_sqr(rr, cyc);
+        fp12_sqr_cyc(aa, cyc);
+        ok(fp12_eq(aa, rr), "fp12_sqr_cyc == fp12_sqr on the cyclotomic subgroup");
+
+        fp12_copy(aa, cyc); fp12_sqr_cyc(aa, aa);
+        ok(fp12_eq(aa, rr), "fp12_sqr_cyc tolerates r == a");
+
+        /* And it must NOT agree off the subgroup. If it did, it would be the
+         * general squaring and the speedup would be imaginary. */
+        fp12_sqr(rr, f);
+        fp12_sqr_cyc(aa, f);
+        ok(!fp12_eq(aa, rr), "fp12_sqr_cyc is not valid off the subgroup");
     }
 #undef ALIAS2
 
