@@ -311,6 +311,22 @@ if(ELIPS_BUILD_TESTS)
                    -DPATTERN=outg2 -DRELABEL=ing2
                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
 
+  # Benchmarks (issue #15).
+  #
+  # Built for every curve, but NOT registered with CTest. A benchmark that runs
+  # in CI becomes a test that fails when the runner is busy, and the point of
+  # this harness is to tell a real regression from a noisy machine rather than
+  # to conflate the two. Run it deliberately:
+  #
+  #   cmake --build build --target bench_BLS12_381
+  #   ./build/bench_BLS12_381 --reps 15
+  #   ./build/bench_BLS12_381 --json > before.json
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(bench_${_cv} bench/bench.c)
+    target_link_libraries(bench_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(bench_${_cv})
+  endforeach()
+
   # Group-law properties, built for every curve. The GLV routines differ by family (four
   # dimensions on BLS12 G2, two on BN G2 and on BLS12 G1), so a single-curve
   # build would leave most of them untested.
