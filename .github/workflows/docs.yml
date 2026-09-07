@@ -58,29 +58,26 @@ jobs:
       - id: deploy
         uses: actions/deploy-pages@v4
 
-      # Switch Pages from the legacy Jekyll builder to this workflow.
+      # Guard the failure that started all this.
       #
-      # Runs LAST, and on purpose. Placed mid-job its output was buried under
-      # the artifact file listing and could not be read back, so a failure was
-      # inferred from the legacy builder still firing rather than observed. At
-      # the end its output is the tail of the log, and continue-on-error makes
-      # the step's own conclusion the answer: green means the API accepted it.
+      # build_type must be "workflow". If it is ever "legacy", Pages ignores
+      # everything above and serves whatever the branch source last built --
+      # which is how this repository spent a day publishing documentation for
+      # headers that had been deleted, with a green workflow above it and
+      # nothing on the page to say so. Silent staleness is worse than a 404, so
+      # this fails loudly instead.
       #
-      # Nothing here can block the deployment, which has already happened by
-      # this point. A refused settings call must not cost the documentation.
-      #
-      # actions/configure-pages with enablement: true does NOT do this: its
-      # enablement only creates a Pages site that does not exist yet, and
-      # against an already-enabled site it leaves build_type alone.
-      - name: Set Pages to deploy from this workflow
-        continue-on-error: true
+      # Read-only on purpose. PUT /repos/{}/pages answers 403 "Resource not
+      # accessible by integration" to GITHUB_TOKEN, and it is not needed:
+      # deploy-pages creating workflow deployments is what moved build_type off
+      # legacy in the first place.
+      - name: Pages must still deploy from this workflow
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -x
-          echo "--- current ---"
-          gh api "repos/$GITHUB_REPOSITORY/pages" || echo "GET refused"
-          echo "--- PUT build_type=workflow ---"
-          gh api -X PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow
-          echo "--- after ---"
-          gh api "repos/$GITHUB_REPOSITORY/pages" --jq '{build_type,source,status}'
+          got=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)
+          echo "build_type = $got"
+          [ "$got" = "workflow" ] || {
+            echo "::error::build_type is '$got'; this deployment is being ignored"
+            exit 1
+          }

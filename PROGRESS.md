@@ -2318,29 +2318,48 @@ criterion had been written down as "pages build and deployment no longer runs
 at all" rather than "the workflow is green".
 
 The second attempt set it directly, `gh api -X PUT repos/{}/pages -f
-build_type=workflow`. **That does not work either, and the reason is a hard
-limit rather than a bug.** `PUT /repos/{}/pages` requires *admin* on the
-repository. `GITHUB_TOKEN` never carries admin, whatever `permissions:` says.
-`POST` (create) is allowed with `pages: write`, which is exactly why
-`configure-pages`' enablement works only for a site that does not yet exist.
+build_type=workflow`. That call is **forbidden** to `GITHUB_TOKEN`:
 
-The test that settled it: the legacy builder fired again on the push made two
-and a half minutes *after* the PUT ran. Had the build type changed, GitHub
-would not have triggered it.
+    gh: Resource not accessible by integration (HTTP 403)
 
-So this one really does need a human with repository admin, once:
-**Settings, Pages, Source, "GitHub Actions"**. The workflow step is kept, since
-it is correct and free, works for a repository where Pages was never enabled,
-and starts working here the moment it is handed a PAT with admin. It is
-deliberately not fatal, because `deploy-pages` publishes the site regardless
-and failing the build over a refused settings call would trade a wrong setting
-for no documentation at all.
+From which the wrong conclusion was drawn twice: that a repository admin had
+to flip the setting by hand, and that nothing more could be done from CI. Both
+were written into this file before the step's own output had ever been read.
 
-What is verified: the site is generated from current source, is guarded against
-being empty, and `deploy-pages` reports a successful deployment. What is *not*
-verified is which of the two Pages mechanisms the live URL is serving while
-`build_type` is still `legacy`. The egress policy blocks `enipu.github.io` from
-the session, so that cannot be settled from here either.
+It had never been read because the step sat in the middle of the job, where its
+output was buried under the artifact file listing, and its `||` fallbacks made
+it exit 0 whatever happened. The failure was *inferred* from the legacy builder
+still firing. Moving the step to the end of the job, dropping the `||`
+swallowing and printing the settings before and after took one commit and
+settled it immediately:
+
+    {"status":"built","build_type":"workflow","html_url":"https://enipu.github.io/elips_bn_bls/"}
+
+**`build_type` was already `workflow`.** The PUT was both forbidden and
+unnecessary. What moved it was `deploy-pages` creating workflow deployments;
+GitHub honours those and switches the build type itself. The `source` field
+still reads `{branch: master, path: /docs}`, but that is vestigial and unused
+once the build type is `workflow`.
+
+The confirming observation is the legacy builder itself: it fired for
+`fc89bc6` and stopped. It has not run since, and `pages build and deployment`
+had failed on every commit for a day before that. No manual step was needed
+after all.
+
+The lesson is not about Pages. Three consecutive claims here were inferences
+presented as findings, and each one survived because the workflow above it was
+green. The step now runs last and reads `build_type` back read-only, failing
+loudly if it is ever not `workflow`, because a Pages site that silently serves
+stale content is exactly the failure that started this.
+
+Verified: `build_type` is `workflow`, Pages reports `status: built`, the
+legacy builder has stopped triggering, the site is generated from current
+source on every push, and an empty site fails the build instead of deploying.
+
+Not verified: the rendered page itself. `enipu.github.io` is blocked from the
+session by egress policy and should stay blocked, since that domain also hosts
+the maintainer's personal site. What is checked is the deployment and the
+configuration, not the pixels.
 
 Two consequences. The site is no longer committed anywhere, so `gh-pages` stops
 being written to and is now vestigial. And an empty site fails the build instead
@@ -2445,8 +2464,9 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 - `hash_to_g2` rebuilds a window table for each of its two short ladders; a
   shared table would help.
 - No signature layer. §10.8 explains why that line is where it is.
-- `gh-pages` is vestigial. Pages is deployed from `.github/workflows/docs.yml`
-  as of #22, so nothing writes to that branch any more and it can be deleted.
+- `gh-pages` is vestigial. Pages deploys from `.github/workflows/docs.yml` as
+  of #22 with `build_type: workflow`, so nothing writes to that branch any
+  more and it can be deleted.
 - The IACR survey behind §10 was done through search abstracts: the egress
   policy blocks `eprint.iacr.org`, so no full text was read. Citations are
   pointers, not sources of copied formulas.
