@@ -1575,12 +1575,27 @@ mismatch and the script exit 1. The CI step is renamed accordingly — it used t
 say "documents issue #16", and issue #16 is moot now that the code it described
 is deleted.
 
-### Note for whoever repoints GitHub Pages
+### The generated Doxygen site is untracked (done)
 
-`docs/` is still tracked and is now 1280 of the 76+1280 tracked files —
-94% of the repository is a generated Doxygen site describing code that in large
-part no longer exists. Untracking it is a one-line change once Pages serves from
-`gh-pages`; the workflow for that already exists.
+`docs/` was 1280 of 1362 tracked files: 94% of the repository was a generated
+site describing code that had been deleted. All 51 headers it documented
+(`bls12_finalexp.h`, `bls12_line_ate.h`, `Commont_headers.h` and the rest) went
+with the legacy layer. Removed; the repository is 82 tracked files.
+
+**A blocker turned up first.** `.github/workflows/docs.yml` would have published
+an *empty* `gh-pages`, because `Doxyfile_101`'s `INPUT` was an absolute path to
+a developer's Mac, `/Users/khandaker/Development/elips_bn_bls`, which does not
+exist on a runner. Deleting `docs/` before noticing that would have left a dead
+site and nothing to repoint to. The Doxyfile now takes `include src README.md`,
+excludes `docs/` and the build trees, and uses the README as the landing page.
+
+Order mattered and was followed: fix the Doxyfile, merge, let `docs.yml` build
+`gh-pages`, **verify it holds a real site** (96 HTML files, an index, all 13
+current headers, no trace of the legacy layer), and only then untrack `docs/`.
+
+**One step needs repository settings and cannot be done from a session.** Pages
+still serves from `master:/docs`, so https://enipu.github.io/elips_bn_bls/ will
+404 until Settings, Pages is repointed to the `gh-pages` branch.
 
 ## A dudect finding: the fixed class must not be degenerate
 
