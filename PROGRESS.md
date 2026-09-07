@@ -1936,6 +1936,73 @@ sanitizer, no warnings under `-Werror`.
 
 ---
 
+## Karabina compression: derived, measured, declined (plan §10.5)
+
+Asked for and done. The answer is that it should not ship, and the numbers say
+so rather than an opinion. `tools/reference/karabina_ref.py` re-runs the whole
+decision in one command.
+
+**The formulas were fitted, not recalled.** Compressed squaring is a quadratic
+map, so its coefficients can be solved for: sample random cyclotomic elements,
+square them exactly, and solve the linear system over `Fp2` for every degree-2
+monomial. That also settled *which* coordinates to keep — the fit was attempted
+for all fifteen ways of choosing four of the six, and `(g1, g2, g4, g5)` is the
+only one where all four outputs fit. In the `Fp4` view that is `c1` and `c2`
+with `c0 = (g0,g3)` dropped, which is what Karabina describes; arriving at it by
+search rather than by matching tower conventions avoided a whole class of
+indexing error.
+
+Recovered coefficients came out as small integers and small integers times `xi`,
+and the fitted maps reproduce squaring and decompression on held-out samples for
+all three curves. That is the check that makes a fit a derivation.
+
+    h1 = 2 g1 + 6 xi g2 g5          4 g1 g3 = 3 g2^2 + xi g5^2 - 2 g4
+    h2 = 3 g1^2 + 3 xi g4^2 - 2 g2  g0      = 1 + xi (g1 g5 - 3 g2 g4 + 2 g3^2)
+    h4 = 3 g2^2 + 3 xi g5^2 - 2 g4
+    h5 = 2 g5 + 6 g1 g4
+
+**Then it was measured, and it loses.** Compressed squaring does beat
+Granger-Scott per squaring on every curve. But it only helps across an
+*uninterrupted* run: a multiplication forces a decompression, and decompression
+costs one constant-time `fp2_inv`.
+
+| curve | GS | compressed | saving/sqr | decompression | break-even |
+|---|---|---|---|---|---|
+| BLS12-381 | 3841 ns | 2778 ns | 1063 ns | 50.6 µs | 47.6 squarings |
+| BLS12-461 | 5717 ns | 3962 ns | 1754 ns | 77.9 µs | 44.4 squarings |
+| BN-462 | 5911 ns | 3976 ns | 1935 ns | 78.2 µs | 40.4 squarings |
+
+The runs are fixed by the NAF of the parameter and are too short:
+
+| curve | runs in `fp12_exp_param` | longest | net |
+|---|---|---|---|
+| BLS12-381 | 2, 2, 3, 9, 32, 16 | 32 | **0%** |
+| BLS12-461 | 27, 17, 33 | 33 | **0%** |
+| BN-462 | 13, 87, 14 | 87 | 10.3% of the final exp, 2.9% of a pairing |
+
+Inert on two curves, 2.9% on the third. Against that: a second representation, a
+division, and an exceptional case at `g1 = 0` that is **a branch on a
+secret-derived value**. Making that constant time means evaluating both branches
+and selecting, which eats the margin that exists on only one curve. Declined.
+
+**The useful result is what it says about §10.7.** Break-even is
+`inversion / saving-per-squaring`, so the gate is the 50–78 µs constant-time
+`fp2_inv`, not the squaring. With an inversion 5x faster, break-even falls to
+8–10 squarings and nearly every run clears it: 8.9%, 16.9% and 19.8% of the
+final exponentiation on the three curves.
+
+§10.7 declined safegcd and Pornin because inversion "was not material" after
+Phase 4 removed all but a handful per pairing, and said to revisit if a profile
+ever said otherwise. This is that profile. The ordering flips: **inversion
+first, then Karabina.** `fp_inv_vartime` is 19x faster and is not usable here,
+because the value inverted is derived from the pairing's input.
+
+Nothing shipped in `src/`. The derivation is kept because the decision depends
+on numbers that can change — a faster inversion, a different curve, a different
+addition chain — and re-deciding should cost one command, not a re-derivation.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6

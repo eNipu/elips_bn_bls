@@ -873,7 +873,7 @@ The decomposition must stay constant time. This library already has a restoring,
 mask-driven division for the BLS12 G2 case at 1.6% overhead; reuse it rather
 than reaching for GMP.
 
-### 10.5 Cyclotomic squaring — Granger-Scott DONE; Karabina still open
+### 10.5 Cyclotomic squaring — Granger-Scott DONE; Karabina derived, measured, DECLINED
 
 **Algorithm of record: Karabina, "Squaring in cyclotomic subgroups"
 (Math. Comp. 82, 2013)**, whose compressed squaring costs about **four Fp2
@@ -933,15 +933,69 @@ general squaring with an imaginary speedup. `test/edge_test.c` repeats both
 checks in C, and a sign sabotage in `h1` was confirmed to fail there and in the
 pairing vectors.
 
-**Karabina compression is still open, and the headroom is now smaller.**
-Compressed squaring costs four `Fp2` squarings, so roughly 1800 ns against
-Granger-Scott's 3857. Over the 64 squarings of one `fp12_exp_param` that is
-about 130 µs saved, but decompression costs one `fp2_inv` at **52 µs** — the
-single most expensive primitive in the library — so it only pays across a long
-uninterrupted run of squarings. Estimated net after the change above: roughly
-400 µs of a 1724 µs final exponentiation, and it brings exceptional cases
-(`g2 = 0`) that the current routine does not have. Worth doing, no longer
-urgent.
+**Karabina compression: derived, implemented, measured, and declined.** The
+work is in `tools/reference/karabina_ref.py`, which re-runs the whole decision
+in one command.
+
+**The formulas were fitted, not recalled.** Compressed squaring is a quadratic
+map, so its coefficients are solvable: sample random cyclotomic elements, square
+them exactly, and solve the resulting linear system over `Fp2` for every
+degree-2 monomial. Which four of the six `Fp2` coordinates to keep was found the
+same way, by attempting the fit for all fifteen subsets — `(g1, g2, g4, g5)` is
+the one that works, which in the `Fp4` view is `c1` and `c2` with `c0 = (g0,g3)`
+dropped. Recovered coefficients are small integers and small integers times
+`xi`, and the fitted maps reproduce squaring and decompression on held-out
+samples for all three curves:
+
+```
+h1 = 2 g1 + 6 xi g2 g5          4 g1 g3 = 3 g2² + xi g5² − 2 g4
+h2 = 3 g1² + 3 xi g4² − 2 g2    g0      = 1 + xi (g1 g5 − 3 g2 g4 + 2 g3²)
+h4 = 3 g2² + 3 xi g5² − 2 g4
+h5 = 2 g5 + 6 g1 g4
+```
+
+**It does not pay.** Measured, both routines built and timed:
+
+| curve | Granger-Scott | compressed | saving/sqr | decompression | break-even |
+|---|---|---|---|---|---|
+| BLS12-381 | 3841 ns | 2778 ns | 1063 ns | 50.6 µs | **47.6 squarings** |
+| BLS12-461 | 5717 ns | 3962 ns | 1754 ns | 77.9 µs | **44.4 squarings** |
+| BN-462 | 5911 ns | 3976 ns | 1935 ns | 78.2 µs | **40.4 squarings** |
+
+Compression only helps across an *uninterrupted* run of squarings, because a
+multiplication forces a decompression. The runs are set by the NAF of the
+parameter, and they are too short:
+
+| curve | squaring runs in `fp12_exp_param` | longest | net |
+|---|---|---|---|
+| BLS12-381 | 2, 2, 3, 9, 32, 16 | 32 | **0%** — no run clears break-even |
+| BLS12-461 | 27, 17, 33 | 33 | **0%** — no run clears break-even |
+| BN-462 | 13, 87, 14 | 87 | 10.3% of the final exponentiation, 2.9% of a pairing |
+
+So it is inert on two curves and worth 2.9% of a pairing on the third. Against
+that: a second representation, a division, and an exceptional case at `g1 = 0`
+which is **a branch on a secret-derived value** — making it constant time means
+evaluating both branches and selecting, which eats into the margin that is
+already only present on one curve. Not a good trade, so it is not shipped.
+
+**What would change the answer, and it points at §10.7.** Break-even is
+`inversion / saving-per-squaring`, so the blocker is the 50–78 µs constant-time
+`fp2_inv`. With an inversion 5x faster, break-even drops to 8–10 squarings and
+almost every run clears it:
+
+| curve | with a 5x faster inversion |
+|---|---|
+| BLS12-381 | 8.9% of the final exponentiation |
+| BLS12-461 | 16.9% |
+| BN-462 | 19.8% |
+
+§10.7 declined safegcd (ePrint 2019/266) and Pornin (ePrint 2020/972) on the
+grounds that inversion was not material after Phase 4 removed all but a handful
+per pairing. **That reasoning no longer holds**: Karabina makes inversion the
+gate on a 9–20% win, and §10.7's own condition for revisiting — "if a profile
+says inversion is material again" — is now met. The right next step in this
+section is a faster constant-time inversion, after which Karabina should be
+re-decided by re-running `karabina_ref.py`.
 
 ### 10.6 Multi-pairing and fixed-argument precomputation — DONE
 
@@ -1044,6 +1098,23 @@ against the `mpn_sec_invert` this library uses, and Phase 3 measured that at
 Adopting a subtle algorithm to save a fraction of a percent of a pairing is the
 wrong trade. Revisit only if a profile says inversion is material again — for
 instance if §10.3's fast subgroup tests land and shift the balance.
+
+**UPDATE: that condition is now met, from an unexpected direction.** Not the
+subgroup tests — §10.5's Karabina analysis. Compressed squaring beats
+Granger-Scott per squaring on every curve, but each decompression costs one
+constant-time `fp2_inv` at 50–78 µs, which sets a break-even of 40–48 squarings
+against runs whose longest is 32, 33 and 87. Inversion is not a fraction of a
+percent here; it is the entire gate. A 5x faster inversion would move Karabina
+from 0% on two curves to 8.9%, 16.9% and 19.8% of the final exponentiation.
+
+So the ordering flips: **inversion first, then Karabina.** Pornin's optimized
+binary GCD (ePrint 2020/972) is the one to read, since it is the fastest of the
+three and the reported margin over safegcd is on the same core. The Phase 6 gate
+in §10.10 applies unchanged — the new routine ships beside the `mpn_sec_invert`
+it replaces, both run against the same vectors, and it is deleted if it does not
+measure a win. Note that this is a constant-time requirement, not a
+nice-to-have: `fp_inv_vartime` exists and is 19x faster, and is unusable here
+because the value being inverted is derived from the pairing's input.
 
 ### 10.8 A BLS signature layer — STILL OUT OF SCOPE
 
