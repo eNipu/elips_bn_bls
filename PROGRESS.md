@@ -2304,11 +2304,26 @@ A 404 would have been better. It is legible.
 
 The earlier note also said the repointing "needs repository settings and cannot
 be done from a session". That was true of the Settings page and false of the
-problem. `actions/configure-pages@v5` with `enablement: true` switches the Pages
-build type from `legacy` to `workflow` through the API, using the workflow's own
-token, so the setting is changed *by the repository* rather than by hand.
-`upload-pages-artifact` and `deploy-pages` then publish what doxygen just
-generated.
+problem: the setting is reachable through the API, and the runner can call it
+even where a development session cannot.
+
+The first attempt got this wrong too, in a way worth keeping. It used
+`actions/configure-pages@v5` with `enablement: true`, on the belief that this
+switches the build type. **It does not.** That input only creates a Pages site
+that does not exist yet; against an already-enabled site it leaves `build_type`
+alone. The workflow went green, `deploy-pages` reported success, and the legacy
+Jekyll builder went on triggering and failing on every push. Two more red runs
+before it was caught, and the only reason it was caught is that the acceptance
+criterion had been written down as "pages build and deployment no longer runs
+at all" rather than "the workflow is green".
+
+So the build type is now set directly, with `gh api -X PUT repos/{}/pages -f
+build_type=workflow` and a `POST` fallback for a repository where Pages was
+never enabled. The step is deliberately **not** fatal: `deploy-pages` publishes
+the site whether or not the settings call is permitted, and failing the build
+over a refused settings call would trade a wrong setting for no documentation
+at all. It reads the resulting `build_type` back and warns if it is not
+`workflow`, so the outcome is visible instead of assumed a second time.
 
 Two consequences. The site is no longer committed anywhere, so `gh-pages` stops
 being written to and is now vestigial. And an empty site fails the build instead
