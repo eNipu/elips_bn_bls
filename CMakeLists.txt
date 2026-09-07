@@ -266,6 +266,26 @@ if(ELIPS_BUILD_TESTS)
                    -DPATTERN=pair
                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
 
+  # Subgroup membership, in both directions. The rejection direction is the
+  # reason this exists: a test that is too permissive accepts attacker-chosen
+  # points of small order while every other test still passes.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(subgroup_test_${_cv} test/subgroup_test.c)
+    target_link_libraries(subgroup_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(subgroup_test_${_cv})
+    add_test(NAME subgroup.${_cv}
+             COMMAND subgroup_test_${_cv}
+                     "${CMAKE_CURRENT_SOURCE_DIR}/test/kat/subgroup_${_vec_${_cv}}.vec")
+    set_tests_properties(subgroup.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
+
+  add_test(NAME subgroup.detects_corruption
+           COMMAND ${CMAKE_COMMAND}
+                   -DRUNNER=$<TARGET_FILE:subgroup_test_BLS12_381>
+                   -DSRC=${CMAKE_CURRENT_SOURCE_DIR}/test/kat/subgroup_bls12_381.vec
+                   -DPATTERN=outg2 -DRELABEL=ing2
+                   -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
+
   # Group-law properties. One curve is enough: the code is a template shared by
   # all three, and the vectors cover each curve's arithmetic separately.
   add_executable(ec_test test/ec_test.c)

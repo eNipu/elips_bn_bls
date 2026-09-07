@@ -9,8 +9,18 @@ if(NOT DEFINED PATTERN)
   set(PATTERN "fp12_mul")
 endif()
 
+#   RELABEL  optional: instead of damaging an expected value, rename every
+#            PATTERN record to this. Used for the subgroup file, whose records
+#            carry no expected value -- the claim IS the label. Relabelling
+#            "must be rejected" as "must be accepted" is the sharper control
+#            there, because it exercises the one direction that can fail
+#            silently.
 file(READ "${SRC}" _txt)
-string(REGEX REPLACE "(\n${PATTERN} [^\n]*)= [0-9a-f]+" "\\1= deadbeef" _bad "${_txt}")
+if(DEFINED RELABEL)
+  string(REGEX REPLACE "\n${PATTERN} " "\n${RELABEL} " _bad "${_txt}")
+else()
+  string(REGEX REPLACE "(\n${PATTERN} [^\n]*)= [0-9a-f]+" "\\1= deadbeef" _bad "${_txt}")
+endif()
 if(_bad STREQUAL _txt)
   message(FATAL_ERROR
     "corruption harness found no '${PATTERN}' record to alter in ${SRC}")

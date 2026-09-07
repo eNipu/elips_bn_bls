@@ -294,6 +294,51 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
                "  static const limb_t ELIPS_ORDER[%d] = {\n        %s\n  };\n"
                % (on, limb_list(ordr, on)))
 
+    # ---- fast subgroup membership tests ------------------------------------
+    #
+    # The tests have the shape "E(P) == [m]P". They are exact only if no prime
+    # dividing the cofactor can satisfy the endomorphism's quadratic, and that
+    # is asserted here rather than assumed, so a curve added later cannot ship
+    # a test that quietly accepts points outside the subgroup.
+    # tools/reference/subgroup_ref.py carries the derivation and the argument.
+    sub_txt = ""
+    if cv.family == "bls12":
+        m1 = -cv.X * cv.X
+        # phi^2 + phi + 1 = 0, so a stray point of order l needs
+        # m^2 + m + 1 == 0 mod l. For m = -x^2 that quantity IS r.
+        assert m1 * m1 + m1 + 1 == ordr, "the G1 exactness identity must hold"
+        assert math.gcd(h1, m1 * m1 + m1 + 1) == 1, \
+            "G1 test would accept points outside G1"
+        beta = None
+        for gg in range(2, 500):
+            b = pow(gg, (p - 1) // 3, p)
+            if b == 1:
+                continue
+            if EFp(cv, b * g1.x % p, g1.y) == g1.mul(m1 % ordr):
+                beta = b
+                break
+        assert beta is not None, "no cube root of unity acts as [-x^2] on G1"
+        assert pow(beta, 3, p) == 1 and beta != 1, "beta must have order exactly 3"
+        sub_txt += fp_const("EP_BETA", beta)
+    else:
+        assert h1 == 1, "BN G1 cofactor must be 1, making the G1 test trivial"
+
+    m2 = cv.X if cv.family == "bls12" else 6 * cv.X**2
+    assert (p - m2) % ordr == 0, "psi's multiplier must be p mod r"
+    # psi^2 - [t] psi + [p] = 0, so a stray point of order l needs
+    # m^2 - t*m + p == 0 mod l. No identity forces this to be coprime to the
+    # cofactor, so it is checked per curve. A shared prime is a gcd away.
+    assert math.gcd(h2, m2 * m2 - tr * m2 + p) == 1, \
+        "G2 test would accept points outside G2"
+    _u2, _u3 = Fp2(p, u2[0], u2[1]), Fp2(p, u3[0], u3[1])
+    assert EFp2(cv, g2.x.conj() * _u2, g2.y.conj() * _u3) == g2.mul(m2 % ordr), \
+        "psi must act as [m] on G2"
+    if cv.family == "bn":
+        mn = (m2.bit_length() + W - 1) // W
+        sub_txt += ("  #define ELIPS_6XSQ_BITS    %d\n" % m2.bit_length() +
+                    "  static const limb_t ELIPS_6XSQ[%d] = {\n        %s\n  };\n"
+                    % (mn, limb_list(m2, mn)))
+
     frob_txt = ""
     for k in (1, 2, 3):
         for i, (a, b) in enumerate(frob[k], start=1):
@@ -318,6 +363,7 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
         "  /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */\n" + hard_txt +
         "  /* Group generators, verified on-curve and of order exactly r. */\n" + gen_txt +
         "  /* Skew Frobenius on the twist: psi and psi^2 multipliers. */\n" + psi_txt +
+        "  /* Fast subgroup tests; exactness asserted by the generator. */\n" + sub_txt +
         "  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */\n" +
         frob_txt +
         "#endif\n")

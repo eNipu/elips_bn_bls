@@ -92,6 +92,13 @@ jobs:
           python3 tools/reference/gen_h2c_params.py
           git diff --exit-code -- include/elips/fp_params.h include/elips/h2c_params.h \
             || { echo "::error::a generated header is stale"; exit 1; }
+      - name: Subgroup tests are exact, and reject points outside the subgroup
+        run: python3 tools/reference/subgroup_ref.py
+      - name: Committed subgroup vectors match the generator
+        run: |
+          python3 tools/reference/gen_subgroup_vectors.py test/kat
+          git diff --exit-code -- test/kat/subgroup_*.vec \
+            || { echo "::error::a committed subgroup vector is stale"; exit 1; }
       - name: Final exponentiation chains compute their claimed exponents
         run: python3 tools/reference/trace_finalexp.py
 

@@ -37,6 +37,13 @@ void ep_from_affine(ep_t *r, const fp_t x, const fp_t y);
 int  ep_to_affine(fp_t x, fp_t y, const ep_t *p);   /* 0 if p is infinity */
 void ep_mul(ep_t *r, const ep_t *p, const limb_t *k, int kbits);
 int  ep_on_curve(const ep_t *p);
+/* Projective equality: no inversion, and correct for infinity. */
+int  ep_eq(const ep_t *a, const ep_t *b);
+#ifdef ELIPS_FAMILY_BLS12
+/* The GLV endomorphism (x, y) -> (beta*x, y). On G1 it acts as [-x^2];
+ * on the rest of E(Fp) it does not, which is what makes it a subgroup test. */
+void ep_phi(ep_t *r, const ep_t *p);
+#endif
 
 /* --- E'(Fp2) --- */
 void ep2_set_infinity(ep2_t *r);
@@ -73,6 +80,7 @@ void ep2_psi(ep2_t *r, const ep2_t *p);
 void ep2_mul_glv(ep2_t *r, const ep2_t *q, const limb_t *k, int kbits);
 #endif
 int  ep2_on_curve(const ep2_t *p);
+int  ep2_eq(const ep2_t *a, const ep2_t *b);
 
 /* Curve constant b in Montgomery form, and the twist constant b*xi. */
 void ep_curve_b(fp_t b);

@@ -216,6 +216,21 @@ int PT(on_curve)(const PTT *p)
     return F(eq)(lhs, rhs);
 }
 
+/* (X1:Y1:Z1) == (X2:Y2:Z2) iff X1*Z2 == X2*Z1 and Y1*Z2 == Y2*Z1.
+ *
+ * Two points at infinity have Z = 0 and satisfy both, as they should. An
+ * infinity never compares equal to an affine point: with (0:Y1:0) the X test
+ * is 0 == 0 and passes, but the Y test needs Y1*Z2 == 0 with Y1 and Z2 both
+ * nonzero, so it fails. No inversion and no branch on coordinate values. */
+int PT(eq)(const PTT *a, const PTT *b)
+{
+    EC_FT t0, t1;
+    F(mul)(t0, a->x, b->z); F(mul)(t1, b->x, a->z);
+    if (!F(eq)(t0, t1)) return 0;
+    F(mul)(t0, a->y, b->z); F(mul)(t1, b->y, a->z);
+    return F(eq)(t0, t1);
+}
+
 #undef CAT_
 #undef CAT
 #undef PT

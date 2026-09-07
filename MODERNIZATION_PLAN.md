@@ -767,7 +767,7 @@ This also closes a gap Phase 5 left: the modern headers were not installed at
 all, so the API carrying the pairing, the serialization and the hash-to-curve
 could not be consumed by anyone.
 
-### 10.3 Fast subgroup membership tests — SCHEDULED, Phase 6, highest value
+### 10.3 Fast subgroup membership tests — DONE
 
 **Algorithms of record, in the order they should be read:**
 
@@ -794,15 +794,60 @@ scalar multiplication by `r`. Scott's tests replace that with one endomorphism
 and a multiplication by the short parameter `x`. Expect the pairing to lose
 roughly a third of its cost.
 
-**Not done now, deliberately.** These tests are valid only under conditions on
-the curve, the literature has already had to correct one of those proofs once
-(2022/352 fixing 2021/1130), and the full texts were not reachable from this
-session. A subgroup test that is wrong does not fail loudly — it accepts
-attacker-chosen points, which is the hole the test exists to close. The Phase 6
-task is: read 2022/352 and 2022/348, have `gen_params.py` derive and assert the
-conditions per curve the way it already asserts that generators have order `r`,
-and only then switch the fast path on. BLS12-381 and BLS12-461 should be
-straightforward; BN-462 needs 2022/348 and may not qualify at all.
+**Done, and the conditions are derived rather than cited.** The full texts were
+not reachable from this session, so the deciding argument is machine-checked
+here instead of recalled. It is short enough to state.
+
+Each test asks whether `E(P) == [m]P` for an endomorphism `E` that satisfies a
+known quadratic over `Z`. If a point of prime order `l` satisfies the test, then
+`m` is an eigenvalue of `E` on `E[l]`, so `m` is a root of that quadratic mod
+`l`:
+
+| group | endomorphism relation | a stray point of order `l` needs |
+|---|---|---|
+| G1, BLS12 | `phi² + phi + 1 = 0` | `m² + m + 1 ≡ 0 (mod l)` |
+| G2, both | `psi² − t·psi + p = 0` | `m² − t·m + p ≡ 0 (mod l)` |
+
+So the test is exact when no prime dividing the cofactor divides the
+corresponding integer, and detecting a shared prime needs no factorisation —
+it is a gcd.
+
+**G1 on BLS12 is exact for every seed.** With `m = −x²`,
+
+```
+m² + m + 1 = x⁴ − x² + 1 = r
+```
+
+exactly. `r` is prime and does not divide the cofactor, so no cofactor point can
+satisfy the relation. That is why the literature reports no exceptional BLS12
+seeds; here it is an identity rather than a citation.
+
+**G1 on BN needs no test at all.** `#E(Fp) = r`, so the cofactor is 1 and being
+on the curve is already the whole condition. Measured: 939.6 µs → 0.9 µs.
+
+**G2 is where a curve could fail**, which is why 2022/352 had to correct a proof.
+No identity forces `m² − t·m + p` coprime to the cofactor, so it is checked per
+curve. All three curves pass.
+
+The derivation lives in `tools/reference/subgroup_ref.py`, which also confirms
+each conclusion numerically on points that really are outside the subgroup.
+`gen_params.py` re-asserts the exactness conditions every time it regenerates
+`fp_params.h`, so a curve added later cannot ship a test that silently accepts
+attacker-chosen points. `test/kat/subgroup_*.vec` carries both classes of point
+and `test/subgroup_test.c` checks both directions, with a negative control that
+relabels a must-reject point as must-accept and requires the runner to notice.
+
+**Measured on this machine, x86-64 gcc -O2:**
+
+| curve | G1 before | G1 after | G2 before | G2 after | pairing before | pairing after |
+|---|---|---|---|---|---|---|
+| BLS12-381 | 331.5 µs | 187.7 µs | 1131.4 µs | 333.1 µs | 4069 µs | 3127 µs (−23%) |
+| BLS12-461 | 613.7 µs | 350.4 µs | 2078.2 µs | 580.9 µs | 6900 µs | 5139 µs (−26%) |
+| BN-462 | 939.6 µs | 0.9 µs | 2936.3 µs | 1502.0 µs | 8701 µs | 6328 µs (−27%) |
+
+Short of the "roughly a third" estimated above, because that estimate assumed
+the checks vanished rather than becoming shorter ladders. BN's G2 multiplier is
+`6x²`, half the width of `r`, so BN gains least on G2 and most on G1.
 
 ### 10.4 GLV for BN, and for G1 everywhere — SCHEDULED, Phase 6
 

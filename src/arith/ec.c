@@ -37,6 +37,17 @@ void ep2_curve_b(fp2_t b)
 #undef EC_F
 #undef EC_FT
 
+#ifdef ELIPS_FAMILY_BLS12
+void ep_phi(ep_t *r, const ep_t *p)
+{
+    /* Safe in projective form: x = X/Z, and scaling X by beta scales x by beta
+     * while leaving Z alone. Infinity has X = 0 and stays infinity. */
+    fp_mul(r->x, p->x, EP_BETA);
+    fp_copy(r->y, p->y);
+    fp_copy(r->z, p->z);
+}
+#endif
+
 void ep2_psi(ep2_t *r, const ep2_t *p)
 {
     /* psi(x, y) = (conj(x) * gamma^-2, conj(y) * gamma^-3) on affine

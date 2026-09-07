@@ -200,6 +200,15 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000) }
   };
+  /* Fast subgroup tests; exactness asserted by the generator. */
+  static const limb_t EP_BETA[6] = {
+        UINT64_C(0x30f1361b798a64e8),
+        UINT64_C(0xf3b8ddab7ece5a2a),
+        UINT64_C(0x16a8ca3ac61577f7),
+        UINT64_C(0xc26a2ff874fd029b),
+        UINT64_C(0x3636b76660701c6e),
+        UINT64_C(0x051ba4ab241b6160)
+  };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][6] = {
     { UINT64_C(0x07089552b319d465),
@@ -630,6 +639,17 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000) }
+  };
+  /* Fast subgroup tests; exactness asserted by the generator. */
+  static const limb_t EP_BETA[8] = {
+        UINT64_C(0x73e3b9c838c74f87),
+        UINT64_C(0xab8e4a32adfe3d11),
+        UINT64_C(0xb59cc9799f6177f8),
+        UINT64_C(0x062782ed30d69711),
+        UINT64_C(0xa47882ff54511132),
+        UINT64_C(0x8640d7ae779cfd76),
+        UINT64_C(0x1b78f28f56a2aaf0),
+        UINT64_C(0x00000000000012ca)
   };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {
@@ -1122,6 +1142,14 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000) }
+  };
+  /* Fast subgroup tests; exactness asserted by the generator. */
+  #define ELIPS_6XSQ_BITS    231
+  static const limb_t ELIPS_6XSQ[4] = {
+        UINT64_C(0x0000000060030006),
+        UINT64_C(0xff6ffe8000000000),
+        UINT64_C(0xfffffffffffffff3),
+        UINT64_C(0x00000060060017ff)
   };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {

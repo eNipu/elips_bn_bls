@@ -434,22 +434,71 @@ void ep2_generator(ep2_t *g)
     fp2_set_one(g->z);
 }
 
+/* ------------------------------------------------- subgroup membership ----
+ *
+ * These used to be [r]P, a full-length ladder, and they dominated the cost of
+ * elips_pairing. They are now endomorphism tests, following Scott (ePrint
+ * 2021/1130) as corrected by El Housni, Guillevic and Piellard (ePrint
+ * 2022/352) for G2, and Dai, Lin, Zhao and Zhou (ePrint 2022/348) for the
+ * generalisation BN needs.
+ *
+ * A test that is too permissive does not fail loudly -- it accepts
+ * attacker-chosen points of small order, which is the hole the test exists to
+ * close. So neither the relation nor its exactness is recalled here.
+ * tools/reference/subgroup_ref.py derives both per curve, and gen_params.py
+ * re-asserts the exactness conditions every time it regenerates fp_params.h.
+ *
+ * The argument, in short. Each test asks whether E(P) == [m]P for an
+ * endomorphism E satisfying a known quadratic. A point of prime order l
+ * satisfying it forces m to be a root of that quadratic mod l:
+ *
+ *     G1 (BLS12)   phi^2 + phi + 1 = 0    needs  m^2 + m + 1 == 0 mod l
+ *     G2 (both)    psi^2 - t psi + p = 0  needs  m^2 - t m + p == 0 mod l
+ *
+ * so the test is exact when no prime dividing the cofactor divides the
+ * corresponding integer. For G1 with m = -x^2 that integer is x^4 - x^2 + 1,
+ * which is r itself, so BLS12 G1 is exact for every seed. G2 has no such
+ * identity and is checked per curve by a gcd. */
+
 int ep_in_subgroup(const ep_t *p)
 {
+#ifdef ELIPS_FAMILY_BN
+    /* #E(Fp) = r exactly on a BN curve, so the cofactor is 1 and being on the
+     * curve is already the whole condition. The generator asserts h1 == 1. */
+    return ep_is_infinity(p) || ep_on_curve(p);
+#else
     if (ep_is_infinity(p)) return 1;
     if (!ep_on_curve(p))   return 0;
-    ep_t t;
-    ep_mul(&t, p, ELIPS_ORDER, ELIPS_ORDER_BITS);
-    return ep_is_infinity(&t);
+
+    /* phi(P) == [-x^2]P. Squaring the parameter makes the sign irrelevant, so
+     * this is two ladders over |x| rather than one over r: 128 bits against
+     * 255 on BLS12-381. */
+    ep_t lhs, rhs;
+    ep_phi(&lhs, p);
+    ep_mul(&rhs, p,    ELIPS_ABSX, ELIPS_ABSX_BITS);
+    ep_mul(&rhs, &rhs, ELIPS_ABSX, ELIPS_ABSX_BITS);
+    ep_neg(&rhs, &rhs);
+    return ep_eq(&lhs, &rhs);
+#endif
 }
 
 int ep2_in_subgroup(const ep2_t *q)
 {
     if (ep2_is_infinity(q)) return 1;
     if (!ep2_on_curve(q))   return 0;
-    ep2_t t;
-    ep2_mul(&t, q, ELIPS_ORDER, ELIPS_ORDER_BITS);
-    return ep2_is_infinity(&t);
+
+    /* psi(Q) == [p mod r]Q. That multiplier is x on BLS12 and 6x^2 on BN. */
+    ep2_t lhs, rhs;
+    ep2_psi(&lhs, q);
+#ifdef ELIPS_FAMILY_BLS12
+    ep2_mul(&rhs, q, ELIPS_ABSX, ELIPS_ABSX_BITS);
+#if ELIPS_X_NEGATIVE
+    ep2_neg(&rhs, &rhs);
+#endif
+#else
+    ep2_mul(&rhs, q, ELIPS_6XSQ, ELIPS_6XSQ_BITS);
+#endif
+    return ep2_eq(&lhs, &rhs);
 }
 
 int elips_pairing(fp12_t out, const ep_t *P, const ep2_t *Q)

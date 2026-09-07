@@ -1627,6 +1627,66 @@ real and the hardware reading above is wrong.
 
 ---
 
+## Phase 6 — fast subgroup tests (issue for plan §10.3)
+
+The subgroup checks were `[r]P`, a full-length ladder, and they were the
+largest single cost inside `elips_pairing`. They are now endomorphism tests.
+
+**What made this safe to do.** A subgroup test that is too strict fails the
+first time a valid point is checked. One that is too permissive fails silently:
+it accepts attacker-chosen points of small order while every other test in the
+suite still passes. That asymmetry is why this was deferred, and it decided how
+it got built.
+
+The full texts of 2021/1130, 2022/352 and 2022/348 were not reachable from this
+session, so the deciding argument is machine-checked rather than recalled:
+
+Each test asks whether `E(P) == [m]P` for an endomorphism satisfying a known
+quadratic. A point of prime order `l` that satisfies the test forces `m` to be a
+root of that quadratic mod `l` — `m²+m+1` for `phi` on G1, `m²−t·m+p` for `psi`
+on G2. So the test is exact when no prime dividing the cofactor divides that
+integer, and finding a shared prime is a gcd, not a factorisation.
+
+Three results fall out, and two of them are better than expected:
+
+- **BLS12 G1 is exact for every seed.** With `m = −x²`, `m²+m+1 = x⁴−x²+1 = r`
+  exactly. `r` is prime and misses the cofactor, so nothing outside G1 can pass.
+  The "no exceptional BLS12 seeds" result is a one-line identity here.
+- **BN G1 needs no test at all.** `#E(Fp) = r`, cofactor 1, so on-curve is the
+  whole condition. 939.6 µs to 0.9 µs.
+- **G2 has no such identity** and is the case the literature had to correct
+  (2022/352 fixing 2021/1130). Checked per curve by gcd; all three pass.
+
+**Where the checks live, in order of how much they would catch.**
+`tools/reference/subgroup_ref.py` derives each test, proves exactness, and then
+confirms it numerically on points that really are outside the subgroup.
+`gen_params.py` re-asserts the exactness conditions on every regeneration, so a
+curve added later cannot ship a permissive test. `test/kat/subgroup_*.vec`
+carries points to accept and points to reject; `test/subgroup_test.c` checks
+both directions and refuses to run on a file with nothing to reject. The
+negative control relabels a must-reject point as must-accept and requires the
+runner to fail.
+
+**Measured, x86-64 gcc -O2:**
+
+| curve | G1 before | G1 after | G2 before | G2 after | pairing |
+|---|---|---|---|---|---|
+| BLS12-381 | 331.5 µs | 187.7 µs | 1131.4 µs | 333.1 µs | 4069 to 3127 µs, −23% |
+| BLS12-461 | 613.7 µs | 350.4 µs | 2078.2 µs | 580.9 µs | 6900 to 5139 µs, −26% |
+| BN-462 | 939.6 µs | 0.9 µs | 2936.3 µs | 1502.0 µs | 8701 to 6328 µs, −27% |
+
+Short of the plan's "roughly a third", which assumed the checks disappeared
+rather than becoming shorter ladders. BN's G2 multiplier is `6x²` at half the
+width of `r`, so BN gains least on G2 and most on G1.
+
+Also new: `ep_eq`/`ep2_eq`, projective equality by cross-multiplication with no
+inversion, correct for infinity in both slots; and `ep_phi`, the GLV
+endomorphism on G1.
+
+42 CTest on Release, 32 under each sanitizer, no warnings under `-Werror`.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6
