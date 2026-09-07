@@ -2374,6 +2374,105 @@ opened from here. What is verified is the deployment, not the rendering.
 
 ---
 
+## The benchmark harness, and three designs that looked right
+
+Issue #15 asked for machine-readable baselines. What it really needed was a
+comparison that can tell a regression from a noisy machine, and getting there
+took three attempts. The two that failed are worth more than the one that
+worked.
+
+**1. All reps of A, then all reps of B.** Reports a spread, and the spread
+lies. Eight of twelve operations disagreed between two consecutive runs by
+*more* than the spread each run claimed for itself, up to 27.8%. Reps taken
+back to back share a CPU frequency and a cache state; separate runs do not. A
+spread that does not bound the run-to-run difference is worse than no spread,
+because it invites confidence.
+
+**2. Interleaved.** One rep of every operation before the next rep starts.
+This fixed ratios *within* a run: 0.9-3.1% stable against 19-23% for the
+absolutes. `bench.c` does this. But comparing two separate runs still failed.
+A planted 12% slowdown came out at +1.5% after drift correction — invisible.
+Normalising against a single reference operation was worse still, importing
+that operation's noise into every number and reporting ten untouched routines
+as regressed.
+
+**3. A/B alternation.** `compare.py --ab` runs the two binaries alternately,
+ABBA, and compares pairwise. The two meet the same machine within seconds of
+each other, over and over, so drift moves both halves of a pair together.
+ABBA rather than ABAB because always running old first biases new by whatever
+the machine does over a round; that version reported ten false regressions
+alongside the real one.
+
+Both controls pass. Identical binaries report nothing, with the -6 to -8%
+drift correctly caught by the sign-agreement metric. The planted 12% gives
+exactly one flagged operation, the one changed, while eleven others read
+unchanged.
+
+Two limits found by using it. It needs an **idle machine**: running a compile
+alongside an A/B produced +9 to +13% on all twelve operations at 100%
+agreement. Everything moving at once is the signature of that mistake, not of
+a regression. And it needs an **absolute floor**: BN's `ep_in_subgroup` is a
+curve equation, 0.8 us, and a 0.1 us difference was reported as "+5.4%
+SLOWER".
+
+## Constant-time G_T exponentiation
+
+`fp12_exp` branches on the exponent. Documented, and fine for the curve
+parameters it exists for — but it meant the library had **no** constant-time
+way to exponentiate in G_T at all.
+
+`fp12_exp_gt` is that, and 2.5x to 2.9x faster as a side effect. G_T and G2
+are the same Frobenius eigenspace, so the Frobenius acts on G_T as exactly
+the multiplier psi has on G2, and the exponent splits in the same base:
+four digits of |x| on BLS12, two of 6x^2 on BN. Plus cyclotomic squaring, and
+two bits per step on BN for the same reason the curve ladder chose that width.
+
+| | fp12_exp | fp12_exp_gt | |
+|---|---|---|---|
+| BLS12-381 | 1573 us | 560 us | 2.80x |
+| BLS12-461 | 2813 us | 964 us | 2.90x |
+| BN-462 | 5104 us | 2017 us | 2.54x |
+
+Projected at 2.8x and 2.6x beforehand. The estimate held only because the
+masked table scan was measured too — 21 us over 64 ladder bits, small but not
+zero. Leaving that out is how the Karabina estimate went wrong by half.
+
+The decomposition helpers moved from `ec.c` into `src/arith/glv_scalar.h`. A
+second copy of a constant-time divider is a copy that can drift.
+
+## Two cofactor clearings
+
+**BLS12.** The note said `hash_to_g2` "rebuilds a window table for each of its
+two short ladders; a shared table would help." Half right. The two ladders run
+on Q and psi(Q), which are different points, so no table can be shared. What
+can be shared is the doublings: `[A]Q + [B]psi(Q)` is a two-scalar
+multiplication, and `ep2_mul2` runs it as one interleaved ladder. BLS12-381
+`hash_to_g2` 1748 -> 1584 us, -12.0%.
+
+Two buffer **overreads** on the way, both caught by the RFC 9380 vectors
+rather than by reading the code. The ladder rounds the bit length up to whole
+two-bit windows and reads a limb per window, so a tightly sized constant is
+read past its end. Then one shared bit length for two scalars that differ in
+length by a factor of two.
+
+**BN, and an assumption that was wrong.** This was investigated expecting to
+report a trade-off: published fast chains for BN G2 compute a different
+*multiple* of the cofactor, so adopting one would change what `hash_to_g2`
+returns and force the vectors to be regenerated. That is not what happened.
+
+The BN G2 cofactor is exactly `h2 = p + t - 1 = p + 6x^2`. In base p that is
+`6x^2 + 1*p` — the multiplier by p is **one**. And on the twist
+`[p] = [t]psi - psi^2`, so p can be eliminated entirely:
+
+    [h2]Q = [6x^2](Q + psi(Q)) + psi(Q) - psi^2(Q)
+
+One 231-bit ladder instead of a 462-bit one, computing exactly `[h_eff]`, with
+`ELIPS_6XSQ` already emitted for the subgroup test. `hash_to_g2` 4514 -> 3757
+us, -20.0%, and the committed BN vectors pass unchanged, which is the proof
+the output did not move.
+
+---
+
 # HAND-OFF — next session starts at Phase 6
 
 **Phases 0 to 5b are complete.** Phase 6 (assembly) is next, and §10.10 of the
@@ -2457,19 +2556,19 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 
 ## Known limitations, stated plainly
 
-- ~~Subgroup checks are full scalar multiplications.~~ Done: `ep_in_subgroup`
-  and `ep2_in_subgroup` are endomorphism tests, proved exact per curve.
-- ~~No multi-pairing.~~ Done: `elips_pairing_multi` shares one Miller
-  accumulator and one final exponentiation, and `elips_pairing_prec` adds
-  fixed-argument precomputation.
-- G_T exponentiation has no GLV. The Frobenius gives a cheap endomorphism on
-  the cyclotomic subgroup and the same two-digit ladder would apply, but
-  `fp12_mul` is a different cost balance from `ep_add`, so it needs measuring
-  before it is built.
-- BN-462 has no fast G2 cofactor chain. (GLV on both its groups is done.)
-- `hash_to_g2` rebuilds a window table for each of its two short ladders; a
-  shared table would help.
+- ~~Subgroup checks are full scalar multiplications.~~ Done.
+- ~~No multi-pairing.~~ Done.
+- ~~G_T exponentiation has no GLV.~~ Done: `fp12_exp_gt`, constant time and
+  2.5x to 2.9x faster. `fp12_exp` remains for public exponents and still
+  branches, deliberately.
+- ~~BN-462 has no fast G2 cofactor chain.~~ Done, and it computes exactly
+  `h_eff`, so nothing downstream changed.
+- ~~`hash_to_g2` rebuilds a window table for each of its two short ladders.~~
+  Done, though not the way that note suggested: the tables could never be
+  shared, the doublings could.
+- No assembly (issue #7), deferred.
 - No signature layer. §10.8 explains why that line is where it is.
+- BN-462 has no fast G2 cofactor chain. (GLV on both its groups is done.)
 - `gh-pages` is vestigial. Pages deploys from `.github/workflows/docs.yml` as
   of #22 with `build_type: workflow`, so nothing writes to that branch any
   more and it can be deleted.
