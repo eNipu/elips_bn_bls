@@ -1758,6 +1758,61 @@ separable from this and untouched.
 
 ---
 
+## The dudect gate, calibrated instead of guessed
+
+`dudect.ep2_mul_glv` failed CI again at `max|t| = 15.76` with a same-size
+confirm of `10.18`. The pull_request run on the **same commit** passed. Two
+runs, identical code, different verdicts.
+
+The earlier fix, replacing the degenerate `k = 0` fixed class, was right and
+did most of the work: the reading fell from 57/71 to 15.76/10.18. What was left
+was not a leak, it was a threshold problem.
+
+**Why 10 was the wrong number here.** dudect's ladder is for one t-test.
+`max_abs_t` reports the largest |t| over 21 correlated crops, and the maximum of
+21 tests clears 10 far more often under the null than one test does. The old
+gate then "confirmed" by re-measuring at the same sample size a second later,
+which sees the same noise burst as the first — much weaker than it sounds.
+
+**An escalating-sample rule was tried first and rejected.** The idea was sound:
+a real effect's t grows as sqrt(n) while noise is distribution-free in n, so
+quadruple the sample and require growth. It fails in practice because a leak
+that is already saturated at n=2000 does not grow. Tested against a planted
+one-multiply leak, requiring 1.4x growth reported **two genuine leaks out of six
+as clean**. A gate that misses real leaks is worse than one that occasionally
+cries wolf, so this was thrown away rather than shipped.
+
+**What shipped: magnitude, measured on both sides.** The suspicion threshold
+stays at 10. Above it the target is re-measured with four times the data — not
+for growth, but because the larger sample gives a steadier reading — and judged
+against `T_CONFIRM = 25`. Both ends of that gap are measured, not chosen:
+
+| | reading |
+|---|---|
+| noise ceiling observed on the CI runner | 15.76 |
+| a planted ONE-multiply leak on one secret bit | 30 to 60, confirming 39 to 51 |
+
+25 sits in that gap. Caught 8 of 8 planted leaks after the change, and
+`ep2_mul_glv` over 25 local runs read 0.84 to 2.62, never once reaching even the
+suspicion threshold.
+
+**The planted leak is now a permanent second control**, `dudect.sensitivity`.
+`control_vartime` reads in the hundreds and only proves the harness finds an
+obvious leak; this one plants a single extra field multiplication on one bit of
+the secret inside a ~900 µs scalar multiplication and proves it finds a small
+one. It also keeps the threshold honest by construction: raise `T_CONFIRM` past
+what a one-multiply leak produces and this test starts failing. That is a
+calibration the file carries with it, rather than a number justified only in a
+comment.
+
+Neither macOS nor the dudect tests were dropped. Dropping them would have
+removed the only AArch64 coverage in CI, on the platform whose timing behaviour
+differs most.
+
+43 CTest on Release, up from 42.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6

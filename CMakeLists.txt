@@ -233,12 +233,20 @@ if(ELIPS_BUILD_TESTS)
      OR CMAKE_BUILD_TYPE STREQUAL "Msan")
     message(STATUS "dudect timing tests built but not registered under ${CMAKE_BUILD_TYPE}")
   else()
-    # control_vartime is the negative control: it calls fp_inv_vartime on secret
-    # inputs and the test FAILS if no leak is found. A leakage detector that
-    # cannot detect a leak says nothing about the targets it passes -- the same
-    # argument that put kat.detects_corruption in the Phase 0 suite.
+    # Two negative controls, at opposite ends, both of which FAIL if no leak is
+    # found. A leakage detector that cannot detect a leak says nothing about the
+    # targets it passes -- the same argument that put kat.detects_corruption in
+    # the Phase 0 suite.
+    #
+    #   control_vartime  calls fp_inv_vartime on secrets; reads in the hundreds,
+    #                    so it proves the harness finds an obvious leak.
+    #   sensitivity      plants ONE extra field multiplication on one bit of the
+    #                    secret; reads 30 to 60, so it proves the harness finds a
+    #                    small one. It is also what keeps the decision threshold
+    #                    honest: raise the threshold past a one-multiply leak and
+    #                    this test starts failing.
     foreach(_t fp_mul fp_add fp_cselect fp_inv ep_mul ep2_mul ep2_mul_glv
-               hash_to_g1 hash_to_g2 control_vartime)
+               hash_to_g1 hash_to_g2 sensitivity control_vartime)
       add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})
       set_tests_properties(dudect.${_t} PROPERTIES TIMEOUT 900)
     endforeach()
