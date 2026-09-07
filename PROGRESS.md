@@ -2278,6 +2278,51 @@ a different cost balance from `ep_add` and it needs measuring before building.
 
 ---
 
+## The documentation site was broken, and looked fine
+
+Worth recording because the failure mode is the interesting part, not the fix.
+
+When `docs/` was untracked, the note left behind said the site would **404
+until Pages was repointed to `gh-pages`**. That prediction was wrong, and wrong
+in the direction that hides the problem. Pages was configured as source =
+branch `master`, folder `/docs`, legacy Jekyll builder. Removing the folder did
+not take the site down. It made every subsequent build fail:
+
+    Source: /github/workspace/./docs
+    Error: No such file or directory @ dir_chdir0 - /github/workspace/docs
+
+and Pages went on serving the last deployment that had succeeded, from
+`3e55a99`, back when `docs/` still held the **old** generated HTML. So the
+published documentation described headers that had been deleted with the legacy
+layer, with nothing on the page to say so. Four builds failed in a row.
+Meanwhile `docs.yml` succeeded every time, publishing correct current HTML to
+`gh-pages` that nothing served.
+
+A 404 would have been better. It is legible.
+
+### The fix, and why it was reachable from a session
+
+The earlier note also said the repointing "needs repository settings and cannot
+be done from a session". That was true of the Settings page and false of the
+problem. `actions/configure-pages@v5` with `enablement: true` switches the Pages
+build type from `legacy` to `workflow` through the API, using the workflow's own
+token, so the setting is changed *by the repository* rather than by hand.
+`upload-pages-artifact` and `deploy-pages` then publish what doxygen just
+generated.
+
+Two consequences. The site is no longer committed anywhere, so `gh-pages` stops
+being written to and is now vestigial. And an empty site fails the build instead
+of deploying: the page count is checked, because `Doxyfile_101` really did once
+have `INPUT` set to an absolute path on a developer's Mac, which generates a
+site with no content at all. The guard was tested against an empty directory, an
+index-only directory and the real 96-page site before being trusted.
+
+The deployment reports `https://enipu.github.io/elips_bn_bls/` and the egress
+policy in the session blocks `enipu.github.io`, so the live page could not be
+opened from here. What is verified is the deployment, not the rendering.
+
+---
+
 # HAND-OFF — next session starts at Phase 6
 
 **Phases 0 to 5b are complete.** Phase 6 (assembly) is next, and §10.10 of the
@@ -2368,9 +2413,8 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 - `hash_to_g2` rebuilds a window table for each of its two short ladders; a
   shared table would help.
 - No signature layer. §10.8 explains why that line is where it is.
-- `docs/` is untracked as of #19 and the site is published to `gh-pages` by
-  `.github/workflows/docs.yml`. GitHub Pages still has to be repointed from
-  `master:/docs` to that branch, which is a repository setting.
+- `gh-pages` is vestigial. Pages is deployed from `.github/workflows/docs.yml`
+  as of #22, so nothing writes to that branch any more and it can be deleted.
 - The IACR survey behind §10 was done through search abstracts: the egress
   policy blocks `eprint.iacr.org`, so no full text was read. Citations are
   pointers, not sources of copied formulas.
