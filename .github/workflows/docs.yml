@@ -51,45 +51,36 @@ jobs:
           echo "generated $n HTML pages"
           test "$n" -gt 10 || { echo "::error::only $n pages, the generator found nothing"; exit 1; }
 
-      # Switch Pages from the legacy Jekyll builder to this workflow.
-      #
-      # actions/configure-pages with enablement: true does NOT do this. Its
-      # enablement only creates a Pages site that does not exist yet; against an
-      # already-enabled site it leaves build_type alone, and the legacy builder
-      # goes on triggering on every push to master and failing. That was
-      # observed here, twice, before this step existed.
-      #
-      # KNOWN LIMITATION, measured rather than assumed. With the default
-      # GITHUB_TOKEN this PUT does not take effect: the legacy builder still
-      # triggered on the push that followed it. PUT /repos/{}/pages requires
-      # ADMIN on the repository, which GITHUB_TOKEN does not carry no matter
-      # what `permissions:` says. POST (create) is allowed with pages: write,
-      # which is exactly why configure-pages' enablement works only for a site
-      # that does not exist yet.
-      #
-      # The step is kept because it is correct and costs nothing: it works for
-      # a repository where Pages was never enabled, and it works here the
-      # moment it is given a token with admin (a PAT in a secret). Until then a
-      # repository admin has to set Settings -> Pages -> Source to
-      # "GitHub Actions" once, by hand.
-      #
-      # Deliberately not fatal either way. deploy-pages below publishes the
-      # site regardless, and failing the build over a refused settings call
-      # would trade a wrong setting for no documentation at all.
-      - name: Deploy from this workflow, not from a branch
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api -X PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
-            || gh api -X POST "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow \
-            || echo "::warning::could not set build_type; the legacy builder may still run"
-          got=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type 2>/dev/null || echo unknown)
-          echo "Pages build_type is now: $got"
-          [ "$got" = "workflow" ] || echo "::warning::build_type is '$got', expected 'workflow'"
-
       - uses: actions/upload-pages-artifact@v3
         with:
           path: doxygen-out/html
 
       - id: deploy
         uses: actions/deploy-pages@v4
+
+      # Switch Pages from the legacy Jekyll builder to this workflow.
+      #
+      # Runs LAST, and on purpose. Placed mid-job its output was buried under
+      # the artifact file listing and could not be read back, so a failure was
+      # inferred from the legacy builder still firing rather than observed. At
+      # the end its output is the tail of the log, and continue-on-error makes
+      # the step's own conclusion the answer: green means the API accepted it.
+      #
+      # Nothing here can block the deployment, which has already happened by
+      # this point. A refused settings call must not cost the documentation.
+      #
+      # actions/configure-pages with enablement: true does NOT do this: its
+      # enablement only creates a Pages site that does not exist yet, and
+      # against an already-enabled site it leaves build_type alone.
+      - name: Set Pages to deploy from this workflow
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          echo "--- current ---"
+          gh api "repos/$GITHUB_REPOSITORY/pages" || echo "GET refused"
+          echo "--- PUT build_type=workflow ---"
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/pages" -f build_type=workflow
+          echo "--- after ---"
+          gh api "repos/$GITHUB_REPOSITORY/pages" --jq '{build_type,source,status}'
