@@ -1,7 +1,0 @@
-{
-    "git.ignoreLimitWarning": true,
-    "files.associations": {
-        "bls12_line_tate.h": "c",
-        "limits": "c"
-    }
-}

@@ -55,3 +55,7 @@ __pycache__/
 docs/
 doxygen-out/
 Doxyfile.ci
+
+# Editor and IDE settings are personal, not repository content.
+.vscode/
+.idea/
