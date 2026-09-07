@@ -517,10 +517,28 @@ void fp12_exp_param(fp12_t r, const fp12_t f)
     fp12_conj(fi, f);
     if (ELIPS_PARAM[ELIPS_PARAM_TOP] > 0) fp12_copy(acc, f);
     else                                  fp12_copy(acc, fi);
-    for (int i = ELIPS_PARAM_TOP - 1; i >= 0; i--) {
-        fp12_sqr_cyc(acc, acc);       /* acc stays cyclotomic throughout */
-        if (ELIPS_PARAM[i] > 0)      fp12_mul(acc, acc, f);
-        else if (ELIPS_PARAM[i] < 0) fp12_mul(acc, acc, fi);
+
+    /* Walk the digits in runs rather than one at a time, so a long stretch of
+     * squarings can be done in Karabina's compressed form.
+     *
+     * Compression is cheaper per squaring but costs one Fp2 inversion to undo,
+     * and a multiply needs the element undone. So it only pays across a run
+     * longer than ELIPS_KARABINA_MIN_RUN. The run lengths come from
+     * ELIPS_PARAM, which is a public compile-time constant, so choosing between
+     * the two paths reveals nothing about the operand. */
+    int i = ELIPS_PARAM_TOP - 1;
+    while (i >= 0) {
+        int j = i;
+        while (j >= 0 && ELIPS_PARAM[j] == 0) j--;
+        int run = (j >= 0) ? (i - j + 1) : (i + 1);
+
+        if (run >= ELIPS_KARABINA_MIN_RUN) fp12_sqr_cyc_run(acc, acc, run);
+        else for (int k = 0; k < run; k++) fp12_sqr_cyc(acc, acc);
+
+        if (j < 0) break;
+        if (ELIPS_PARAM[j] > 0) fp12_mul(acc, acc, f);
+        else                    fp12_mul(acc, acc, fi);
+        i = j - 1;
     }
     fp12_copy(r, acc);
 }

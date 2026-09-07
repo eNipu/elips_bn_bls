@@ -90,6 +90,12 @@ void fp12_frobenius(fp12_t r, const fp12_t a, int k);
  * Cheaper than fp12_sqr, and WRONG outside that subgroup. Everything the final
  * exponentiation touches after the easy part qualifies. */
 void fp12_sqr_cyc(fp12_t r, const fp12_t a);
+
+/* n squarings in a row on a cyclotomic element, via Karabina's compressed
+ * form. Cheaper per squaring than fp12_sqr_cyc but costs one Fp2 inversion to
+ * come back, so it wins only for a long enough n: ELIPS_KARABINA_MIN_RUN is the
+ * measured break-even. Same result as n calls to fp12_sqr_cyc. */
+void fp12_sqr_cyc_run(fp12_t r, const fp12_t a, int n);
 /* r = a^e, e given as little-endian limbs of ebits bits. Not constant time in
  * the exponent, which is fine: every exponent used here is a public curve
  * parameter. */

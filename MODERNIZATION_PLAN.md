@@ -873,7 +873,7 @@ The decomposition must stay constant time. This library already has a restoring,
 mask-driven division for the BLS12 G2 case at 1.6% overhead; reuse it rather
 than reaching for GMP.
 
-### 10.5 Cyclotomic squaring — Granger-Scott DONE; Karabina derived, measured, DECLINED
+### 10.5 Cyclotomic squaring — Granger-Scott DONE; Karabina DONE (after §10.7)
 
 **Algorithm of record: Karabina, "Squaring in cyclotomic subgroups"
 (Math. Comp. 82, 2013)**, whose compressed squaring costs about **four Fp2
@@ -933,9 +933,10 @@ general squaring with an imaginary speedup. `test/edge_test.c` repeats both
 checks in C, and a sign sabotage in `h1` was confirmed to fail there and in the
 pairing vectors.
 
-**Karabina compression: derived, implemented, measured, and declined.** The
-work is in `tools/reference/karabina_ref.py`, which re-runs the whole decision
-in one command.
+**Karabina compression: declined once, then built once §10.7 changed the
+inputs.** The derivation is in `tools/reference/karabina_ref.py`, which re-runs
+the decision in one command; the history below is kept because the reversal is
+the useful part.
 
 **The formulas were fitted, not recalled.** Compressed squaring is a quadratic
 map, so its coefficients are solvable: sample random cyclotomic elements, square
@@ -991,11 +992,44 @@ almost every run clears it:
 
 §10.7 declined safegcd (ePrint 2019/266) and Pornin (ePrint 2020/972) on the
 grounds that inversion was not material after Phase 4 removed all but a handful
-per pairing. **That reasoning no longer holds**: Karabina makes inversion the
-gate on a 9–20% win, and §10.7's own condition for revisiting — "if a profile
-says inversion is material again" — is now met. The right next step in this
-section is a faster constant-time inversion, after which Karabina should be
-re-decided by re-running `karabina_ref.py`.
+per pairing. That reasoning stopped holding, §10.7 was reversed, and the faster
+inversion landed.
+
+**With it, Karabina is built and switched on.** `fp12_sqr_cyc_run(a, n)` does n
+squarings in compressed form; `fp12_exp_param` walks the parameter's digits in
+runs and uses it when a run is long enough.
+
+**The threshold came from measuring the real routine, not its parts.** Dividing
+one `fp2_inv` by the per-squaring saving predicted break-even near 6. That was
+optimistic by half: decompression also costs several multiplies and squarings.
+Timing `fp12_sqr_cyc_run(n)` against n calls to `fp12_sqr_cyc`, best of 7 runs
+of 300:
+
+| n | 5 | 9 | 10 | 13 | 16 | 27 | 32 | 87 |
+|---|---|---|---|---|---|---|---|---|
+| BLS12-381 | 0.72x | 0.91x | 0.94x | 1.02x | 1.08x | 1.18x | 1.21x | 1.36x |
+| BN-462 | 0.72x | 0.93x | 0.97x | 1.03x | 1.19x | 1.09x | 1.16x | 1.42x |
+
+So it is a **loss** below about 12. `ELIPS_KARABINA_MIN_RUN` is 16; shorter runs
+use `fp12_sqr_cyc`, so the threshold can never make anything slower than before.
+
+**The exceptional case is closed, not hoped away.** Decompression needs `g3`,
+and there are two relations for it:
+
+```
+4 g1 g3 = 3 g2² + xi g5² − 2 g4        4 xi g5 g3 = g1² − 2 g2 + 3 xi g4²
+```
+
+one dividing by `g1`, the other by `g5`. Both degenerate only if
+`g2³ = 8/(27 xi)`, and `gen_params.py` now asserts that this is **not a cube in
+Fp2** for every curve shipped — it is not, on all three. The only element with
+`g1 = g5 = 0` is therefore the identity, where `fp2_inv(0) = 0` makes both
+relations give `g3 = 0` and `g0 = 1`, which is correct. The choice between them
+is a select, not a branch, because the operand is secret.
+
+Relation 2 is unreachable by random testing, so `test/edge_test.c` checks the
+two **identities** instead, which hold on every cyclotomic element. Confirmed
+necessary: forcing relation 1 everywhere breaks nothing else in the suite.
 
 ### 10.6 Multi-pairing and fixed-argument precomputation — DONE
 

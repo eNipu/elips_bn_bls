@@ -364,6 +364,39 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
     inv_fix = pow(2, 2 * inv_blocks, p) * R % p
     inv_txt = fp_const("FP_INV_FIX", inv_fix)
 
+    # Karabina compression (src/arith/fpx.c) pays only across a run of
+    # squarings long enough to amortise its decompression.
+    #
+    # 16, from measuring the real routine rather than its parts. Dividing one
+    # fp2_inv by the per-squaring saving predicted a break-even near 6, and that
+    # was optimistic by half: decompression also costs several multiplies and
+    # squarings, and compression has its own overhead. Timing
+    # fp12_sqr_cyc_run(n) against n calls to fp12_sqr_cyc, best of 7 runs of 300:
+    #
+    #   n      5     9    10    13    16    27    32    87
+    #   381 0.72x 0.91x 0.94x 1.02x 1.08x 1.18x 1.21x 1.36x
+    #   462 0.72x 0.93x 0.97x 1.03x 1.19x 1.09x 1.16x 1.42x
+    #
+    # so it is a LOSS below about 12 and only clearly a win from 16 up. Runs
+    # shorter than this simply use fp12_sqr_cyc, so the threshold can never make
+    # anything slower than it was.
+    inv_txt += "  #define ELIPS_KARABINA_MIN_RUN 16\n"
+
+    # Decompression divides by g1, or by g5 when g1 is zero. Both vanish only
+    # if g2^3 == 8/(27 xi), so that must not be a cube in Fp2 or a non-identity
+    # element could decompress wrongly. Asserted per curve, not assumed.
+    _xi = Fp2(p, 1, 1)
+    _t = Fp2(p, 8, 0) * (Fp2(p, 27, 0) * _xi).inv()
+    def _fp2_pow(a, e):
+        r_ = Fp2(p, 1, 0)
+        while e:
+            if e & 1: r_ = r_ * a
+            a = a * a; e >>= 1
+        return r_
+    if (p * p - 1) % 3 == 0:
+        assert not (_fp2_pow(_t, (p * p - 1) // 3) - Fp2(p, 1, 0)).is_zero(), \
+            "8/(27 xi) is a cube: Karabina decompression has a second exceptional point"
+
     frob_txt = ""
     for k in (1, 2, 3):
         for i, (a, b) in enumerate(frob[k], start=1):

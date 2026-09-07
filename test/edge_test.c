@@ -287,6 +287,63 @@ static void test_aliasing(void)
         fp12_sqr(rr, f);
         fp12_sqr_cyc(aa, f);
         ok(!fp12_eq(aa, rr), "fp12_sqr_cyc is not valid off the subgroup");
+
+        /* Karabina: n compressed squarings must equal n ordinary ones. Run
+         * lengths on either side of the threshold, and the degenerate n. */
+        for (int n = 0; n <= 12; n++) {
+            fp12_t want, got;
+            fp12_copy(want, cyc);
+            for (int k = 0; k < n; k++) fp12_sqr_cyc(want, want);
+            fp12_sqr_cyc_run(got, cyc, n);
+            ok(fp12_eq(got, want), "fp12_sqr_cyc_run == repeated fp12_sqr_cyc");
+        }
+        fp12_copy(aa, cyc); fp12_sqr_cyc_run(aa, aa, 7);
+        fp12_sqr_cyc_run(rr, cyc, 7);
+        ok(fp12_eq(aa, rr), "fp12_sqr_cyc_run tolerates r == a");
+
+        /* Decompression picks between two relations for g3, and the second is
+         * only reached when g1 == 0 -- which random cyclotomic elements never
+         * hit, so a wrong second relation would sit untested. Confirmed: forcing
+         * the first relation everywhere breaks nothing else in this suite.
+         *
+         * So check the relations themselves. Both hold identically on every
+         * cyclotomic element, and validating relation 2 here validates the
+         * branch that cannot be reached directly.
+         *
+         *   4 g1 g3    == 3 g2^2 + xi g5^2 - 2 g4
+         *   4 xi g5 g3 == g1^2 - 2 g2 + 3 xi g4^2
+         *
+         * with a[0] = (g0,g2,g4) and a[1] = (g1,g3,g5). */
+        {
+            fp2_t g1, g2, g3, g4, g5, lhs, rhs, t2, th;
+            fp2_copy(g1, cyc[1][0]); fp2_copy(g2, cyc[0][1]);
+            fp2_copy(g3, cyc[1][1]); fp2_copy(g4, cyc[0][2]);
+            fp2_copy(g5, cyc[1][2]);
+
+            fp2_mul(lhs, g1, g3);
+            fp2_add(lhs, lhs, lhs); fp2_add(lhs, lhs, lhs);      /* 4 g1 g3 */
+            fp2_sqr(rhs, g2);
+            fp2_add(t2, rhs, rhs); fp2_add(rhs, t2, rhs);        /* 3 g2^2  */
+            fp2_sqr(t2, g5); fp2_mul_xi(t2, t2); fp2_add(rhs, rhs, t2);
+            fp2_sub(rhs, rhs, g4); fp2_sub(rhs, rhs, g4);
+            ok(fp2_eq(lhs, rhs), "decompression relation 1 holds (divides by g1)");
+
+            fp2_mul_xi(lhs, g5); fp2_mul(lhs, lhs, g3);
+            fp2_add(lhs, lhs, lhs); fp2_add(lhs, lhs, lhs);      /* 4 xi g5 g3 */
+            fp2_sqr(rhs, g1);
+            fp2_sub(rhs, rhs, g2); fp2_sub(rhs, rhs, g2);
+            fp2_sqr(t2, g4); fp2_mul_xi(t2, t2);
+            fp2_add(th, t2, t2); fp2_add(th, th, t2);            /* 3 xi g4^2 */
+            fp2_add(rhs, rhs, th);
+            ok(fp2_eq(lhs, rhs), "decompression relation 2 holds (divides by g5)");
+        }
+
+        /* The identity is the one element where BOTH relations degenerate:
+         * g1 = g5 = 0. gen_params.py asserts no other element can do that. */
+        fp12_t idt, ids;
+        fp12_set_one(idt);
+        fp12_sqr_cyc_run(ids, idt, 5);
+        ok(fp12_eq(ids, idt), "compressed squaring of the identity is the identity");
     }
 #undef ALIAS2
 

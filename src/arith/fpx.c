@@ -373,6 +373,147 @@ void fp12_sqr_cyc(fp12_t r, const fp12_t a)
     fp2_copy(r[0][1], o2a); fp2_copy(r[1][2], o2b);
 }
 
+/* ------------------------------------------ Karabina compression -------
+ *
+ * Karabina, "Squaring in cyclotomic subgroups" (Math. Comp. 82, 2013). An
+ * element of the cyclotomic subgroup is determined by four of its six Fp2
+ * coordinates, and squaring in that form is cheaper than Granger-Scott: six
+ * Fp2 squarings and no multiplication, measured 1759 ns against 2902 on
+ * BLS12-381.
+ *
+ * The catch is that a multiplication needs the full element back, and getting
+ * it back costs one Fp2 inversion. So compression pays only across a run of
+ * squarings long enough to amortise that. With the divstep inversion (§10.7)
+ * the break-even is about 6 squarings; before it, it was about 48, which is
+ * why this was measured and declined once before being built.
+ *
+ * FORMULAS. Keeping (g1, g2, g4, g5) -- in the Fp4 view, the two coordinates
+ * c1 and c2, with c0 = (g0, g3) dropped:
+ *
+ *   h1 = 2 g1 + 6 xi g2 g5          h2 = 3 g1^2 + 3 xi g4^2 - 2 g2
+ *   h5 = 2 g5 + 6 g1 g4             h4 = 3 g2^2 + 3 xi g5^2 - 2 g4
+ *
+ * Both cross products come from squarings already needed, via
+ * 2ab = (a+b)^2 - a^2 - b^2, so the routine uses six squarings and no multiply.
+ *
+ * DECOMPRESSION has two relations for g3, and this is where the care goes:
+ *
+ *   4 g1 g3    = 3 g2^2 + xi g5^2 - 2 g4
+ *   4 xi g5 g3 = g1^2 - 2 g2 + 3 xi g4^2
+ *
+ * The first divides by g1, the second by g5, so one serves when the other
+ * degenerates. They cannot both degenerate except at the identity: g1 = g5 = 0
+ * forces g2^3 = 8/(27 xi), and gen_params.py asserts that this is NOT a cube in
+ * Fp2 for every curve shipped. At the identity all four kept coordinates are
+ * zero, both denominators are zero, fp2_inv(0) is 0 by contract, and g3 = 0 and
+ * g0 = 1 come out right anyway.
+ *
+ * The choice between the two is a select on whether g1 is zero, not a branch:
+ * the operand is secret.
+ *
+ * Then g0 = 1 + xi (g1 g5 - 3 g2 g4 + 2 g3^2).
+ *
+ * All of this was fitted from the arithmetic rather than recalled -- see
+ * tools/reference/karabina_ref.py, which solves for the coefficients and checks
+ * them on held-out samples. */
+
+typedef struct { fp2_t g1, g2, g4, g5; } fp12_comp_t;
+
+/* a[0] holds (g0, g2, g4) and a[1] holds (g1, g3, g5). */
+static void fp12_compress(fp12_comp_t *c, const fp12_t a)
+{
+    fp2_copy(c->g1, a[1][0]);
+    fp2_copy(c->g2, a[0][1]);
+    fp2_copy(c->g4, a[0][2]);
+    fp2_copy(c->g5, a[1][2]);
+}
+
+static void fp12_comp_sqr(fp12_comp_t *r, const fp12_comp_t *a)
+{
+    fp2_t s1, s2, s4, s5, t25, t14, u, w;
+
+    fp2_sqr(s1, a->g1); fp2_sqr(s2, a->g2);
+    fp2_sqr(s4, a->g4); fp2_sqr(s5, a->g5);
+    fp2_add(w, a->g2, a->g5); fp2_sqr(t25, w);
+    fp2_sub(t25, t25, s2); fp2_sub(t25, t25, s5);      /* 2 g2 g5 */
+    fp2_add(w, a->g1, a->g4); fp2_sqr(t14, w);
+    fp2_sub(t14, t14, s1); fp2_sub(t14, t14, s4);      /* 2 g1 g4 */
+
+    /* h1 = 2 g1 + 3 xi (2 g2 g5) */
+    fp2_mul_xi(u, t25);
+    fp2_add(w, u, u); fp2_add(u, w, u);
+    fp2_add(u, u, a->g1); fp2_add(u, u, a->g1);
+    /* h5 = 2 g5 + 3 (2 g1 g4) */
+    fp2_t h5;
+    fp2_add(w, t14, t14); fp2_add(h5, w, t14);
+    fp2_add(h5, h5, a->g5); fp2_add(h5, h5, a->g5);
+    /* h2 = 3 (g1^2 + xi g4^2) - 2 g2 */
+    fp2_t h2;
+    fp2_mul_xi(h2, s4); fp2_add(h2, h2, s1);
+    fp2_add(w, h2, h2); fp2_add(h2, w, h2);
+    fp2_sub(h2, h2, a->g2); fp2_sub(h2, h2, a->g2);
+    /* h4 = 3 (g2^2 + xi g5^2) - 2 g4 */
+    fp2_t h4;
+    fp2_mul_xi(h4, s5); fp2_add(h4, h4, s2);
+    fp2_add(w, h4, h4); fp2_add(h4, w, h4);
+    fp2_sub(h4, h4, a->g4); fp2_sub(h4, h4, a->g4);
+
+    fp2_copy(r->g1, u); fp2_copy(r->g2, h2);
+    fp2_copy(r->g4, h4); fp2_copy(r->g5, h5);
+}
+
+static void fp12_decompress(fp12_t r, const fp12_comp_t *c)
+{
+    fp2_t n1, n2, d1, d2, n, d, g3, g0, t, xi_one, one;
+
+    /* n1 = 3 g2^2 + xi g5^2 - 2 g4 ;  d1 = 4 g1 */
+    fp2_sqr(n1, c->g2);
+    fp2_add(t, n1, n1); fp2_add(n1, t, n1);
+    fp2_sqr(t, c->g5); fp2_mul_xi(t, t); fp2_add(n1, n1, t);
+    fp2_sub(n1, n1, c->g4); fp2_sub(n1, n1, c->g4);
+    fp2_add(d1, c->g1, c->g1); fp2_add(d1, d1, d1);
+
+    /* n2 = g1^2 - 2 g2 + 3 xi g4^2 ; d2 = 4 xi g5 */
+    fp2_sqr(n2, c->g1);
+    fp2_sub(n2, n2, c->g2); fp2_sub(n2, n2, c->g2);
+    fp2_sqr(t, c->g4); fp2_mul_xi(t, t);
+    fp2_add(g3, t, t); fp2_add(t, g3, t);
+    fp2_add(n2, n2, t);
+    fp2_mul_xi(d2, c->g5);
+    fp2_add(d2, d2, d2); fp2_add(d2, d2, d2);
+
+    /* Select, do not branch: which relation is usable depends on the operand. */
+    fp2_set_zero(t);
+    limb_t use2 = (limb_t)0 - (limb_t)fp2_eq(c->g1, t);
+    fp2_cselect(n, n2, n1, use2);
+    fp2_cselect(d, d2, d1, use2);
+
+    fp2_inv(d, d);              /* fp2_inv(0) == 0, which the identity needs */
+    fp2_mul(g3, n, d);
+
+    /* g0 = 1 + xi (g1 g5 - 3 g2 g4 + 2 g3^2) */
+    fp2_mul(g0, c->g1, c->g5);
+    fp2_mul(t, c->g2, c->g4);
+    fp2_add(xi_one, t, t); fp2_add(t, xi_one, t);
+    fp2_sub(g0, g0, t);
+    fp2_sqr(t, g3); fp2_add(g0, g0, t); fp2_add(g0, g0, t);
+    fp2_mul_xi(g0, g0);
+    fp2_set_one(one);
+    fp2_add(g0, g0, one);
+
+    fp2_copy(r[0][0], g0);   fp2_copy(r[0][1], c->g2); fp2_copy(r[0][2], c->g4);
+    fp2_copy(r[1][0], c->g1); fp2_copy(r[1][1], g3);   fp2_copy(r[1][2], c->g5);
+}
+
+void fp12_sqr_cyc_run(fp12_t r, const fp12_t a, int n)
+{
+    if (n <= 0) { fp12_copy(r, a); return; }
+    fp12_comp_t c;
+    fp12_compress(&c, a);
+    for (int i = 0; i < n; i++) fp12_comp_sqr(&c, &c);
+    fp12_decompress(r, &c);
+}
+
 void fp12_exp(fp12_t r, const fp12_t a, const limb_t *e, int ebits)
 {
     fp12_t acc;

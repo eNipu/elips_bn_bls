@@ -219,6 +219,7 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x2e314f4d96f19179),
         UINT64_C(0x165890b82b48dbff)
   };
+  #define ELIPS_KARABINA_MIN_RUN 16
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][6] = {
     { UINT64_C(0x07089552b319d465),
@@ -673,6 +674,7 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x7b1de9eb8b86b30b),
         UINT64_C(0x0000000000000d56)
   };
+  #define ELIPS_KARABINA_MIN_RUN 16
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {
     { UINT64_C(0x5ffb2514d3d275a9),
@@ -1185,6 +1187,7 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x7404aebcb6bb35a0),
         UINT64_C(0x0000000000001098)
   };
+  #define ELIPS_KARABINA_MIN_RUN 16
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {
     { UINT64_C(0xc6569749d7a29138),
