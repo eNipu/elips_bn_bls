@@ -136,8 +136,15 @@ python3 tools/reference/h2c_ref.py         # RFC 9380 maps, isogenies, SvdW
 python3 tools/reference/gen_vectors.py test/kat          # field and curve
 python3 tools/reference/gen_pairing_vectors.py test/kat  # the pairing itself
 python3 tools/reference/gen_h2c_vectors.py test/kat      # hash to curve
-python3 tools/reference/trace_finalexp.py  # exact exponent of each chain
+python3 tools/reference/trace_finalexp.py  # exponent of each final-exp chain
 ```
+
+`trace_finalexp.py` is the odd one out: it produces no vectors. It walks the
+two `pairing_final_exp_fast` chains in `src/pairing/miller.c` symbolically,
+tracking the exponent rather than the field element, and asserts that each
+computes what its comment claims: `lambda` for BN, `3*lambda` for BLS12. A
+numeric vector says the answer is right today; this says the chain is the
+right chain, and fails if an edit changes its exponent.
 
 Every suite in `test/` is driven by these vectors, so the library is checked
 against a Python implementation written from the defining equations rather than

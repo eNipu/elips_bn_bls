@@ -909,6 +909,12 @@ library was inspected for non-const file-scope symbols and there are none, so
 that class of defect has nowhere left to live. Issue #16 describes code that no
 longer exists.
 
+The script that diagnosed #16, `tools/reference/trace_finalexp.py`, was kept and
+retargeted at the surviving chains in `src/pairing/miller.c`. It no longer
+reports an exponent, it asserts one: `lambda` for BN, `3*lambda` for BLS12. The
+two scripts that read a dump from the now-deleted `test/dump_pairing.c` had no
+way left to run and were removed.
+
 The plan's "curve context struct" was never built and never needed: the
 remaining layer's constants are compile-time.
 

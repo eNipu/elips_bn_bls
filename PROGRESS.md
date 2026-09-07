@@ -1536,6 +1536,45 @@ One library, `ELiPS::arith`, built for the curve `-DELIPS_CURVE` selects.
 old name still configures — verified by building a consumer against each name.
 `include/ELiPS_bn_bls/` is no longer installed because it no longer exists.
 
+### The Python tooling the deletion stranded
+
+Three reference scripts were written to study the legacy final exponentiation.
+Removing that code changed what each is worth, and they did not all land in the
+same place.
+
+`check_finalexp.py` and `find_exponent.py` both read a JSON dump produced by
+`test/dump_pairing.c`. That producer is gone, so neither script can be run at
+all: there is no longer any way to give them an input. They are deleted. What
+they established is not lost, because it is what the current pairing test
+asserts on every run.
+
+`trace_finalexp.py` was the third, and it was the one worth keeping. It traced
+`src/bn_final_exp.c` and `src/bls12_finalexp.c`, so after the deletion it still
+passed while describing nothing. Rather than drop it or leave a CI step that
+guards nothing, it now traces the two `pairing_final_exp_fast` chains in
+`src/pairing/miller.c`, and it asserts rather than reports:
+
+| curve | chain claims | trace says |
+|---|---|---|
+| BN-462 | `lambda` | exact |
+| BLS12-461 | `3*lambda` | exact |
+| BLS12-381 | `3*lambda` | exact |
+
+The check is cheap and independent in a way the vectors are not. A vector says
+the pairing produced the right number for four specific inputs. This says the
+chain computes the exponent its comment claims, for every input, by tracking the
+exponent through the chain instead of the field element: `fp12_mul` adds,
+`fp12_sqr_cyc` doubles, `fp12_exp_param` multiplies by the signed x,
+`fp12_frobenius` multiplies by a power of p, `fp12_conj` negates. The last of
+those holds only because the easy part already put the element in the
+cyclotomic subgroup, which is the same fact both C chains rely on.
+
+Confirmed it fails when it should: changing one `frobenius(b,1)` to
+`frobenius(b,2)` in the traced BLS12 chain makes both BLS12 curves report a
+mismatch and the script exit 1. The CI step is renamed accordingly — it used to
+say "documents issue #16", and issue #16 is moot now that the code it described
+is deleted.
+
 ### Note for whoever repoints GitHub Pages
 
 `docs/` is still tracked and is now 1280 of the 76+1280 tracked files —

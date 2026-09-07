@@ -92,7 +92,7 @@ jobs:
           python3 tools/reference/gen_h2c_params.py
           git diff --exit-code -- include/elips/fp_params.h include/elips/h2c_params.h \
             || { echo "::error::a generated header is stale"; exit 1; }
-      - name: Final exponentiation exponents (documents issue #16)
+      - name: Final exponentiation chains compute their claimed exponents
         run: python3 tools/reference/trace_finalexp.py
 
   install:
