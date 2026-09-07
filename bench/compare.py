@@ -56,7 +56,7 @@ def run_binary(path, reps, name=None):
     return json.loads(out)["results"]
 
 
-def ab(old, new, rounds, reps, floor):
+def ab(old, new, rounds, reps, floor, abs_floor):
     """Alternate the two binaries and compare pairwise."""
     # ABBA ordering. Running old-then-new every round biases the second one by
     # whatever the machine is doing over the round: tried that way, a planted
@@ -91,7 +91,15 @@ def ab(old, new, rounds, reps, floor):
         same = sum(1 for r in ratios if (r > 0) == (change > 0))
         agree = same / len(ratios)
 
-        if abs(change) <= floor or agree < 0.75:
+        oa = statistics.median([a for a, _ in pairs[k]])
+        ob = statistics.median([b for _, b in pairs[k]])
+
+        # An operation below the absolute floor cannot be measured here. On BN
+        # ep_in_subgroup is a curve equation and runs in 0.8 us; a 0.1 us
+        # difference read as "+5.4% SLOWER" is the timer, not the code.
+        if min(oa, ob) < abs_floor:
+            verdict = "too fast to measure"
+        elif abs(change) <= floor or agree < 0.75:
             verdict = "unchanged"
         elif change > 0:
             verdict = "SLOWER"
@@ -99,13 +107,11 @@ def ab(old, new, rounds, reps, floor):
         else:
             verdict = "faster"
 
-        oa = statistics.median([a for a, _ in pairs[k]])
-        ob = statistics.median([b for _, b in pairs[k]])
         print(f"{k:<{width}} {oa:>10.1f} {ob:>10.1f} {change:>+8.1f}% {agree:>6.0%}   {verdict}")
     return regressed
 
 
-def files(before_path, after_path, floor):
+def files(before_path, after_path, floor, abs_floor):
     """Compare two recorded runs, correcting for drift with the median change."""
     with open(before_path) as f:
         db = json.load(f)
@@ -132,6 +138,11 @@ def files(before_path, after_path, floor):
     for k in shared:
         c = change[k] - drift
         noise = max(before[k]["spread_pct"], after[k]["spread_pct"], floor)
+        if min(before[k]["median"], after[k]["median"]) < abs_floor:
+            verdict = "too fast to measure"
+            print(f"{k:<{width}} {before[k]['median']:>10.1f} {after[k]['median']:>10.1f} "
+                  f"{c:>+8.1f}%   {verdict}")
+            continue
         if abs(c) <= noise:
             verdict = "unchanged"
         elif c > 0:
@@ -155,10 +166,15 @@ def main():
     ap.add_argument("--reps", type=int, default=9, help="reps inside each run (default 9)")
     ap.add_argument("--floor", type=float, default=3.0,
                     help="smallest change treated as real, percent (default 3)")
+    ap.add_argument("--abs-floor", type=float, default=2.0,
+                    help="ignore operations faster than this many microseconds "
+                         "(default 2); below it the timer noise is the reading")
     args = ap.parse_args()
 
-    regressed = (ab(args.first, args.second, args.rounds, args.reps, args.floor)
-                 if args.ab else files(args.first, args.second, args.floor))
+    regressed = (ab(args.first, args.second, args.rounds, args.reps,
+                    args.floor, args.abs_floor)
+                 if args.ab else files(args.first, args.second,
+                                       args.floor, args.abs_floor))
 
     print()
     print(f"{regressed} operation(s) regressed" if regressed

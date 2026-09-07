@@ -224,7 +224,25 @@ int elips_encode_to_g1(ep_t *out, const uint8_t *msg, size_t msg_len,
  * that, a wrong chain here cannot pass silently: it computes a different
  * multiple, and the RFC 9380 vectors stop matching.
  *
- * BN keeps the plain multiplication; no chain for it has been verified here. */
+ * BN gets its own chain, and it is simpler than the BLS12 one. There the G2
+ * cofactor is exactly h2 = p + t - 1 = p + 6x^2, so in base p it is
+ * 6x^2 + 1*p: the multiplier by p is one and the remainder is only 231 bits.
+ * On the twist psi satisfies psi^2 - [t]psi + [p] = 0, so [p] = [t]psi - psi^2
+ * and p disappears entirely:
+ *
+ *     [h2]Q = [6x^2]Q + [t]psi(Q) - psi^2(Q)
+ *           = [6x^2](Q + psi(Q)) + psi(Q) - psi^2(Q)
+ *
+ * folding the two scalar multiplications into one with t = 6x^2 + 1. A SINGLE
+ * 231-bit ladder replaces the 462-bit one, and it computes exactly [h_eff],
+ * so no vector moves. ELIPS_6XSQ already exists for the G2 subgroup test, so
+ * the chain needs no new constants.
+ *
+ * Published fast chains for BN G2 generally compute a different MULTIPLE of
+ * the cofactor, which would change what hash_to_g2 returns. This one does
+ * not, which is why it could be adopted without regenerating anything.
+ * tools/reference/h2c_ref.py derives it and checks it against [h_eff] on
+ * random points of the twist. */
 static void clear_cofactor_g2(ep2_t *r, const ep2_t *q)
 {
 #ifdef ELIPS_H2C_G2_FAST_CLEAR
@@ -259,6 +277,17 @@ static void clear_cofactor_g2(ep2_t *r, const ep2_t *q)
     ep2_psi(&t2, &t2);
 
     ep2_add(r, r, &t2);
+#elif defined(ELIPS_FAMILY_BN)
+    ep2_t pq, ppq, sum;
+
+    ep2_psi(&pq, q);          /* psi(Q)    */
+    ep2_psi(&ppq, &pq);       /* psi^2(Q)  */
+    ep2_neg(&ppq, &ppq);
+
+    ep2_add(&sum, q, &pq);    /* Q + psi(Q) */
+    ep2_mul(r, &sum, ELIPS_6XSQ, ELIPS_6XSQ_BITS);
+    ep2_add(r, r, &pq);
+    ep2_add(r, r, &ppq);
 #else
     ep2_mul(r, q, H2C_HEFF_G2, H2C_HEFF_G2_BITS);
 #endif

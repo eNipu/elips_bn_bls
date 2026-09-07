@@ -558,6 +558,62 @@ def g2_fast_clear_coeffs(curve):
     return a, b
 
 
+def bn_g2_fast_clear(curve):
+    """The BN G2 cofactor chain, derived here rather than recalled.
+
+    The published fast chains for BN G2 compute a MULTIPLE of the cofactor,
+    not the cofactor itself, which would change what hash_to_g2 returns. This
+    one does not, and the reason is a small identity worth writing down.
+
+    For a BN curve the G2 cofactor is
+
+        h2 = p + t - 1 = p + 6x^2
+
+    checked below, not assumed. Written in base p that is h2 = 6x^2 + 1*p, so
+    the multiplier by p is 1 and the remainder is only 231 bits. And on the
+    twist psi satisfies its characteristic equation
+
+        psi^2 - [t] psi + [p] = 0   hence   [p] = [t] psi - psi^2
+
+    so p can be replaced by psi entirely:
+
+        [h2]Q = [6x^2]Q + [t]psi(Q) - psi^2(Q)
+              = [6x^2](Q + psi(Q)) + psi(Q) - psi^2(Q)
+
+    using t = 6x^2 + 1 to fold the two scalar multiplications into one. That
+    leaves a SINGLE 231-bit ladder in place of the 462-bit one, computing
+    exactly [h_eff], so no vector changes.
+
+    6x^2 is already emitted as ELIPS_6XSQ for the G2 subgroup test, so the
+    chain needs no new constants at all.
+
+    Checked on random points of the TWIST, not of G2, where much weaker
+    relations hold and would hide a wrong chain."""
+    if curve.family != "bn":
+        return None
+
+    X, p = curve.X, curve.p
+    t = 6 * X * X + 1
+    h = cofactor_multiplier(curve, "G2")
+    assert h == p + t - 1, "BN G2 cofactor should be p + t - 1"
+
+    import random
+    rng = random.Random(20260907)
+    bt = EFp2.b_twist(curve)
+    for _ in range(6):
+        while True:
+            x = Fp2(p, rng.randrange(p), rng.randrange(p))
+            y = fp2_sqrt(x.sqr() * x + bt, p)
+            if y is not None:
+                break
+        Q = EFp2(curve, x, y)
+        pQ = psi(curve, Q)
+        ppQ = psi(curve, pQ)
+        got = (Q + pQ).mul(6 * X * X) + pQ + EFp2(curve, ppQ.x, -ppQ.y)
+        assert got == Q.mul(h), "the BN G2 cofactor chain is not [h_eff]"
+    return 6 * X * X
+
+
 # ----------------------------------------------------------------- self-test
 
 _SUITE_CACHE = {}
@@ -686,9 +742,12 @@ def selftest(verbose=True):
 
     # The fast G2 cofactor chain must compute exactly [h_eff], on the whole
     # twist and not merely on G2.
-    for name in ("BLS12-381", "BLS12-461"):
+    for name in ("BLS12-381", "BLS12-461", "BN-462"):
         cv = CURVES[name]
-        ok = g2_fast_clear_coeffs(cv) is not None
+        if cv.family == "bls12":
+            ok = g2_fast_clear_coeffs(cv) is not None
+        else:
+            ok = bn_g2_fast_clear(cv) is not None
         check(ok, "%-11s fast G2 cofactor chain equals [h_eff] on the twist" % name)
 
     # SvdW: the construction's own identity, on every curve that uses it.
