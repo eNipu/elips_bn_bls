@@ -257,13 +257,14 @@ if(ELIPS_BUILD_TESTS)
     #                    honest: raise the threshold past a one-multiply leak and
     #                    this test starts failing.
     foreach(_t fp_mul fp_add fp_cselect fp_inv ep_mul ep2_mul ep2_mul_glv
-               ep_mul_glv hash_to_g1 hash_to_g2 sensitivity control_vartime)
+               ep_mul_glv fp12_exp_gt hash_to_g1 hash_to_g2
+               sensitivity control_vartime)
       add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})
       set_tests_properties(dudect.${_t} PROPERTIES TIMEOUT 900)
     endforeach()
 
     # Only the routines whose code BN does not share, plus the controls.
-    foreach(_t ep_mul_glv ep2_mul_glv sensitivity control_vartime)
+    foreach(_t ep_mul_glv ep2_mul_glv fp12_exp_gt sensitivity control_vartime)
       add_test(NAME dudect.bn.${_t} COMMAND dudect_test_bn ${_t})
       set_tests_properties(dudect.bn.${_t} PROPERTIES TIMEOUT 900)
     endforeach()

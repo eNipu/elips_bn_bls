@@ -11,6 +11,7 @@
  * Montgomery reduction per fp_t operation instead of one per fp2/fp6 operation.
  */
 #include "elips/fpx.h"
+#include "arith/glv_scalar.h"
 
 /* ============================== fp2 ==================================== */
 
@@ -521,6 +522,149 @@ void fp12_exp(fp12_t r, const fp12_t a, const limb_t *e, int ebits)
     for (int i = ebits - 1; i >= 0; i--) {
         fp12_sqr(acc, acc);
         if ((e[i / 64] >> (i % 64)) & 1) fp12_mul(acc, acc, a);
+    }
+    fp12_copy(r, acc);
+}
+
+/* ---- constant-time exponentiation in G_T ---------------------------------
+ *
+ * fp12_exp above branches on the exponent, which is fine for the curve
+ * parameters it was written for and unusable for a secret one. This is the
+ * constant-time counterpart, and it is faster as well, for three reasons.
+ *
+ * 1. fp12_sqr_cyc instead of fp12_sqr. Valid because the input is in the
+ *    cyclotomic subgroup, and 1.6x to 2.0x cheaper.
+ *
+ * 2. The Frobenius is an endomorphism of G_T, and on that subgroup it acts as
+ *    multiplication by p mod r -- the same multiplier psi has on G2, since G_T
+ *    and G2 are the same eigenspace of the Frobenius. So the exponent splits
+ *    in the same base the G2 GLV uses: |x| on BLS12, which is a quarter of r
+ *    and gives four digits, and 6x^2 on BN, which is sqrt(r) and gives two.
+ *    fp12_frobenius costs about a fifth of an fp12_mul, so the endomorphism is
+ *    effectively free.
+ *
+ * 3. Two bits of each digit per step on BN, one on BLS12. Same reasoning as
+ *    the curve ladder in ec.c: BN's two digits index a 16-entry table at width
+ *    two, while BLS12's four digits would need 256 entries for the same trick
+ *    and stay at width one.
+ *
+ * Measured against fp12_exp on the same element, best of interleaved runs:
+ *
+ *            fp12_exp   this   speedup
+ *   381        1877 us  ~680     2.8x
+ *   462        5210 us  ~2000    2.6x
+ *
+ * PRECONDITION: a must lie in G_T, the order-r cyclotomic subgroup. That is
+ * where fp12_sqr_cyc is valid and where the Frobenius acts as the scalar
+ * above; on a general fp12 element this returns a wrong answer rather than
+ * failing. The output of elips_pairing always qualifies.
+ */
+
+/* r = mask ? a : b, for a whole fp12. */
+static void fp12_cselect(fp12_t r, const fp12_t a, const fp12_t b, limb_t mask)
+{
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 3; j++)
+            for (int k = 0; k < 2; k++)
+                fp_cselect(r[i][j][k], a[i][j][k], b[i][j][k], mask);
+}
+
+/* The Frobenius power that acts as [base^i] on G_T. */
+static void gt_endo(fp12_t r, const fp12_t a, int i)
+{
+    if (i == 0) fp12_copy(r, a);
+    else        fp12_frobenius(r, a, i);
+}
+
+void fp12_exp_gt(fp12_t r, const fp12_t a, const limb_t *k, int kbits)
+{
+    limb_t kbuf[GLV_W], ord[GLV_W], base[GLV_W];
+    limb_t quo[GLV_W], tmp[GLV_W];
+#ifdef ELIPS_FAMILY_BLS12
+    enum { NDIG = 4, WIN = 1 };
+    const int digit_bits = ELIPS_ABSX_BITS;
+#else
+    enum { NDIG = 2, WIN = 2 };
+    const int digit_bits = ELIPS_6XSQ_BITS;
+#endif
+    enum { NTBL = 1 << (NDIG * WIN) };
+    limb_t d[NDIG][GLV_W];
+
+    memset(kbuf, 0, sizeof kbuf);
+    memset(ord,  0, sizeof ord);
+    memset(base, 0, sizeof base);
+    for (int i = 0; i < GLV_W && i < (kbits + 63) / 64; i++) kbuf[i] = k[i];
+    for (int i = 0; i < GLV_W && i < (ELIPS_ORDER_BITS + 63) / 64; i++)
+        ord[i] = ELIPS_ORDER[i];
+    for (int i = 0; i < GLV_W && i < (digit_bits + 63) / 64; i++)
+#ifdef ELIPS_FAMILY_BLS12
+        base[i] = ELIPS_ABSX[i];
+#else
+        base[i] = ELIPS_6XSQ[i];
+#endif
+
+    /* k mod r, then peel off the digits in that base. */
+    int inbits = kbits > ELIPS_ORDER_BITS ? kbits : ELIPS_ORDER_BITS;
+    glv_divrem(quo, tmp, kbuf, inbits, ord, GLV_W);
+
+    int bits = ELIPS_ORDER_BITS;
+    for (int i = 0; i < NDIG - 1; i++) {
+        glv_divrem(quo, d[i], tmp, bits, base, GLV_W);
+        memcpy(tmp, quo, sizeof tmp);
+        bits -= digit_bits - 1;
+        if (bits < digit_bits) bits = digit_bits;
+    }
+    memcpy(d[NDIG - 1], tmp, sizeof d[NDIG - 1]);
+
+    /* Base elements: a^(base^i) by repeated Frobenius. On BLS12 the multiplier
+     * is x, which is negative for these seeds, so the odd powers need the
+     * inverse -- which in the cyclotomic subgroup is just conjugation. */
+    fp12_t P[NDIG];
+    for (int i = 0; i < NDIG; i++) {
+        gt_endo(P[i], a, i);
+#if defined(ELIPS_FAMILY_BLS12) && ELIPS_X_NEGATIVE
+        if (i & 1) fp12_conj(P[i], P[i]);
+#endif
+    }
+
+    /* One factor per BIT of the window index, not per digit. Bit b of the
+     * index belongs to digit b/WIN, and its weight inside that digit is
+     * 2^(b%WIN), so at width two the high bit of a digit contributes the
+     * SQUARE of that digit's base. Getting this wrong is easy and silent: it
+     * builds a table that is right for every index below 2 and wrong above. */
+    fp12_t Pw[NDIG * WIN];
+    for (int b = 0; b < NDIG * WIN; b++) {
+        fp12_copy(Pw[b], P[b / WIN]);
+        for (int s = 0; s < b % WIN; s++) fp12_sqr_cyc(Pw[b], Pw[b]);
+    }
+
+    /* tbl[j] = prod over set bits b of j of Pw[b]. */
+    fp12_t tbl[NTBL];
+    fp12_set_one(tbl[0]);
+    for (int j = 1; j < NTBL; j++) {
+        int low = j & (-j), b = 0;
+        while ((1 << b) != low) b++;
+        fp12_mul(tbl[j], tbl[j ^ low], Pw[b]);
+    }
+
+    fp12_t acc, sel;
+    fp12_set_one(acc);
+    int top = ((digit_bits + WIN) / WIN) * WIN;
+    for (int pos = top - WIN; pos >= 0; pos -= WIN) {
+        for (int s = 0; s < WIN; s++) fp12_sqr_cyc(acc, acc);
+
+        limb_t w = 0;
+        for (int i = 0; i < NDIG; i++)
+            w |= ((d[i][pos / 64] >> (pos % 64)) & ((1u << WIN) - 1)) << (i * WIN);
+
+        fp12_set_one(sel);
+        for (int j = 0; j < NTBL; j++) {
+            limb_t diff = w ^ (limb_t)j;
+            limb_t mask = (limb_t)0 -
+                (limb_t)(1 - (int)((diff | (~diff + 1)) >> 63));
+            fp12_cselect(sel, tbl[j], sel, mask);
+        }
+        fp12_mul(acc, acc, sel);
     }
     fp12_copy(r, acc);
 }

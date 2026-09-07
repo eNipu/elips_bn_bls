@@ -344,6 +344,60 @@ int main(int argc, char **argv)
         ok(fp12_eq(bad, one), "a rejected multi-pairing leaves the result at one");
     }
 
+    {   /* Constant-time G_T exponentiation against the reference ladder.
+         *
+         * fp12_exp_gt splits the exponent with the Frobenius and squares in
+         * the cyclotomic subgroup; fp12_exp is a plain square-and-multiply
+         * over the whole exponent. They must agree on every scalar, and a
+         * decomposition that is wrong for one scalar in a million would pass
+         * a casual test, so this includes 0, 1, r-1 and values straddling the
+         * digit base as well as random ones.
+         *
+         * Both are exercised on a real pairing output, which is the only kind
+         * of element fp12_exp_gt is defined on. */
+        fp12_t base;
+        ep_t Pg; ep2_t Qg;
+        ep_generator(&Pg); ep2_generator(&Qg);
+        ok(elips_pairing(base, &Pg, &Qg) == 1, "pairing of the generators for the G_T test");
+
+        mpz_t R_, kk;
+        mpz_inits(R_, kk, NULL);
+        mpz_import(R_, (ELIPS_ORDER_BITS + 63) / 64, -1, sizeof(limb_t), 0, 0, ELIPS_ORDER);
+        gmp_randstate_t rs;
+        gmp_randinit_default(rs);
+        gmp_randseed_ui(rs, 20260907UL);
+
+        int bad_gt = 0;
+        for (int i = 0; i < 40; i++) {
+            if (i == 0)      mpz_set_ui(kk, 0);
+            else if (i == 1) mpz_set_ui(kk, 1);
+            else if (i == 2) mpz_sub_ui(kk, R_, 1);
+            else if (i == 3) mpz_set_ui(kk, 2);
+            else if (i < 12) {
+                int nb = ELIPS_ORDER_BITS / 2 + (i - 4) - 3;
+                mpz_ui_pow_ui(kk, 2, (unsigned)(nb > 1 ? nb : 1));
+                if (i % 3 == 1) mpz_sub_ui(kk, kk, 1);
+                if (i % 3 == 2) mpz_add_ui(kk, kk, 1);
+                mpz_mod(kk, kk, R_);
+            } else {
+                mpz_urandomm(kk, rs, R_);
+            }
+            limb_t kb[16];
+            memset(kb, 0, sizeof kb);
+            mpz_export(kb, NULL, -1, sizeof(limb_t), 0, 0, kk);
+            int kbits = mpz_sgn(kk) ? (int)mpz_sizeinbase(kk, 2) : 1;
+
+            fp12_t slow, fast_gt;
+            fp12_exp(slow, base, kb, kbits);
+            fp12_exp_gt(fast_gt, base, kb, kbits);
+            if (!fp12_eq(slow, fast_gt)) bad_gt++;
+        }
+        ok(bad_gt == 0, "fp12_exp_gt matches fp12_exp on 40 scalars");
+
+        gmp_randclear(rs);
+        mpz_clears(R_, kk, NULL);
+    }
+
     printf("  %ld pairings, %d checks, %d failed\n", records, checks, fails);
     return fails ? 1 : 0;
 }

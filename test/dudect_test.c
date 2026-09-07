@@ -283,6 +283,14 @@ static void run_ep2_glv(const input_t *in)
 static void run_ep_glv(const input_t *in)
 { ep_mul_glv(&sink_ep, &g1, in->k, ELIPS_ORDER_BITS); }
 
+/* fp12_exp_gt is the constant-time G_T exponentiation. Its sibling fp12_exp
+ * branches on the exponent and is documented as public-exponent only, so it is
+ * deliberately NOT a target here: it would leak by design and the harness
+ * would be right to say so. */
+static fp12_t gt_base, sink_fp12;
+static void run_gt_exp(const input_t *in)
+{ fp12_exp_gt(sink_fp12, gt_base, in->k, ELIPS_ORDER_BITS); }
+
 /* The pairing's secret is the point, not the loop bound: the Miller loop runs
  * over a public curve parameter. Class 1 is [k]G for a fresh random k, class 0
  * a fixed multiple, so the coordinates vary and nothing else does. */
@@ -343,6 +351,7 @@ static const target_t TARGETS[] = {
     { "ep2_mul",     prep_scalar,  run_ep2_mul,      1,  2000, 0 },
     { "ep2_mul_glv", prep_scalar,  run_ep2_glv,      1,  2000, 0 },
     { "ep_mul_glv",  prep_scalar,  run_ep_glv,       1,  3000, 0 },
+    { "fp12_exp_gt", prep_scalar,  run_gt_exp,       1,  2000, 0 },
     { "miller",      prep_pairing, run_pairing,      1,  1000, 0 },
     { "hash_to_g1",  prep_h2c,     run_h2c_g1,       1,  1000, 0 },
     { "hash_to_g2",  prep_h2c,     run_h2c_g2,       1,   700, 0 },

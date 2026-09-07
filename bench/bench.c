@@ -97,6 +97,7 @@ static void b_ep_mul_glv(void)  { ep_mul_glv(&sink_ep, &g1, next_scalar(), ELIPS
 static void b_ep2_mul(void)     { ep2_mul(&sink_ep2, &g2, next_scalar(), ELIPS_ORDER_BITS); }
 static void b_ep2_mul_glv(void) { ep2_mul_glv(&sink_ep2, &g2, next_scalar(), ELIPS_ORDER_BITS); }
 static void b_gt_exp(void)      { fp12_exp(sink_fp12, gt_base, next_scalar(), ELIPS_ORDER_BITS); }
+static void b_gt_exp_ct(void)   { fp12_exp_gt(sink_fp12, gt_base, next_scalar(), ELIPS_ORDER_BITS); }
 static void b_pairing(void)     { elips_pairing(sink_fp12, &g1, &g2); }
 
 /* Miller and the final exponentiation separately, because they are optimised
@@ -120,6 +121,7 @@ static const bench_t BENCHES[] = {
     { "ep2_mul",         b_ep2_mul,     BENCH_INNER },
     { "ep2_mul_glv",     b_ep2_mul_glv, BENCH_INNER },
     { "gt_exp",          b_gt_exp,      BENCH_INNER },
+    { "gt_exp_ct",       b_gt_exp_ct,   BENCH_INNER },
     { "miller",          b_miller,      BENCH_INNER },
     { "final_exp",       b_final_exp,   BENCH_INNER },
     { "pairing",         b_pairing,     BENCH_INNER },
