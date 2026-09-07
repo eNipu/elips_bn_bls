@@ -893,7 +893,7 @@ Also worth reading before starting:
 
 Expected 10–15% on the final exponentiation, which is roughly 60% of a pairing.
 
-### 10.6 Multi-pairing and fixed-argument precomputation — SCHEDULED
+### 10.6 Multi-pairing — DONE. Fixed-argument precomputation — still scheduled
 
 **Algorithm of record: one shared Miller loop with a single final
 exponentiation** — Scott, "On the Efficient Implementation of Pairing-Based
@@ -909,12 +909,42 @@ pairings does the final exponentiation twice and throws away about 60% of a
 pairing on every verification. With hash-to-curve landed, this is the piece
 between this library and a usable signature scheme.
 
-**Add fixed-argument precomputation at the same time.** Costello and Stebila,
+**Built as `elips_pairing_multi`.** One shared accumulator, so the squaring at
+the top of each Miller iteration happens once rather than once per term, and one
+final exponentiation for the whole product.
+
+The correctness statement is exact, not approximate: `x -> x^E` is a
+homomorphism, so `final_exp(f_1 ... f_n) == final_exp(f_1) ... final_exp(f_n)`
+bit for bit, cube on BLS12 included. `test/pairing_test.c` checks the result
+both against the product of the Python oracle's recorded values and against the
+product of individual `elips_pairing` calls, and crosses the internal chunk
+boundary. Both checks were confirmed to fail under deliberate sabotage
+(squaring per term instead of per iteration; dropping a term).
+
+Per-term state is one `ep2_t`, so it lives in a fixed-size buffer and longer
+inputs are processed in chunks whose Miller values are multiplied together. Any
+`n` is accepted and the single final exponentiation is preserved regardless;
+chunking costs only the sharing of squarings across a boundary.
+
+**Measured, x86-64 gcc -O2, against the same pairings computed separately:**
+
+| terms | BLS12-381 | BN-462 |
+|---|---|---|
+| 2 | 1.45x | 1.32x |
+| 4 | 1.78x | 1.54x |
+| 8 | 2.08x | 1.74x |
+| 16 | 2.24x | 1.79x |
+
+`examples/03_bls_signature.c` now verifies as `e(-sigma, G2) * e(H(m), pk) == 1`
+in one call, which is the 1.45x row.
+
+**Fixed-argument precomputation is not done.** Costello and Stebila,
 "Fixed Argument Pairings" (ePrint 2010/342), report **25–37% fewer field
 multiplications** in the Miller loop when one argument is fixed and its line
 coefficients are precomputed. In a signature verification one argument always is
 fixed — the generator, or a long-lived public key — so this is not a
-hypothetical case.
+hypothetical case. It is separable from the multi-pairing above and is the
+remaining half of this item.
 
 ### 10.7 Constant-time inversion — DECIDED, no change, now with numbers
 

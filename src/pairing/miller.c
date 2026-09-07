@@ -237,6 +237,85 @@ void pairing_miller(fp12_t f, const fp2_t qx, const fp2_t qy,
 #endif
 }
 
+/* ------------------------------------------------------- multi-pairing ----
+ *
+ * A product of pairings needs only one Miller loop and one final
+ * exponentiation. Every pair shares the running accumulator f, so the squaring
+ * at the top of each iteration happens once rather than n times, and the whole
+ * product is exponentiated once at the end instead of n times.
+ *
+ * The final exponentiation is the larger of the two savings and the one that
+ * does not degrade: it is a fixed exponentiation, and x -> x^E is a
+ * homomorphism, so
+ *
+ *     final_exp(f_1 * ... * f_n) == final_exp(f_1) * ... * final_exp(f_n)
+ *
+ * exactly. That identity is what test/pairing_test.c checks the result against,
+ * and it holds bit for bit -- including the stray cube on BLS12, since both
+ * sides carry it.
+ *
+ * The per-pair state is one ep2_t, so it is held in a fixed-size buffer and
+ * long inputs are processed in chunks whose Miller values are multiplied
+ * together. Chunking costs only the sharing of squarings across a chunk
+ * boundary; the single final exponentiation is preserved for any n. At
+ * ELIPS_MULTI_CHUNK = 8 a chunk already captures 7/8 of the available squaring
+ * saving, and the common cases -- a two-term signature verification, a small
+ * aggregate -- never reach a boundary at all. */
+
+#define ELIPS_MULTI_CHUNK 8
+
+/* One shared Miller loop over m <= ELIPS_MULTI_CHUNK pairs. */
+static void miller_chunk(fp12_t f, const fp2_t *qx, const fp2_t *qy,
+                         const fp_t *px, const fp_t *py, size_t m)
+{
+    ep2_t T[ELIPS_MULTI_CHUNK];
+    fp2_t nqy[ELIPS_MULTI_CHUNK];
+
+    for (size_t j = 0; j < m; j++) {
+        fp2_neg(nqy[j], qy[j]);
+        if (ELIPS_LOOP[ELIPS_LOOP_TOP] > 0) ep2_from_affine(&T[j], qx[j], qy[j]);
+        else                                ep2_from_affine(&T[j], qx[j], nqy[j]);
+    }
+    fp12_set_one(f);
+
+    for (int i = ELIPS_LOOP_TOP - 1; i >= 0; i--) {
+        fp12_sqr(f, f);                     /* once, not once per pair */
+        for (size_t j = 0; j < m; j++) {
+            dbl_step(f, &T[j], px[j], py[j]);
+            if (ELIPS_LOOP[i] > 0)
+                add_step(f, &T[j], qx[j], qy[j],  px[j], py[j]);
+            else if (ELIPS_LOOP[i] < 0)
+                add_step(f, &T[j], qx[j], nqy[j], px[j], py[j]);
+        }
+    }
+#ifdef ELIPS_FAMILY_BN
+    /* BN's two correction lines are per pair, exactly as in pairing_miller. */
+    for (size_t j = 0; j < m; j++) {
+        fp2_t q1x, q1y, q2x, q2y;
+        fp2_conj(q1x, qx[j]); fp2_mul(q1x, q1x, PSI_X);
+        fp2_conj(q1y, qy[j]); fp2_mul(q1y, q1y, PSI_Y);
+        fp2_mul(q2x, qx[j], PSI2_X);
+        fp2_mul(q2y, qy[j], PSI2_Y);
+        fp2_neg(q2y, q2y);
+        add_step(f, &T[j], q1x, q1y, px[j], py[j]);
+        add_step(f, &T[j], q2x, q2y, px[j], py[j]);
+    }
+#endif
+}
+
+void pairing_miller_multi(fp12_t f, const fp2_t *qx, const fp2_t *qy,
+                          const fp_t *px, const fp_t *py, size_t n)
+{
+    fp12_set_one(f);                        /* n == 0 is the empty product */
+    for (size_t base = 0; base < n; base += ELIPS_MULTI_CHUNK) {
+        size_t m = n - base;
+        if (m > ELIPS_MULTI_CHUNK) m = ELIPS_MULTI_CHUNK;
+        fp12_t g;
+        miller_chunk(g, qx + base, qy + base, px + base, py + base, m);
+        fp12_mul(f, f, g);
+    }
+}
+
 void pairing_final_exp_plain(fp12_t r, const fp12_t f)
 {
     /* easy part: f^(p^6-1) then ^(p^2+1) */
@@ -515,5 +594,42 @@ int elips_pairing(fp12_t out, const ep_t *P, const ep2_t *Q)
     fp12_t f;
     pairing_miller(f, qx, qy, px, py);
     pairing_final_exp_fast(out, f);
+    return 1;
+}
+
+int elips_pairing_multi(fp12_t out, const ep_t *P, const ep2_t *Q, size_t n)
+{
+    fp12_set_one(out);
+
+    /* Validate everything before computing anything. A caller that ignores the
+     * return value then gets one, not a product over the pairs that happened to
+     * be checked before the bad one. The contract matches elips_pairing: the
+     * identity is rejected rather than treated as a factor of one. */
+    for (size_t j = 0; j < n; j++) {
+        if (ep_is_infinity(&P[j]) || ep2_is_infinity(&Q[j])) return 0;
+        if (!ep_in_subgroup(&P[j]) || !ep2_in_subgroup(&Q[j])) return 0;
+    }
+
+    fp_t  px[ELIPS_MULTI_CHUNK], py[ELIPS_MULTI_CHUNK];
+    fp2_t qx[ELIPS_MULTI_CHUNK], qy[ELIPS_MULTI_CHUNK];
+    fp12_t f, g;
+    fp12_set_one(f);
+
+    size_t m = 0;
+    for (size_t j = 0; j < n; j++) {
+        ep_to_affine(px[m], py[m], &P[j]);
+        ep2_to_affine(qx[m], qy[m], &Q[j]);
+        if (++m == ELIPS_MULTI_CHUNK) {
+            miller_chunk(g, qx, qy, px, py, m);
+            fp12_mul(f, f, g);
+            m = 0;
+        }
+    }
+    if (m) {
+        miller_chunk(g, qx, qy, px, py, m);
+        fp12_mul(f, f, g);
+    }
+
+    pairing_final_exp_fast(out, f);         /* once, whatever n is */
     return 1;
 }

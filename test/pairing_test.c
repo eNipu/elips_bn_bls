@@ -75,6 +75,12 @@ int main(int argc, char **argv)
     ssize_t len;
     long records = 0;
 
+    /* Kept for the multi-pairing checks at the end. */
+#define MAXREC 16
+    ep_t   allP[MAXREC];
+    ep2_t  allQ[MAXREC];
+    fp12_t allExact[MAXREC];
+
     while ((len = getline(&line, &cap, f)) > 0) {
         cur_line++;
         if (line[0] == '#' || line[0] == '\n') continue;
@@ -185,6 +191,11 @@ int main(int argc, char **argv)
         ok(elips_pairing(whole, &P, &Q) == 1, "elips_pairing accepts the inputs");
         ok(fp12_eq(whole, fast), "elips_pairing == miller + fast final exp");
 
+        if (records < MAXREC) {
+            ep_copy(&allP[records], &P);
+            ep2_copy(&allQ[records], &Q);
+            fp12_copy(allExact[records], exact);
+        }
         records++;
     }
 
@@ -195,6 +206,90 @@ int main(int argc, char **argv)
     if (records == 0) {
         fprintf(stderr, "no pairing records in %s\n", argv[1]);
         return 2;
+    }
+
+    /* ---------------------------------------------------- multi-pairing ---
+     *
+     * Two independent statements, because each can pass while the other fails.
+     *
+     * Against the oracle: the product of the recorded exact values is a number
+     * this library never computed, so agreeing with it says the shared loop
+     * really evaluated every pair. On BLS12 the fast chain contributes a cube
+     * to each factor, so the product picks up one cube overall.
+     *
+     * Against itself: raising to a fixed exponent is a homomorphism, so the
+     * multi-pairing must equal the product of the individual elips_pairing
+     * results bit for bit. That catches a wrong accumulator or a dropped term
+     * even if the oracle comparison were somehow satisfied.
+     */
+    long nrec = records < MAXREC ? records : MAXREC;
+    cur_line = 0;
+
+    if (nrec >= 2) {
+        fp12_t multi, prod_exact, prod_single, one;
+        fp12_set_one(one);
+
+        ok(elips_pairing_multi(multi, allP, allQ, (size_t)nrec) == 1,
+           "elips_pairing_multi accepts the vector points");
+
+        fp12_set_one(prod_exact);
+        for (long i = 0; i < nrec; i++) fp12_mul(prod_exact, prod_exact, allExact[i]);
+#ifdef ELIPS_FAMILY_BLS12
+        {   /* the fast chain cubes each factor, so the product picks up one cube */
+            fp12_t sq;
+            fp12_sqr(sq, prod_exact);
+            fp12_mul(prod_exact, sq, prod_exact);
+        }
+#endif
+        ok(fp12_eq(multi, prod_exact),
+           "multi-pairing == product of the reference values");
+
+        fp12_set_one(prod_single);
+        for (long i = 0; i < nrec; i++) {
+            fp12_t e1;
+            if (elips_pairing(e1, &allP[i], &allQ[i]) != 1) { fails++; checks++; continue; }
+            fp12_mul(prod_single, prod_single, e1);
+        }
+        ok(fp12_eq(multi, prod_single),
+           "multi-pairing == product of individual elips_pairing");
+
+        /* Cross the internal chunk boundary. Ten terms cycled from the
+         * available records, so the run is longer than one chunk however the
+         * chunk size is tuned. */
+        ep_t  longP[10];
+        ep2_t longQ[10];
+        for (int i = 0; i < 10; i++) {
+            ep_copy(&longP[i],  &allP[i % nrec]);
+            ep2_copy(&longQ[i], &allQ[i % nrec]);
+        }
+        fp12_t mlong, plong;
+        ok(elips_pairing_multi(mlong, longP, longQ, 10) == 1,
+           "multi-pairing accepts a run longer than one chunk");
+        fp12_set_one(plong);
+        for (int i = 0; i < 10; i++) {
+            fp12_t e1;
+            if (elips_pairing(e1, &longP[i], &longQ[i]) != 1) { fails++; checks++; continue; }
+            fp12_mul(plong, plong, e1);
+        }
+        ok(fp12_eq(mlong, plong),
+           "multi-pairing across a chunk boundary == product of singles");
+
+        /* The empty product is one, and it is not an error. */
+        fp12_t empty;
+        ok(elips_pairing_multi(empty, allP, allQ, 0) == 1,
+           "multi-pairing of nothing succeeds");
+        ok(fp12_eq(empty, one), "multi-pairing of nothing is one");
+
+        /* And a bad input must be refused, with the result left at one rather
+         * than a product over whichever pairs were checked first. */
+        ep_t  badP[2];
+        ep2_t badQ[2];
+        ep_copy(&badP[0], &allP[0]);  ep2_copy(&badQ[0], &allQ[0]);
+        ep_set_infinity(&badP[1]);    ep2_copy(&badQ[1], &allQ[0]);
+        fp12_t bad;
+        ok(elips_pairing_multi(bad, badP, badQ, 2) == 0,
+           "multi-pairing rejects an identity input");
+        ok(fp12_eq(bad, one), "a rejected multi-pairing leaves the result at one");
     }
 
     printf("  %ld pairings, %d checks, %d failed\n", records, checks, fails);

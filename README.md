@@ -92,6 +92,22 @@ uint8_t enc[EP_SER_COMPRESSED_BYTES];
 ep_write_compressed(enc, &P);
 ```
 
+A verification equation should be one call, not several pairings compared
+afterwards. `elips_pairing_multi` shares one Miller loop and one final
+exponentiation across every term, which is 1.45x for the two-term case on
+BLS12-381 and 2.24x at sixteen terms:
+
+```c
+/* e(-sigma, G2) * e(H(m), pk) == 1 */
+ep_t  Ps[2];  ep2_t Qs[2];
+ep_neg(&Ps[0], &sig);   ep2_generator(&Qs[0]);
+ep_copy(&Ps[1], &h);    ep2_copy(&Qs[1], &pk);
+
+fp12_t prod, one;
+fp12_set_one(one);
+int ok = elips_pairing_multi(prod, Ps, Qs, 2) && fp12_eq(prod, one);
+```
+
 `ELiPS::elips` is kept as an alias of the same library, so a build file written
 against the old name still configures.
 

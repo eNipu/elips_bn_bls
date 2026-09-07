@@ -7,11 +7,19 @@
 #ifndef ELIPS_PAIRING_H
 #define ELIPS_PAIRING_H
 
+#include <stddef.h>
+
 #include "elips/ec.h"
 
 /* Miller loop only, no final exponentiation. Q must be affine on the twist. */
 void pairing_miller(fp12_t f, const fp2_t qx, const fp2_t qy,
                     const fp_t px, const fp_t py);
+
+/* The same loop shared across n pairs: the accumulator is squared once per
+ * iteration rather than once per pair. Returns the product of the Miller
+ * values, which still needs a final exponentiation. */
+void pairing_miller_multi(fp12_t f, const fp2_t *qx, const fp2_t *qy,
+                          const fp_t *px, const fp_t *py, size_t n);
 
 /* f^((p^12-1)/r), computed exactly. Slow but definitionally correct; used to
  * validate the fast chain. */
@@ -59,9 +67,12 @@ void fp12_exp_param(fp12_t r, const fp12_t f);
 void ep_generator(ep_t *g);
 void ep2_generator(ep2_t *g);
 
-/* Subgroup membership: is [r]P the identity? A point can sit on the curve and
- * still be outside the order-r subgroup, which is what small-subgroup attacks
- * exploit. Nothing in the legacy library ever checked this. */
+/* Subgroup membership. A point can sit on the curve and still be outside the
+ * order-r subgroup, which is what small-subgroup attacks exploit. Nothing in
+ * the legacy library ever checked this.
+ *
+ * These are endomorphism tests, not [r]P: see the derivation in
+ * tools/reference/subgroup_ref.py and the note above their definitions. */
 int ep_in_subgroup(const ep_t *p);
 int ep2_in_subgroup(const ep2_t *q);
 
@@ -74,5 +85,26 @@ int ep2_in_subgroup(const ep2_t *q);
  * On BLS12 the value is e^3 (see the note on pairing_final_exp_fast); on BN it
  * is e exactly. */
 int elips_pairing(fp12_t out, const ep_t *P, const ep2_t *Q);
+
+/* The product of n pairings, prod_j e(P_j, Q_j), with one shared Miller loop
+ * and a single final exponentiation.
+ *
+ * This is what a verification equation actually needs. Checking
+ * e(H(m), pk) * e(-sig, G2) == 1 as two separate pairings runs the final
+ * exponentiation twice and throws away about half the work; here it runs once
+ * however many terms there are, and the per-iteration squaring is shared
+ * across the terms too.
+ *
+ * Same contract as elips_pairing: returns 0 and leaves the result at one if
+ * any input is the identity or fails its subgroup check, and every input is
+ * validated before any of them is used. On BLS12 the value is
+ * (prod_j e(P_j, Q_j))^3, on BN it is the product exactly -- in both cases
+ * identical to multiplying together what elips_pairing returns for each pair,
+ * because raising to a fixed exponent is a homomorphism.
+ *
+ * n may be any length; the implementation uses a fixed-size buffer and
+ * processes longer inputs in chunks, which never costs more than one
+ * final exponentiation. */
+int elips_pairing_multi(fp12_t out, const ep_t *P, const ep2_t *Q, size_t n);
 
 #endif /* ELIPS_PAIRING_H */

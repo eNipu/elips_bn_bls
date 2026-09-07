@@ -1687,6 +1687,77 @@ endomorphism on G1.
 
 ---
 
+## Phase 6 — multi-pairing (plan §10.6, first half)
+
+`elips_pairing_multi(out, P, Q, n)` computes the product of n pairings with one
+shared Miller loop and one final exponentiation.
+
+Two savings, and they are not equal. The per-iteration `fp12_sqr` now happens
+once instead of n times, which helps more as n grows. The final exponentiation
+runs once instead of n times, which is the larger saving at small n and is
+exactly where a verification equation spends its wasted work: the final
+exponentiation is 49% of a pairing on this profile.
+
+**The correctness statement is exact.** Raising to a fixed exponent is a
+homomorphism, so
+
+    final_exp(f_1 * ... * f_n) == final_exp(f_1) * ... * final_exp(f_n)
+
+bit for bit, including the stray cube the BLS12 fast chain contributes, because
+both sides carry it. That makes the multi-pairing checkable against the
+single-pairing path with exact equality rather than a tolerance.
+
+`test/pairing_test.c` checks two independent things, since either can pass while
+the other fails:
+
+- against the **oracle**, the product of the values recorded in
+  `test/kat/pairing_*.vec`, a number this library never computed;
+- against **itself**, the product of individual `elips_pairing` results.
+
+It also runs a ten-term product to cross the internal chunk boundary, checks
+that the empty product is one and is not an error, and checks that an identity
+input is refused with the result left at one rather than a partial product.
+
+**Confirmed the tests can fail.** Squaring once per term instead of once per
+iteration, and dropping the last term of each chunk, were each injected and each
+made three checks fail. A test for a faster path that only ever agrees with the
+faster path proves nothing.
+
+**Chunking.** Per-term state is one `ep2_t`, so it sits in a fixed-size buffer
+(`ELIPS_MULTI_CHUNK`, 8) and longer inputs run in chunks whose Miller values are
+multiplied together. Any n works and the single final exponentiation survives
+for any n; only the sharing of squarings stops at a boundary. At 8 a chunk
+already captures 7/8 of the squaring saving, and a two-term verification never
+reaches a boundary.
+
+**Measured, x86-64 gcc -O2, against the same pairings computed separately:**
+
+| terms | BLS12-381 | BN-462 |
+|---|---|---|
+| 2 | 1.45x | 1.32x |
+| 4 | 1.78x | 1.54x |
+| 8 | 2.08x | 1.74x |
+| 16 | 2.24x | 1.79x |
+
+The n=16 row crosses a chunk boundary, which is why it gains little over n=8.
+That is the design behaving as described, not a surprise.
+
+`examples/03_bls_signature.c` now verifies as `e(-sigma, G2) * e(H(m), pk) == 1`
+in one call. Every forgery case it demonstrates still rejects, which is the
+check that matters when rearranging a verification equation.
+
+Also corrected: the comment on `ep_in_subgroup` in the public header still said
+"is [r]P the identity?", which stopped being true when the endomorphism tests
+landed.
+
+Still open from §10.6: fixed-argument precomputation (ePrint 2010/342), worth a
+further 25 to 37 percent of the Miller loop when one argument is fixed. It is
+separable from this and untouched.
+
+42 CTest on Release, 32 under each sanitizer, no warnings under `-Werror`.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6
