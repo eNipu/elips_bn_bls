@@ -142,11 +142,6 @@ void PT(dbl)(PTT *r, const PTT *p)
     F(copy)(r->x, x3); F(copy)(r->y, y3); F(copy)(r->z, z3);
 }
 
-/* Kept for source compatibility with the Jacobian version, which needed a
- * separate incomplete routine for speed. The complete formulas are already the
- * fast path, so this is simply an alias. */
-void PT(add_generic)(PTT *r, const PTT *p, const PTT *q) { PT(add)(r, p, q); }
-
 int PT(to_affine)(EC_FT x, EC_FT y, const PTT *p)
 {
     if (PT(is_infinity)(p)) { F(set_zero)(x); F(set_zero)(y); return 0; }
@@ -219,6 +214,21 @@ int PT(on_curve)(const PTT *p)
     F(mul)(z3, z3, b);
     F(add)(rhs, rhs, z3);
     return F(eq)(lhs, rhs);
+}
+
+/* (X1:Y1:Z1) == (X2:Y2:Z2) iff X1*Z2 == X2*Z1 and Y1*Z2 == Y2*Z1.
+ *
+ * Two points at infinity have Z = 0 and satisfy both, as they should. An
+ * infinity never compares equal to an affine point: with (0:Y1:0) the X test
+ * is 0 == 0 and passes, but the Y test needs Y1*Z2 == 0 with Y1 and Z2 both
+ * nonzero, so it fails. No inversion and no branch on coordinate values. */
+int PT(eq)(const PTT *a, const PTT *b)
+{
+    EC_FT t0, t1;
+    F(mul)(t0, a->x, b->z); F(mul)(t1, b->x, a->z);
+    if (!F(eq)(t0, t1)) return 0;
+    F(mul)(t0, a->y, b->z); F(mul)(t1, b->y, a->z);
+    return F(eq)(t0, t1);
 }
 
 #undef CAT_

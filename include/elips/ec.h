@@ -1,5 +1,6 @@
 /*
- * Elliptic curve points in Jacobian coordinates.
+ * Elliptic curve points in homogeneous projective coordinates, with the
+ * complete addition formulas of Renes, Costello and Batina.
  *
  * Pulled forward from Phase 4 into Phase 3 because the two are coupled: the
  * affine group law needs a field inversion per point operation, and constant-
@@ -10,7 +11,12 @@
  *
  * A point is (X : Y : Z) with x = X/Z and y = Y/Z. The identity has Z = 0.
  * Both curves have a = 0, so the RCB formulas specialise to their cheapest form.
- 
+ *
+ * ep_add and ep2_add are correct for every input pair -- equal, opposite,
+ * identity -- with no branch and no fixup. There is deliberately no faster
+ * incomplete variant: the Jacobian version had one, guarded by a precondition
+ * the caller had to honour, and a routine that is wrong for inputs a caller can
+ * plausibly supply is a defect waiting for its first careless call site.
  */
 #ifndef ELIPS_EC_H
 #define ELIPS_EC_H
@@ -27,12 +33,17 @@ void ep_copy(ep_t *r, const ep_t *p);
 void ep_neg(ep_t *r, const ep_t *p);
 void ep_dbl(ep_t *r, const ep_t *p);
 void ep_add(ep_t *r, const ep_t *p, const ep_t *q);
-/* Faster, but wrong for p==q, p==-q or infinity. Miller loop only. */
-void ep_add_generic(ep_t *r, const ep_t *p, const ep_t *q);
 void ep_from_affine(ep_t *r, const fp_t x, const fp_t y);
 int  ep_to_affine(fp_t x, fp_t y, const ep_t *p);   /* 0 if p is infinity */
 void ep_mul(ep_t *r, const ep_t *p, const limb_t *k, int kbits);
 int  ep_on_curve(const ep_t *p);
+/* Projective equality: no inversion, and correct for infinity. */
+int  ep_eq(const ep_t *a, const ep_t *b);
+/* The GLV endomorphism (x, y) -> (beta*x, y). On G1 it acts as multiplication
+ * by a fixed eigenvalue: -x^2 on BLS12, 36x^3 + 18x^2 + 6x + 1 on BN. On the
+ * rest of E(Fp) it does not, which on BLS12 is what makes it a subgroup test.
+ * BN needs no such test, since its G1 cofactor is 1. */
+void ep_phi(ep_t *r, const ep_t *p);
 
 /* --- E'(Fp2) --- */
 void ep2_set_infinity(ep2_t *r);
@@ -41,8 +52,6 @@ void ep2_copy(ep2_t *r, const ep2_t *p);
 void ep2_neg(ep2_t *r, const ep2_t *p);
 void ep2_dbl(ep2_t *r, const ep2_t *p);
 void ep2_add(ep2_t *r, const ep2_t *p, const ep2_t *q);
-/* Faster, but wrong for p==q, p==-q or infinity. Miller loop only. */
-void ep2_add_generic(ep2_t *r, const ep2_t *p, const ep2_t *q);
 void ep2_from_affine(ep2_t *r, const fp2_t x, const fp2_t y);
 int  ep2_to_affine(fp2_t x, fp2_t y, const ep2_t *p);
 void ep2_mul(ep2_t *r, const ep2_t *p, const limb_t *k, int kbits);
@@ -50,13 +59,16 @@ void ep2_mul(ep2_t *r, const ep2_t *p, const limb_t *k, int kbits);
  * eigenvalue, which is what makes GLV possible. */
 void ep2_psi(ep2_t *r, const ep2_t *p);
 
-#ifdef ELIPS_FAMILY_BLS12
-/* GLV scalar multiplication on G2, four-dimensional via psi.
+/* GLV scalar multiplication on G2. Four-dimensional via psi on BLS12,
+ * two-dimensional on BN.
+ *
  *
  * On BLS12, psi acts on G2 as multiplication by the mother parameter x, which
  * is only 64 to 77 bits against a 255 to 308 bit group order. Writing the
  * scalar in base |x| therefore gives four short digits and cuts the ladder to a
- * quarter of its length.
+ * quarter of its length. On BN, psi acts as 6x^2 -- 231 bits against a 462-bit
+ * order, exactly sqrt(r) -- so the split is base 6x^2 and two-dimensional,
+ * halving the ladder rather than quartering it.
  *
  * Constant time throughout, decomposition included: the division is restoring,
  * one bit at a time, with the conditional subtraction done by mask. Safe for
@@ -69,8 +81,24 @@ void ep2_psi(ep2_t *r, const ep2_t *p);
  * which is general-purpose and has no such requirement. This is why ep2_mul
  * does not simply dispatch here. */
 void ep2_mul_glv(ep2_t *r, const ep2_t *q, const limb_t *k, int kbits);
-#endif
+
+/* Two-dimensional GLV on G1, using phi. Halves the ladder on both families,
+ * and is constant time on both, decomposition included.
+ *
+ * The two families reach it differently. On BLS12 phi acts as [-x^2] and |x^2|
+ * is sqrt(r), so the scalar splits in base x^2: one division, unsigned digits,
+ * no rounding. On BN lambda is 348 bits against sqrt(r) = 231, so no base
+ * splits it; there the digits come from Babai rounding against a reduced
+ * lattice basis and are signed. tools/reference/glv_ref.py derives both.
+ *
+ * PRECONDITION: p must be in G1. On BLS12 that is a real condition, and
+ * ep_in_subgroup is the check. On BN #E(Fp) = r is prime, so every point on
+ * the curve other than infinity already qualifies. ep_mul is the
+ * general-purpose routine either way, which is why it does not dispatch
+ * here. */
+void ep_mul_glv(ep_t *r, const ep_t *p, const limb_t *k, int kbits);
 int  ep2_on_curve(const ep2_t *p);
+int  ep2_eq(const ep2_t *a, const ep2_t *b);
 
 /* Curve constant b in Montgomery form, and the twist constant b*xi. */
 void ep_curve_b(fp_t b);

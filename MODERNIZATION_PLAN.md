@@ -572,11 +572,20 @@ Phases 3 and 4 carry most of the constant-time burden. What remains:
 5. **`dudect` timing-leakage tests in CI**, on both architectures.
 6. Serialization and deserialization in the standard compressed point formats,
    which BLS12-381 interoperability requires.
+7. **Hash to curve (added 2026-09-06).** RFC 9380. Not in the original scope,
+   which drew the line at "a protocol layer is a different project" -- but
+   hash-to-curve is a curve operation with a curve specification, and without it
+   the serialization in item 6 has nothing to serialize that a signature scheme
+   would produce. See §10.1 for the decision and the rejected alternatives.
+8. **A curve-selection switch and an installable modern API (added
+   2026-09-06).** `-DELIPS_CURVE=`, and the `include/elips/` headers actually
+   installed. See §10.2.
 
 **Gate:** `dudect` reports no leakage on any secret-dependent path on either
 architecture; the variable-time fast paths are reachable only through
 explicitly `_vartime`-suffixed functions; malformed and off-curve inputs are
-rejected rather than processed.
+rejected rather than processed; the BLS12-381 hash-to-curve suites reproduce
+RFC 9380's published test vectors.
 
 ### Phase 6 — Assembly
 
@@ -590,6 +599,10 @@ Four routines, per §1.1:
 |---|---|---|
 | 6 limbs (BLS12-381) | `MUL`/`UMULH` + `ADCS` | `MULX`/`ADCX`/`ADOX` |
 | 8 limbs (BN-462, BLS12-461) | `MUL`/`UMULH` + `ADCS` | `MULX`/`ADCX`/`ADOX` |
+
+**Superseded on x86-64 — see §10.10.** The state of the art there is now
+AVX-512 IFMA applied to the extension-field arithmetic, not a scalar limb
+multiply, and it is worth about 3x rather than the ~1.3x assumed below.
 
 1. Start with 6-limb AArch64 — smallest routine, on the development machine, for
    the curve with external vectors. Prove the approach there before scaling.
@@ -622,7 +635,9 @@ rather than carried; `dudect` still clean.
 ## 8. Explicitly not doing
 
 - Curve families beyond BN-462, BLS12-461 and BLS12-381.
-- A protocol layer (BLS signatures, IBE). Different project.
+- A protocol layer (BLS signatures, IBE). Different project — but see §10.8:
+  hash-to-curve moved *in*, because it is a curve operation with a curve
+  specification. Signing, aggregation and ciphersuites stay out.
 - GPU or multi-threaded pairings.
 - One binary supporting all three curves at runtime — see §1.5, option A is the
   plan of record and option C remains available later.
@@ -680,11 +695,686 @@ and it should not begin until the BN/BLS12 path is finished and proven.
   they are superseded for production use.
 - **Option C from §1.5** — runtime dispatch across all three curves in one
   binary, if a consumer ever needs it.
-- **Multi-pairing / products of pairings** — `e(P₁,Q₁)·e(P₂,Q₂)···` sharing one
-  final exponentiation. A large win for verification-heavy protocols, and a
-  natural follow-on once Phase 4 lands.
+- **Multi-pairing / products of pairings** — promoted out of the backlog; see
+  §10.6. It is what a signature verification actually calls.
 
 ---
+
+## 10. Decisions on the remaining open items (2026-09-06)
+
+Everything Phases 0–5 left open, researched against the literature and decided
+rather than left as a list. Each entry names the algorithm of record with its
+citation, says why it is the one, and says whether it is built now or scheduled.
+"Scheduled" means the derivation is identified and the risk understood; it does
+not mean optional.
+
+**How this survey was done, and its limit.** The session's egress policy blocks
+`eprint.iacr.org`, `tches.iacr.org` and `rfc-editor.org`, so papers could be
+*found and their abstracts read through search*, but the full texts could not be
+retrieved. Every citation below is therefore a pointer for the implementer, not
+a formula copied from the paper — which is exactly why the items that depend on
+a precise correctness condition (§10.3 above all) are scheduled with "derive and
+assert it in the generator" rather than implemented from a summary. Where a
+result *was* verified computationally in this repository, it says so.
+
+### 10.1 Hash to curve — DECIDED AND BUILT
+
+**Algorithm of record: RFC 9380** (Faz-Hernández, Scott, Sullivan, Wahby, Wood,
+August 2023), the only standard in this area, with the optimized simplified SWU
+of **Wahby and Boneh, "Fast and simple constant-time hashing to the BLS12-381
+elliptic curve", TCHES 2019 (ePrint 2019/403)**, which is where the BLS12-381
+isogeny construction comes from.
+
+Two maps, because these curves need different ones:
+
+| Curve | Map | Why |
+|---|---|---|
+| BLS12-381 | simplified SWU over an 11-isogenous (G1) / 3-isogenous (G2) curve, RFC 9380 §6.6.2 | The registered suite. Byte-exact with every conforming implementation. |
+| BLS12-461, BN-462 | Shallue–van de Woestijne, RFC 9380 §6.6.1 | Both have `A = 0`, so simplified SWU needs an isogeny nobody has standardised for them. SvdW needs none, and RFC 9380 uses it for BN254 for exactly this reason. |
+
+Rejected alternatives, with reasons:
+
+- **SvdW everywhere**, for one code path. Rejected: BLS12-381 would then not
+  interoperate, which is the entire reason to implement hash-to-curve. Keeping
+  both maps costs about 60 lines in one template.
+- **Deriving our own isogeny for BLS12-461** with Vélu's formulas. Rejected: it
+  produces a *correct* map but not the *same* map as anyone else, so it buys
+  nothing over SvdW while costing a large piece of machinery. There is nobody to
+  interoperate with on that curve.
+- **Koshelev, "Some remarks on how to hash faster onto elliptic curves"
+  (ePrint 2021/1082)** and the surrounding faster-hashing line of work.
+  Rejected for now: faster than SSWU in some settings, but not standardised, so
+  adopting it would trade the one property this feature exists to provide.
+- **Icart's map** and **try-and-increment**. Rejected: Icart needs the same
+  two-elements-and-add construction to be indifferentiable, and
+  try-and-increment is variable time in the message, which is disqualifying —
+  an OPRF or a PAKE hashes a secret.
+
+The isogeny coefficients are the only numbers in this project not derivable from
+the curve parameters, and are treated accordingly: committed as data with
+provenance, then verified before use — the map is checked to send `E'` onto `E`
+and to be a group homomorphism, and the suite is checked against RFC 9380's
+published vectors. A mistranscribed coefficient fails all three.
+
+### 10.2 Curve selection and an installable API — DECIDED AND BUILT
+
+`-DELIPS_CURVE=BLS12_381|BLS12_461|BN_462` selects the curve for the installed
+library, exported as `ELiPS::arith` with `ELiPS_CURVE` in the package config.
+Option A of §1.5 stands: one curve per binary, because `FP_LIMBS` must be a
+constant. Option C (runtime dispatch) stays available and unbuilt.
+
+This also closes a gap Phase 5 left: the modern headers were not installed at
+all, so the API carrying the pairing, the serialization and the hash-to-curve
+could not be consumed by anyone.
+
+### 10.3 Fast subgroup membership tests — DONE
+
+**Algorithms of record, in the order they should be read:**
+
+- **Scott, "A note on group membership tests for G1, G2 and GT on BLS
+  pairing-friendly curves" (ePrint 2021/1130)** — the origin. Under mild
+  conditions an endomorphism relation holds *if and only if* the element has
+  order `r`, and those conditions are met for the BLS family.
+- **El Housni, Guillevic and Piellard, "Co-factor clearing and subgroup
+  membership testing on pairing-friendly curves" (ePrint 2022/352)** — **read
+  this before implementing.** It *fixes a proof argument* in Scott's preprint
+  for the G2 case and generalises the result to both G1 and G2 across families.
+  It also records that for BLS12 there are no exceptional seeds.
+- **Dai, Lin, Zhao and Zhou, "Fast Subgroup Membership Testings for G1, G2 and
+  GT on Pairing-friendly Curves" (ePrint 2022/348)** — generalises Scott's
+  method to a much wider class of curves, which is what BN-462 needs.
+- Newer and worth checking before starting: **ePrint 2024/1790** (subgroup
+  testing via the Tate pairing, fewer Miller iterations and less storage),
+  **ePrint 2025/2230** (G2 testing specifically) and **ePrint 2025/1311**
+  (batch testing, which suits verification-heavy workloads).
+
+The motivation is measured here, not assumed: the subgroup checks inside
+`elips_pairing` cost **2175 µs of 6033 µs on BLS12-381**, because each is a full
+scalar multiplication by `r`. Scott's tests replace that with one endomorphism
+and a multiplication by the short parameter `x`. Expect the pairing to lose
+roughly a third of its cost.
+
+**Done, and the conditions are derived rather than cited.** The full texts were
+not reachable from this session, so the deciding argument is machine-checked
+here instead of recalled. It is short enough to state.
+
+Each test asks whether `E(P) == [m]P` for an endomorphism `E` that satisfies a
+known quadratic over `Z`. If a point of prime order `l` satisfies the test, then
+`m` is an eigenvalue of `E` on `E[l]`, so `m` is a root of that quadratic mod
+`l`:
+
+| group | endomorphism relation | a stray point of order `l` needs |
+|---|---|---|
+| G1, BLS12 | `phi² + phi + 1 = 0` | `m² + m + 1 ≡ 0 (mod l)` |
+| G2, both | `psi² − t·psi + p = 0` | `m² − t·m + p ≡ 0 (mod l)` |
+
+So the test is exact when no prime dividing the cofactor divides the
+corresponding integer, and detecting a shared prime needs no factorisation —
+it is a gcd.
+
+**G1 on BLS12 is exact for every seed.** With `m = −x²`,
+
+```
+m² + m + 1 = x⁴ − x² + 1 = r
+```
+
+exactly. `r` is prime and does not divide the cofactor, so no cofactor point can
+satisfy the relation. That is why the literature reports no exceptional BLS12
+seeds; here it is an identity rather than a citation.
+
+**G1 on BN needs no test at all.** `#E(Fp) = r`, so the cofactor is 1 and being
+on the curve is already the whole condition. Measured: 939.6 µs → 0.9 µs.
+
+**G2 is where a curve could fail**, which is why 2022/352 had to correct a proof.
+No identity forces `m² − t·m + p` coprime to the cofactor, so it is checked per
+curve. All three curves pass.
+
+The derivation lives in `tools/reference/subgroup_ref.py`, which also confirms
+each conclusion numerically on points that really are outside the subgroup.
+`gen_params.py` re-asserts the exactness conditions every time it regenerates
+`fp_params.h`, so a curve added later cannot ship a test that silently accepts
+attacker-chosen points. `test/kat/subgroup_*.vec` carries both classes of point
+and `test/subgroup_test.c` checks both directions, with a negative control that
+relabels a must-reject point as must-accept and requires the runner to notice.
+
+**Measured on this machine, x86-64 gcc -O2:**
+
+| curve | G1 before | G1 after | G2 before | G2 after | pairing before | pairing after |
+|---|---|---|---|---|---|---|
+| BLS12-381 | 331.5 µs | 187.7 µs | 1131.4 µs | 333.1 µs | 4069 µs | 3127 µs (−23%) |
+| BLS12-461 | 613.7 µs | 350.4 µs | 2078.2 µs | 580.9 µs | 6900 µs | 5139 µs (−26%) |
+| BN-462 | 939.6 µs | 0.9 µs | 2936.3 µs | 1502.0 µs | 8701 µs | 6328 µs (−27%) |
+
+Short of the "roughly a third" estimated above, because that estimate assumed
+the checks vanished rather than becoming shorter ladders. BN's G2 multiplier is
+`6x²`, half the width of `r`, so BN gains least on G2 and most on G1.
+
+### 10.4 GLV for BN, and for G1 — DONE, all three groups
+
+**Algorithm of record: Gallant, Lambert and Vanstone (CRYPTO 2001)**, with a
+short lattice basis for the decomposition. For the BLS12 G2 case already
+implemented here, the endomorphism and its eigenvalue follow **Budroni and
+Pintore**; the four-dimensional structure is the one analysed in **ePrint
+2011/315 ("Implementing 4-Dimensional GLV on GLS curves with j-invariant 0")**.
+Recent surveys of the multidimensional case: **ePrint 2024/038**, and **ePrint
+2025/1151** for the 3-dimensional signature-verification variant.
+
+**All three are closed.** The first pass shipped BLS12 G1 and BN G2 and
+recorded BN G1 as blocked; a second pass built it and, in the process, found
+that the ladder every one of these routines shared was giving back most of the
+gain. Both are described below, and the ladder mattered more.
+
+**G1 GLV, BLS12 only.** `phi(x,y) = (beta x, y)` acts as `[-x²]`, and `|x²|` is
+sqrt(r) to within a bit, so the scalar splits in **base x²** with one
+constant-time division and no lattice reduction at all — `glv_divrem` was
+already there for G2. No Babai rounding, no reduced basis.
+
+**BN G1 has no such split, and is now built the general way.** Its `lambda` is
+348 bits against sqrt(r) = 231, checked rather than assumed, so no base-B
+decomposition exists. `tools/reference/glv_ref.py` runs the Lagrange-Gauss
+reduction per curve and gets, with `a = 2x+1`, `c = 6x²+2x` and `d = a + c`,
+the basis `(-a, c)`, `(-d, -a)` with determinant `a² + cd = r` exactly. The
+closed forms are checked against the reduction rather than trusted, and
+`gen_params.py` re-runs both on every regeneration. Babai rounding then gives
+
+    q1 = round(k a / r)      q2 = round(k c / r)
+    k1 = k - q1 a - q2 d     k2 = q1 c - q2 a
+
+with both digits under 2²³⁰, proved from the half-vector bound rather than
+sampled. This is the only decomposition in the library with signed digits and
+the only one that needs arithmetic wider than `r`: `k·c` is 693 bits.
+
+**BN G2 GLV, built.** `psi` acts as `6x²`, which is 231 bits against 462 —
+*exactly* sqrt(r) — so the same base trick applies, and `ELIPS_6XSQ` already
+existed because the fast subgroup test uses the same multiplier. Two dimensions,
+not four: BLS12 gets four because `psi` acts as `[x]` there, a quarter of `r`.
+
+**The ladder was the real problem.** The first pass predicted 1.4x on G1 and
+measured 1.11x, and blamed the decomposition overhead. That was wrong. `ep_mul`
+is a width-4 fixed window — 462 doublings, 115 additions — while every GLV
+routine was bit-at-a-time: 231 doublings and **231** additions. Halving the
+digit length halves the doublings and leaves the additions where the window
+already had them, and additions are the expensive half (`ep_add` 3.49 µs against
+`ep_dbl` 2.23 µs on BN-462).
+
+Two bits of each digit per step indexes a 16-entry table by `(d1 << 2) | d0`
+and brings the additions down to 115, for 14 point operations of table build.
+Width 3 is worse: table and scan grow as `2^(2w)`, additions saved as `1/w`.
+The ladder is written once as a macro and instantiated for `E(Fp)` and
+`E'(Fp2)`. BLS12 G2 keeps the bitwise form: four digits would need a 256-entry
+table.
+
+**Measured, best of 7 runs of 200, three passes:**
+
+| | plain | GLV before | GLV after | before | after |
+|---|---|---|---|---|---|
+| BLS12-381 G1 | 290 µs | 224 µs | **206 µs** | 1.13x | **1.45x** |
+| BLS12-461 G1 | 486 µs | 449 µs | **330 µs** | 1.13x | **1.46x** |
+| BN-462 G1 | 751 µs | — | **521 µs** | — | **1.43x** |
+| BN-462 G2 | 2444 µs | 2564 µs | **1572 µs** | 1.16x | **1.53x** |
+| BLS12 G2, 4-dim | | | unchanged | 1.92x | 1.92x |
+
+So the windowing was worth more than the routine it was found while building.
+
+**G_T exponentiation** by the same decomposition is still open and untouched.
+The Frobenius gives a cheap endomorphism on the cyclotomic subgroup and the
+same two-digit ladder would apply, but `fp12_mul` is a different cost balance
+from `ep_add` and it should be measured before it is built.
+
+Every routine is checked against the plain ladder it replaces on 40 scalars per
+curve, including 0, 1, `r-1`, and values straddling the decomposition base;
+`test/ec_test.c` builds for all three curves. BN adds 144 constructed
+rounding-tie scalars, where a digit sits exactly at its bound. Seven sabotage
+variants were tried and five are caught; the two that are not — floor instead of
+round, and a ladder one bit shorter — are slack rather than gaps, and combining
+them does fail. `dudect` was BLS12-381 only on the grounds that other curves run
+the same code at a different width; BN G1 GLV is the one routine for which that
+is false, so it gets its own binary, reading 2.09 with both negative controls
+leaking on that build.
+
+The decomposition must stay constant time. This library already has a restoring,
+mask-driven division for the BLS12 G2 case at 1.6% overhead; reuse it rather
+than reaching for GMP.
+
+### 10.5 Cyclotomic squaring — Granger-Scott DONE; Karabina DONE (after §10.7)
+
+**Algorithm of record: Karabina, "Squaring in cyclotomic subgroups"
+(Math. Comp. 82, 2013)**, whose compressed squaring costs about **four Fp2
+squarings**, against Granger–Scott's cyclotomic squaring already implemented in
+Phase 4. Compression represents an element by two of its four Fp2 coordinates
+and needs one decompression, with a field inversion, per chain — which is why it
+pays for the long `f^x` runs in the final exponentiation and not for short ones.
+
+Also worth reading before starting:
+
+- **Hayashida, Hayasaka and Teruya, "Efficient Final Exponentiation via
+  Cyclotomic Structure for Pairings over Families of Elliptic Curves"
+  (ePrint 2020/875)** — the paper behind the Phase 0 note about whether the
+  BLS12 factor of three was deliberate.
+- **"Fast Final Exponentiation on BW and BLS Curves with Even Embedding
+  Degrees" (ePrint 2025/1387)** — newer, and directly on this curve family.
+
+**The premise was wrong, and the correction was worth more than the item.** This
+section assumed Granger-Scott was "already implemented in Phase 4". It was not.
+`fp12_sqr_cyc` used the weaker identity `conj(a) = a^-1`, giving
+`a^2 = (2 d0^2 - 1) + 2 d0 d1 w` — one `fp6` squaring plus one `fp6`
+multiplication, about eleven `Fp2` multiplications.
+
+Profiling first is what found it. A BLS12-381 final exponentiation runs about
+**321** cyclotomic squarings, which measured as **87% of the final
+exponentiation**. So the routine to fix was the one the section took for granted.
+
+Granger-Scott now: view `Fp12` as `Fp4[w]/(w^3 - s)` with
+`Fp4 = Fp2[s]/(s^2 - xi)` and `s = w^3`. With `c0 = (g0,g3)`, `c1 = (g1,g4)`,
+`c2 = (g2,g5)`,
+
+```
+h0 = 3 c0² − 2 conj(c0)      h1 = 3 s c2² + 2 conj(c1)      h2 = 3 c1² − 2 conj(c2)
+```
+
+Three `Fp4` squarings. Each is done as three `Fp2` squarings, taking `2ab` as
+`(a+b)² − a² − b²`, because `fp2_sqr` measures 271 ns against `fp2_mul`'s 421.
+The `3t ± 2c` combinations are `2(t ± c) + t`, three additions rather than four —
+at 45 ns an addition against 421 for a multiplication, and six of them per
+squaring, that is not noise.
+
+**Measured, controlled: both versions built and timed back to back.**
+
+| curve | `fp12_sqr_cyc` | final exp | pairing |
+|---|---|---|---|
+| BLS12-381 | 5819 → 3857 ns (1.51x) | 2298 → 1724 µs (−25%) | 4680 → 4027 µs (−14%) |
+| BLS12-461 | 8626 → 5597 ns (1.54x) | 3753 → 2611 µs (−30%) | 8087 → 6750 µs (−17%) |
+| BN-462 | 8678 → 5900 ns (1.47x) | 3775 → 2630 µs (−30%) | 10821 → 9351 µs (−14%) |
+
+Against the section's estimate of 10–15% of the final exponentiation, the
+measured figure is 25–30%, because the baseline was worse than assumed.
+
+The formulas are checked by `tools/reference/selftest.py` against full `Fp12`
+squaring on random cyclotomic elements, and — as importantly — checked NOT to
+hold off the subgroup, since a routine that agreed everywhere would just be the
+general squaring with an imaginary speedup. `test/edge_test.c` repeats both
+checks in C, and a sign sabotage in `h1` was confirmed to fail there and in the
+pairing vectors.
+
+**Karabina compression: declined once, then built once §10.7 changed the
+inputs.** The derivation is in `tools/reference/karabina_ref.py`, which re-runs
+the decision in one command; the history below is kept because the reversal is
+the useful part.
+
+**The formulas were fitted, not recalled.** Compressed squaring is a quadratic
+map, so its coefficients are solvable: sample random cyclotomic elements, square
+them exactly, and solve the resulting linear system over `Fp2` for every
+degree-2 monomial. Which four of the six `Fp2` coordinates to keep was found the
+same way, by attempting the fit for all fifteen subsets — `(g1, g2, g4, g5)` is
+the one that works, which in the `Fp4` view is `c1` and `c2` with `c0 = (g0,g3)`
+dropped. Recovered coefficients are small integers and small integers times
+`xi`, and the fitted maps reproduce squaring and decompression on held-out
+samples for all three curves:
+
+```
+h1 = 2 g1 + 6 xi g2 g5          4 g1 g3 = 3 g2² + xi g5² − 2 g4
+h2 = 3 g1² + 3 xi g4² − 2 g2    g0      = 1 + xi (g1 g5 − 3 g2 g4 + 2 g3²)
+h4 = 3 g2² + 3 xi g5² − 2 g4
+h5 = 2 g5 + 6 g1 g4
+```
+
+**It does not pay.** Measured, both routines built and timed:
+
+| curve | Granger-Scott | compressed | saving/sqr | decompression | break-even |
+|---|---|---|---|---|---|
+| BLS12-381 | 3841 ns | 2778 ns | 1063 ns | 50.6 µs | **47.6 squarings** |
+| BLS12-461 | 5717 ns | 3962 ns | 1754 ns | 77.9 µs | **44.4 squarings** |
+| BN-462 | 5911 ns | 3976 ns | 1935 ns | 78.2 µs | **40.4 squarings** |
+
+Compression only helps across an *uninterrupted* run of squarings, because a
+multiplication forces a decompression. The runs are set by the NAF of the
+parameter, and they are too short:
+
+| curve | squaring runs in `fp12_exp_param` | longest | net |
+|---|---|---|---|
+| BLS12-381 | 2, 2, 3, 9, 32, 16 | 32 | **0%** — no run clears break-even |
+| BLS12-461 | 27, 17, 33 | 33 | **0%** — no run clears break-even |
+| BN-462 | 13, 87, 14 | 87 | 10.3% of the final exponentiation, 2.9% of a pairing |
+
+So it is inert on two curves and worth 2.9% of a pairing on the third. Against
+that: a second representation, a division, and an exceptional case at `g1 = 0`
+which is **a branch on a secret-derived value** — making it constant time means
+evaluating both branches and selecting, which eats into the margin that is
+already only present on one curve. Not a good trade, so it is not shipped.
+
+**What would change the answer, and it points at §10.7.** Break-even is
+`inversion / saving-per-squaring`, so the blocker is the 50–78 µs constant-time
+`fp2_inv`. With an inversion 5x faster, break-even drops to 8–10 squarings and
+almost every run clears it:
+
+| curve | with a 5x faster inversion |
+|---|---|
+| BLS12-381 | 8.9% of the final exponentiation |
+| BLS12-461 | 16.9% |
+| BN-462 | 19.8% |
+
+§10.7 declined safegcd (ePrint 2019/266) and Pornin (ePrint 2020/972) on the
+grounds that inversion was not material after Phase 4 removed all but a handful
+per pairing. That reasoning stopped holding, §10.7 was reversed, and the faster
+inversion landed.
+
+**With it, Karabina is built and switched on.** `fp12_sqr_cyc_run(a, n)` does n
+squarings in compressed form; `fp12_exp_param` walks the parameter's digits in
+runs and uses it when a run is long enough.
+
+**The threshold came from measuring the real routine, not its parts.** Dividing
+one `fp2_inv` by the per-squaring saving predicted break-even near 6. That was
+optimistic by half: decompression also costs several multiplies and squarings.
+Timing `fp12_sqr_cyc_run(n)` against n calls to `fp12_sqr_cyc`, best of 7 runs
+of 300:
+
+| n | 5 | 9 | 10 | 13 | 16 | 27 | 32 | 87 |
+|---|---|---|---|---|---|---|---|---|
+| BLS12-381 | 0.72x | 0.91x | 0.94x | 1.02x | 1.08x | 1.18x | 1.21x | 1.36x |
+| BN-462 | 0.72x | 0.93x | 0.97x | 1.03x | 1.19x | 1.09x | 1.16x | 1.42x |
+
+So it is a **loss** below about 12. `ELIPS_KARABINA_MIN_RUN` is 16; shorter runs
+use `fp12_sqr_cyc`, so the threshold can never make anything slower than before.
+
+**The exceptional case is closed, not hoped away.** Decompression needs `g3`,
+and there are two relations for it:
+
+```
+4 g1 g3 = 3 g2² + xi g5² − 2 g4        4 xi g5 g3 = g1² − 2 g2 + 3 xi g4²
+```
+
+one dividing by `g1`, the other by `g5`. Both degenerate only if
+`g2³ = 8/(27 xi)`, and `gen_params.py` now asserts that this is **not a cube in
+Fp2** for every curve shipped — it is not, on all three. The only element with
+`g1 = g5 = 0` is therefore the identity, where `fp2_inv(0) = 0` makes both
+relations give `g3 = 0` and `g0 = 1`, which is correct. The choice between them
+is a select, not a branch, because the operand is secret.
+
+Relation 2 is unreachable by random testing, so `test/edge_test.c` checks the
+two **identities** instead, which hold on every cyclotomic element. Confirmed
+necessary: forcing relation 1 everywhere breaks nothing else in the suite.
+
+### 10.6 Multi-pairing and fixed-argument precomputation — DONE
+
+**Algorithm of record: one shared Miller loop with a single final
+exponentiation** — Scott, "On the Efficient Implementation of Pairing-Based
+Protocols" (ePrint 2011/334); implementation detail in "Pairing Implementation
+Revisited" (ePrint 2019/077). Several `(P_j, Q_j)` share one running Miller
+state, so the accumulated product costs **one Fp12 squaring per iteration
+regardless of how many terms there are**, and one final exponentiation instead
+of `n`.
+
+Promoted out of the §9.2 backlog because the use case is now concrete. A BLS
+verification is `e(H(m), pk) · e(-g1, sigma) == 1`: computing it as two separate
+pairings does the final exponentiation twice and throws away about 60% of a
+pairing on every verification. With hash-to-curve landed, this is the piece
+between this library and a usable signature scheme.
+
+**Built as `elips_pairing_multi`.** One shared accumulator, so the squaring at
+the top of each Miller iteration happens once rather than once per term, and one
+final exponentiation for the whole product.
+
+The correctness statement is exact, not approximate: `x -> x^E` is a
+homomorphism, so `final_exp(f_1 ... f_n) == final_exp(f_1) ... final_exp(f_n)`
+bit for bit, cube on BLS12 included. `test/pairing_test.c` checks the result
+both against the product of the Python oracle's recorded values and against the
+product of individual `elips_pairing` calls, and crosses the internal chunk
+boundary. Both checks were confirmed to fail under deliberate sabotage
+(squaring per term instead of per iteration; dropping a term).
+
+Per-term state is one `ep2_t`, so it lives in a fixed-size buffer and longer
+inputs are processed in chunks whose Miller values are multiplied together. Any
+`n` is accepted and the single final exponentiation is preserved regardless;
+chunking costs only the sharing of squarings across a boundary.
+
+**Measured, x86-64 gcc -O2, against the same pairings computed separately:**
+
+| terms | BLS12-381 | BN-462 |
+|---|---|---|
+| 2 | 1.45x | 1.32x |
+| 4 | 1.78x | 1.54x |
+| 8 | 2.08x | 1.74x |
+| 16 | 2.24x | 1.79x |
+
+`examples/03_bls_signature.c` now verifies as `e(-sigma, G2) * e(H(m), pk) == 1`
+in one call, which is the 1.45x row.
+
+**Fixed-argument precomputation, also built.** Costello and Stebila,
+"Fixed Argument Pairings" (ePrint 2010/342), report **25–37% fewer field
+multiplications** in the Miller loop when one argument is fixed. Measured here
+as a 1.58x Miller loop on BLS12-381, which is the top of that range.
+
+The saving is the point arithmetic, not the line evaluation. Writing the line at
+`P` as `c0 = yP·a`, `c3 = c`, `c5 = xP·b`, the triple `(a, b, c)` depends on the
+G2 argument alone, so `ep2_precompute` walks the loop once per `Q` and stores
+every line. Replay costs one accumulator squaring, two `fp2`-by-`fp` scalings
+and one sparse `fp12` multiply per step, with no G2 point arithmetic at all.
+
+`ELIPS_MILLER_LINES` is derived by `gen_params.py` from the loop's own digits,
+so the table is sized exactly rather than by a bound a new curve could exceed,
+and `test/pairing_test.c` counts the loop independently and checks the two agree.
+
+The split is exact: `dbl_line` and `add_line` hand over the same field elements
+the direct path used to compute inline, so a precomputed Miller loop is
+**bit-identical** to `pairing_miller`. The test asserts that, not the weaker
+"equal after the final exponentiation" — the exponentiation kills any per-line
+`Fp2` scaling and would hide exactly the errors worth catching. Three sabotages
+(swapped `a`/`b`, a skipped addition line, a line index that ignores the digit)
+were each injected and each caught.
+
+`ep2_precompute` performs the G2 subgroup check itself, because once the lines
+are extracted nothing downstream can check `Q` any more.
+
+**Measured, x86-64 gcc -O2:**
+
+| | BLS12-381 | BN-462 |
+|---|---|---|
+| Miller loop, precomputed vs direct | 1.58x | 1.48x |
+| one pairing | 1.33x | 1.55x |
+| 2-term product vs 2 separate pairings | 2.02x | 2.52x |
+| 4-term | 3.00x | 3.37x |
+| 8-term | 3.85x | 4.58x |
+
+**The cost, stated plainly.** A table is 19.9 KB on BLS12-381 and 47.6 KB on
+BN-462, and building one costs about two Miller loops: 1258 µs against a 634 µs
+per-use saving, so it breaks even at 2.0 uses (2.7 on BN-462). Verifying once
+with a fresh public key is a loss; verifying twice is already ahead. The
+generator is fixed forever and should simply be precomputed at startup.
+
+### 10.7 Constant-time inversion — REVERSED AND DONE
+
+**safegcd (Bernstein and Yang, "Fast constant-time gcd computation and modular
+inversion", TCHES 2019, ePrint 2019/266) is still not adopted**, and neither is
+**Pornin's optimized binary GCD (ePrint 2020/972)**, which is faster again —
+Pornin reports about 6250 cycles against Bernstein–Yang's 8520 on the same core
+— nor **"Jumping for Bernstein-Yang Inversion" (ePrint 2024/644)**.
+
+The reported speedups, 1.76x–3.76x, are **against Fermat exponentiation**, not
+against the `mpn_sec_invert` this library uses, and Phase 3 measured that at
+26.4 µs while Phase 4 removed all but a handful of inversions per pairing.
+Adopting a subtle algorithm to save a fraction of a percent of a pairing is the
+wrong trade. Revisit only if a profile says inversion is material again — for
+instance if §10.3's fast subgroup tests land and shift the balance.
+
+**UPDATE: that condition is now met, from an unexpected direction.** Not the
+subgroup tests — §10.5's Karabina analysis. Compressed squaring beats
+Granger-Scott per squaring on every curve, but each decompression costs one
+constant-time `fp2_inv` at 50–78 µs, which sets a break-even of 40–48 squarings
+against runs whose longest is 32, 33 and 87. Inversion is not a fraction of a
+percent here; it is the entire gate. A 5x faster inversion would move Karabina
+from 0% on two curves to 8.9%, 16.9% and 19.8% of the final exponentiation.
+
+So the ordering flipped: **inversion first, then Karabina.**
+
+**BUILT.** `fp_inv` is now batched divsteps (Bernstein-Yang, ePrint 2019/266;
+Pornin, 2020/972). One divstep's branch depends only on `delta` and the low bit
+of `g`, so 62 of them run in registers on the low limbs alone, producing a 2x2
+integer matrix; the full-width work happens once per 62 steps instead of once
+per step. No approximation of the high bits is involved, which is the part of
+Pornin's variant that carries a correctness obligation.
+
+| curve | before | after | |
+|---|---|---|---|
+| BLS12-381 | 29629 ns | 6998 ns | 4.2x |
+| BLS12-461 | 52575 ns | 8483 ns | 6.2x |
+| BN-462 | 52205 ns | 9778 ns | 5.3x |
+
+The §10.10 gate was honoured: the old routine is kept as `fp_inv_sec`, and
+`test/edge_test.c` checks the new one against it on 400 random values plus
+1, 2, 3, 4, 5, 7, 255, 256, p-1, p-2, zero, and an aliased call.
+
+**Two bugs, both caught by tooling rather than by reading.**
+
+*Undefined behaviour.* The code was correct at `-O2` and wrong at `-O3`. UBSan
+named both lines: a left shift of a negative `__int128`, and a `m * modulus[i]`
+product that reaches 2^128 and overflows a **signed** `__int128`. Both are
+unsigned now, where wraparound is defined and the bit pattern is the same.
+
+*A timing leak.* dudect read `|t| = 80` on the new `fp_inv`, confirming at 115.
+Two branches on secret-derived values: the signs of `f` and `g` in the matrix
+application, and the `delta > 0` test. Both are masks now, and the reading fell
+to 1-3. Reading the code had not found them; this is what that harness is for.
+
+**The iteration count** is fixed at `3*bits` — it cannot depend on the input
+without leaking. `tools/reference/divstep_ref.py` models the algorithm at limb
+level, checks it against exact inverses, and measures the worst case actually
+reached over ~6000 inputs per curve including Fibonacci pairs: about `2.17*bits`,
+so the margin is 38%. It also states plainly which part is measured and which
+part (the 2019/266 bound of about `2.88*bits`) is recalled rather than read.
+
+**This unlocks §10.5.** Karabina's break-even was 40-48 squarings and is now
+**6.4 on BLS12-381 and 8.7 on BN-462**, against runs of `2,2,3,9,32,16`,
+`27,17,33` and `13,87,14`. Most runs now clear it, which is what the §10.5
+analysis said would change the answer. Re-run `karabina_ref.py` to re-decide.
+
+### 10.8 A BLS signature layer — STILL OUT OF SCOPE
+
+§8 said "a protocol layer is a different project" and that stands, but the line
+has moved: hash-to-curve is a *curve* operation with a *curve* specification, so
+it belongs here. Signing, verification, aggregation, proof of possession and the
+ciphersuite registry of `draft-irtf-cfrg-bls-signature` do not. With
+hash-to-curve, serialization and the pairing in place, that layer is thin and
+can be built on top without touching this library — and §10.6 is the one thing
+it will want that is missing.
+
+### 10.9 Retiring the legacy layer — DONE, issue #17
+
+12,271 lines deleted: `src/*.c`, `include/ELiPS_bn_bls/`, and the four tests
+that existed only to exercise them. Tracked files outside the generated Doxygen
+site drop from 169 to 76.
+
+**Defects A3 and A4 are gone, checked rather than assumed.** Both lived in the
+legacy final exponentiation — one writing through its input pointer, the other
+mutating global curve parameters mid-computation. Every object file in the
+library was inspected for non-const file-scope symbols and there are none, so
+that class of defect has nowhere left to live. Issue #16 describes code that no
+longer exists.
+
+The script that diagnosed #16, `tools/reference/trace_finalexp.py`, was kept and
+retargeted at the surviving chains in `src/pairing/miller.c`. It no longer
+reports an exponent, it asserts one: `lambda` for BN, `3*lambda` for BLS12. The
+two scripts that read a dump from the now-deleted `test/dump_pairing.c` had no
+way left to run and were removed.
+
+The plan's "curve context struct" was never built and never needed: the
+remaining layer's constants are compile-time.
+
+**What made this possible was replacing the reference, not deleting the code.**
+`test/pairing_test.c` used to assert that the new pairing agreed with the old
+one, which is the weaker of the two available statements — two implementations
+can share a misreading of the twist conventions. It is now driven by
+`test/kat/pairing_*.vec`, generated from `tools/reference/pairing_ref.py`. Every
+suite in `test/` is now checked against the Python oracle; nothing compares one
+C implementation against another. BLS12-381 gained a pairing reference it never
+had, since the legacy layer did not support it.
+
+### 10.10 Phase 6 assembly — the target has changed
+
+Phase 6 as written (§6) says four scalar routines: `MUL`/`UMULH` + `ADCS` on
+AArch64, `MULX`/`ADCX`/`ADOX` on x86-64. **On x86-64 that is no longer the state
+of the art.**
+
+- **"Fast AVX-512 Implementation of the Optimal Ate Pairing on BLS12-381"
+  (TCHES 2025, ePrint 2025/1283)** uses AVX-512 **IFMA** — eight 52×52-bit
+  multiplies per instruction — and reports **~1.20–1.27 million cycles for a
+  full BLS12-381 pairing** on an Ice Lake core, vectorising Fp4/Fp6/Fp12
+  arithmetic rather than just the base field.
+- **"Efficient SIMD Implementation of the BLS Signature Scheme Using Intel
+  AVX-512" (ePrint 2026/947)** carries the same approach up to the protocol.
+- **"Truncated multiplication and batch software SIMD AVX512 implementation for
+  faster Montgomery multiplications"** (CiC) reports **almost 20%** over
+  non-truncated Montgomery reduction.
+
+At roughly 3 GHz, 1.2M cycles is about 400 µs, against this library's 1175 µs of
+portable C on Apple Silicon. So the realistic Phase 6 headroom on x86-64 is
+around **3x, not the ~1.3x §6 assumed**, and it comes from vectorising the
+extension-field arithmetic, not only from a faster limb multiply.
+
+**Revised Phase 6 decision:**
+
+1. Keep the AArch64 scalar path as §6 describes; there is no IFMA equivalent, so
+   `MUL`/`UMULH` + `ADCS` remains right there.
+2. On x86-64, target AVX-512 IFMA first and treat scalar `MULX`/`ADCX`/`ADOX` as
+   the fallback for machines without it, not as the goal. Runtime feature
+   detection was already required by §6 and now carries more weight.
+3. The §6 gate stands unchanged and matters more: every routine ships with the C
+   fallback it replaces, both run against the same vectors on every CI build,
+   and any routine that does not measure a ≥ 1.2x win is deleted rather than
+   carried.
+4. Take the profile on an x86-64 machine before starting. Every measurement in
+   `PROGRESS.md` up to Phase 4 was taken on Apple Silicon, and Phase 5's on a
+   slower x86-64 VM; neither is the machine this decision is about.
+
+### 10.11 Why these three curves — recorded, since it was never written down
+
+**Guillevic et al., "A short-list of pairing-friendly curves resistant to the
+Special TNFS algorithm at the 128-bit security level" (ePrint 2019/1371)**, and
+the 192-bit follow-up in *Communications in Cryptology*.
+
+The short version: STNFS pushed the required field size up, BLS12-381's
+conjectured security is now around 126 bits rather than 128, and the short-list
+puts **BLS12 over a 440–448-bit prime** as the best choice for pairing
+efficiency at a true 128-bit level. That is why BLS12-461 and BN-462 are in this
+library at all, and it is worth stating plainly:
+
+- **BLS12-381** is the interoperability curve. It has the specification, the
+  deployments and the test vectors, and it is what this library's generators,
+  encodings and hash-to-curve match byte for byte.
+- **BLS12-461** is the security-margin curve, sized per the short-list.
+- **BN-462** is the BN-family curve at a comparable margin. BN has been largely
+  displaced by BLS12 in deployment, which is also why it is the curve here with
+  the least optimization work behind it (no GLV, no registered hash-to-curve
+  suite).
+
+A consumer with no other constraint should use BLS12-381.
+
+### 10.12 Fast G2 cofactor clearing — DECIDED AND BUILT
+
+**Algorithm of record: Budroni and Pintore, "Efficient hash maps to G2 on BLS
+curves" (ePrint 2017/419)**, building on Fuentes-Castañeda et al. and Scott et
+al.:
+
+```
+[h_eff]Q = [x^2 - x - 1]Q + [x - 1]psi(Q) + psi^2([2]Q)
+```
+
+`h_eff` is 636 bits on BLS12-381 and 769 on BLS12-461, so before this the
+cofactor clearing — not the map — dominated `elips_hash_to_g2`. Two ladders over
+the 64-bit mother parameter and three applications of `psi` replace it.
+
+Measured: **BLS12-381 hash_to_g2 4070 µs -> 2133 µs (1.91x)**, BLS12-461
+7041 µs -> 3794 µs (1.86x). Less than the ladder-length ratio suggests, because
+the window table is rebuilt for each of the two ladders.
+
+BN keeps the plain multiplication; no equivalent chain has been verified here.
+
+**Why this one was built and §10.3 was not, given both come from papers whose
+full text was unreachable.** The failure modes are not alike. A wrong cofactor
+chain computes a *different multiple*, so the RFC 9380 vectors stop matching
+immediately — it cannot ship. A wrong subgroup test *accepts points it should
+reject*, which no vector notices. The identity here was additionally checked
+numerically against the derived `h_eff` on random points of the **twist**, not
+of G2, since on G2 much weaker relations hold and would hide a wrong chain.
 
 ## Appendix A — Verification log
 

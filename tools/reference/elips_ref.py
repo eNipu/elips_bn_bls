@@ -7,7 +7,7 @@ two independently written implementations agree, which is evidence the value is
 correct. If they disagree, one of them is wrong and the disagreement is the
 finding.
 
-Tower (must match include/ELiPS_bn_bls/field_dtype.h and the *_mul_basis
+Tower (must match include/elips/fpx.h and the *_mul_xi
 routines in src/):
 
     Fp2  = Fp[u]  / (u^2 + 1)          element a0 + a1*u

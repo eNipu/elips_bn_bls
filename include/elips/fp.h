@@ -52,6 +52,11 @@ void fp_mul(fp_t r, const fp_t a, const fp_t b);   /* Montgomery product */
 void fp_sqr(fp_t r, const fp_t a);
 void fp_inv(fp_t r, const fp_t a);         /* constant time; 0 maps to 0 */
 /* Variable time. Only for values that are already public -- never a secret. */
+/* The previous constant-time inversion, mpn_sec_invert based. Kept as the
+ * reference fp_inv is checked against, and as the fallback if the batched
+ * divstep version ever has to be backed out. Same contract, ~6x slower. */
+void fp_inv_sec(fp_t r, const fp_t a);
+
 void fp_inv_vartime(fp_t r, const fp_t a);
 
 /* --- predicates ------------------------------------------------------------
@@ -61,5 +66,42 @@ int fp_eq(const fp_t a, const fp_t b);
 
 /* Constant-time select: r = mask ? a : b, where mask must be 0 or all ones. */
 void fp_cselect(fp_t r, const fp_t a, const fp_t b, limb_t mask);
+
+/* --- exponentiation and square roots ---------------------------------------
+ * The exponent is read as ebits little-endian bits and is assumed PUBLIC: the
+ * square-and-multiply schedule depends on it. Every exponent used inside the
+ * library is derived from p, which is public. Never pass a secret. */
+void fp_exp(fp_t r, const fp_t a, const limb_t *e, int ebits);
+
+/* The three exponents derived from the modulus, each FP_LIMBS limbs wide and
+ * FP_BITS bits long: (p+1)/4, (p-1)/2 and (p-3)/4. Any argument may be NULL.
+ * Exposed because the Fp2 square root needs the same values. */
+void fp_exp_constants(limb_t *sqrt_e, limb_t *half_e, limb_t *quarter_e);
+
+/* Square root, for the p = 3 (mod 4) primes this library supports.
+ *
+ * Returns 1 and writes a root to r when a is a quadratic residue; returns 0 and
+ * zeroes r when it is not. The result is the root with the exponentiation's own
+ * sign convention, which is arbitrary -- callers that need a specific one (the
+ * point decompressor does) must fix it themselves.
+ *
+ * Constant time with respect to a: one exponentiation by the public constant
+ * (p+1)/4, then a comparison. Which of the two roots comes back does depend on
+ * a, but that is inherent to the function's output, not a side channel. */
+int fp_sqrt(fp_t r, const fp_t a);
+
+/* Is a strictly greater than (p-1)/2 in the canonical representation? This is
+ * the "lexicographically largest" predicate the compressed point encodings use
+ * to recover the sign of y from a single bit. Constant time. */
+int fp_is_lex_largest(const fp_t a);
+
+/* RFC 9380 4.1 sgn0: the low bit of the canonical representation.
+ *
+ * A different predicate from fp_is_lex_largest, and the two are easy to
+ * confuse. Both answer "which of the two square roots is this", but the
+ * encodings use "greater than (p-1)/2" and hash-to-curve uses "odd", and
+ * substituting one for the other produces points that are on the curve, in the
+ * group, and wrong. Constant time. */
+int fp_sgn0(const fp_t a);
 
 #endif /* ELIPS_FP_H */

@@ -129,6 +129,19 @@ int main(int argc, char **argv)
         if (fp_eq(fa, fb) != (mpz_cmp(a, b) == 0)) { failures++; fprintf(stderr, "MISMATCH eq\n"); }
     }
 
+    /* Zero is excluded from the loop above because it has no inverse, which
+     * makes it exactly the case a constant-time inversion is most likely to get
+     * wrong: the natural implementation early-returns on it, and an early
+     * return is a branch on the operand. fp_inv is defined to map 0 to 0 and to
+     * do it without branching, so pin the value here. */
+    {
+        fp_t z, iz;
+        fp_set_zero(z);
+        fp_inv(iz, z);
+        checks++;
+        if (!fp_is_zero(iz)) { failures++; fprintf(stderr, "MISMATCH fp_inv(0) != 0\n"); }
+    }
+
     mpz_clears(a, b, w, NULL); gmp_randclear(st); mpz_clear(P);
     printf("  %ld checks, %ld failures\n", checks, failures);
     return failures ? 1 : 0;

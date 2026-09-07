@@ -47,3 +47,11 @@ __pycache__/
 # Editor and OS
 .DS_Store
 /fontconfig/
+
+# The Doxygen site is generated, not authored. .github/workflows/docs.yml
+# regenerates it on every push to master and publishes it to the gh-pages
+# branch; keeping a copy in the tree meant 1280 tracked files describing code
+# that had been deleted.
+docs/
+doxygen-out/
+Doxyfile.ci

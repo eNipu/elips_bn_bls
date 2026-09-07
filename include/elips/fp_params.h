@@ -63,8 +63,14 @@ typedef mp_limb_t limb_t;
   static const limb_t ELIPS_ABSX[1] = {
         UINT64_C(0xd201000000010000)
   };
+  #define ELIPS_ABSX2_BITS   128
+  static const limb_t ELIPS_ABSX2[2] = {
+        UINT64_C(0x0000000100000000),
+        UINT64_C(0xac45a4010001a402)
+  };
   #define ELIPS_LOOP_TOP     64
   #define ELIPS_FAMILY_BLS12   1
+  #define ELIPS_MILLER_LINES 69
   static const signed char ELIPS_LOOP[65] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, -1 };
   /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
   #define ELIPS_HARD_BITS    1268
@@ -109,32 +115,32 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0bbc3efc5008a26a)
   };
   static const limb_t EP2_GEN_X[2][6] = {
-    { UINT64_C(0x3e53a5f8c8ffaef8),
-        UINT64_C(0xb99c06aaf3b276c3),
-        UINT64_C(0xfb79858ebcad992d),
-        UINT64_C(0xe9df675fc458d908),
-        UINT64_C(0xe673bab9a7b788b7),
-        UINT64_C(0x055f75de1e08db1d) },
-    { UINT64_C(0x4d1c8a6a79bafb7d),
-        UINT64_C(0x2a2ed51ab0816bc7),
-        UINT64_C(0x3860876a6dda17c6),
-        UINT64_C(0x713b9c28071a239a),
-        UINT64_C(0xa9c18852c003bc5a),
-        UINT64_C(0x12c09cd114b7fa69) }
+    { UINT64_C(0xf5f28fa202940a10),
+        UINT64_C(0xb3f5fb2687b4961a),
+        UINT64_C(0xa1a893b53e2ae580),
+        UINT64_C(0x9894999d1a3caee9),
+        UINT64_C(0x6f67b7631863366b),
+        UINT64_C(0x058191924350bcd7) },
+    { UINT64_C(0xa5a9c0759e23f606),
+        UINT64_C(0xaaa0c59dbccd60c3),
+        UINT64_C(0x3bb17e18e2867806),
+        UINT64_C(0x1b1ab6cc8541b367),
+        UINT64_C(0xc2b6ed0ef2158547),
+        UINT64_C(0x11922a097360edf3) }
   };
   static const limb_t EP2_GEN_Y[2][6] = {
-    { UINT64_C(0xb589385988a1a4fc),
-        UINT64_C(0x6225b2f878bce232),
-        UINT64_C(0xca23289fcfe62047),
-        UINT64_C(0x9dafb522eee3e2b3),
-        UINT64_C(0x691238cd99b4ec9f),
-        UINT64_C(0x14fc893c21245d2c) },
-    { UINT64_C(0x8b2f4b2f9c4921de),
-        UINT64_C(0x827df6c6a087b5fb),
-        UINT64_C(0x5f3663668b7caf52),
-        UINT64_C(0xc637447e65d03e6d),
-        UINT64_C(0x7dab1e1fb38756d0),
-        UINT64_C(0x0da1940f68192943) }
+    { UINT64_C(0x4c730af860494c4a),
+        UINT64_C(0x597cfa1f5e369c5a),
+        UINT64_C(0xe7e6856caa0a635a),
+        UINT64_C(0xbbefb5e96e0d495f),
+        UINT64_C(0x07d3a975f0ef25a2),
+        UINT64_C(0x0083fd8e7e80dae5) },
+    { UINT64_C(0xadc0fc92df64b05d),
+        UINT64_C(0x18aa270a2b1461dc),
+        UINT64_C(0x86adac6a3be4eba0),
+        UINT64_C(0x79495c4ec93da33a),
+        UINT64_C(0xe7175850a43ccaed),
+        UINT64_C(0x0b2bc2a163de1bf2) }
   };
   #define ELIPS_ORDER_BITS   255
   static const limb_t ELIPS_ORDER[4] = {
@@ -200,6 +206,25 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000) }
   };
+  /* Fast subgroup tests; exactness asserted by the generator. */
+  static const limb_t EP_BETA[6] = {
+        UINT64_C(0x30f1361b798a64e8),
+        UINT64_C(0xf3b8ddab7ece5a2a),
+        UINT64_C(0x16a8ca3ac61577f7),
+        UINT64_C(0xc26a2ff874fd029b),
+        UINT64_C(0x3636b76660701c6e),
+        UINT64_C(0x051ba4ab241b6160)
+  };
+  /* Closes the 2^62 vs 2^64 gap in the divstep inversion. */
+  static const limb_t FP_INV_FIX[6] = {
+        UINT64_C(0x037740e68756b3df),
+        UINT64_C(0x0515b243abe50dd9),
+        UINT64_C(0xeff70d431292a34a),
+        UINT64_C(0xa99e361d3f3cfe02),
+        UINT64_C(0x2e314f4d96f19179),
+        UINT64_C(0x165890b82b48dbff)
+  };
+  #define ELIPS_KARABINA_MIN_RUN 16
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][6] = {
     { UINT64_C(0x07089552b319d465),
@@ -461,8 +486,15 @@ typedef mp_limb_t limb_t;
         UINT64_C(0xfffbfffe00000000),
         UINT64_C(0x0000000000001fff)
   };
+  #define ELIPS_ABSX2_BITS   154
+  static const limb_t ELIPS_ABSX2[3] = {
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0xffff801000100004),
+        UINT64_C(0x0000000003fffffe)
+  };
   #define ELIPS_LOOP_TOP     77
   #define ELIPS_FAMILY_BLS12   1
+  #define ELIPS_MILLER_LINES 79
   static const signed char ELIPS_LOOP[78] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 };
   /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
   #define ELIPS_HARD_BITS    1534
@@ -631,6 +663,29 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000) }
   };
+  /* Fast subgroup tests; exactness asserted by the generator. */
+  static const limb_t EP_BETA[8] = {
+        UINT64_C(0x73e3b9c838c74f87),
+        UINT64_C(0xab8e4a32adfe3d11),
+        UINT64_C(0xb59cc9799f6177f8),
+        UINT64_C(0x062782ed30d69711),
+        UINT64_C(0xa47882ff54511132),
+        UINT64_C(0x8640d7ae779cfd76),
+        UINT64_C(0x1b78f28f56a2aaf0),
+        UINT64_C(0x00000000000012ca)
+  };
+  /* Closes the 2^62 vs 2^64 gap in the divstep inversion. */
+  static const limb_t FP_INV_FIX[8] = {
+        UINT64_C(0x9970cce391e15e23),
+        UINT64_C(0x6bc80a98c8695a80),
+        UINT64_C(0xd9fd7c5c4fade2d9),
+        UINT64_C(0x0fc62942171deb40),
+        UINT64_C(0xc3a859832825ffc7),
+        UINT64_C(0x4f2c552a60dca8d8),
+        UINT64_C(0x7b1de9eb8b86b30b),
+        UINT64_C(0x0000000000000d56)
+  };
+  #define ELIPS_KARABINA_MIN_RUN 16
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {
     { UINT64_C(0x5ffb2514d3d275a9),
@@ -954,6 +1009,7 @@ typedef mp_limb_t limb_t;
   };
   #define ELIPS_LOOP_TOP     116
   #define ELIPS_FAMILY_BN   1
+  #define ELIPS_MILLER_LINES 124
   static const signed char ELIPS_LOOP[117] = { 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 };
   /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
   #define ELIPS_HARD_BITS    1384
@@ -1123,6 +1179,56 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x0000000000000000),
         UINT64_C(0x0000000000000000) }
   };
+  /* Fast subgroup tests; exactness asserted by the generator. */
+  static const limb_t EP_BETA[8] = {
+        UINT64_C(0xd1de50472b230ca3),
+        UINT64_C(0x60b71948720b0b58),
+        UINT64_C(0x6c2c1347370f979a),
+        UINT64_C(0xf724644d88ea1b8e),
+        UINT64_C(0x43036734dbadcda9),
+        UINT64_C(0xffc7fd1e777f3f1c),
+        UINT64_C(0x50c14b636e3f2006),
+        UINT64_C(0x00000000000013a6)
+  };
+  #define ELIPS_6XSQ_BITS    231
+  static const limb_t ELIPS_6XSQ[4] = {
+        UINT64_C(0x0000000060030006),
+        UINT64_C(0xff6ffe8000000000),
+        UINT64_C(0xfffffffffffffff3),
+        UINT64_C(0x00000060060017ff)
+  };
+  #define ELIPS_GLV_A_BITS   116
+  static const limb_t ELIPS_GLV_A[2] = {
+        UINT64_C(0xffffffffffff7fff),
+        UINT64_C(0x0008003fffffffff)
+  };
+  #define ELIPS_GLV_C_BITS   231
+  static const limb_t ELIPS_GLV_C[4] = {
+        UINT64_C(0x0000000060028004),
+        UINT64_C(0xff77fec000000000),
+        UINT64_C(0xfffffffffffffff3),
+        UINT64_C(0x00000060060017ff)
+  };
+  #define ELIPS_GLV_D_BITS   231
+  static const limb_t ELIPS_GLV_D[4] = {
+        UINT64_C(0x0000000060020003),
+        UINT64_C(0xff7fff0000000000),
+        UINT64_C(0xfffffffffffffff3),
+        UINT64_C(0x00000060060017ff)
+  };
+  #define ELIPS_GLV_BITS     230
+  /* Closes the 2^62 vs 2^64 gap in the divstep inversion. */
+  static const limb_t FP_INV_FIX[8] = {
+        UINT64_C(0xa152e4597ff1f59d),
+        UINT64_C(0xcb578d0fb654de2c),
+        UINT64_C(0x8efd2a29b8733c63),
+        UINT64_C(0xc1c98acd00883b61),
+        UINT64_C(0x013363c2dc804e7a),
+        UINT64_C(0xf0378352b61a91d1),
+        UINT64_C(0x7404aebcb6bb35a0),
+        UINT64_C(0x0000000000001098)
+  };
+  #define ELIPS_KARABINA_MIN_RUN 16
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {
     { UINT64_C(0xc6569749d7a29138),
