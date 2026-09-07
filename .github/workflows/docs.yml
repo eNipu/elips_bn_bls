@@ -59,12 +59,23 @@ jobs:
       # goes on triggering on every push to master and failing. That was
       # observed here, twice, before this step existed.
       #
-      # PUT sets build_type on an existing site; POST covers a repository where
-      # Pages has never been enabled. Neither is allowed to fail the build:
-      # deploy-pages below publishes the site either way, and losing the
-      # deployment because a settings call was refused would be a worse outcome
-      # than the setting staying wrong. The resulting state is printed instead,
-      # so it is visible rather than assumed.
+      # KNOWN LIMITATION, measured rather than assumed. With the default
+      # GITHUB_TOKEN this PUT does not take effect: the legacy builder still
+      # triggered on the push that followed it. PUT /repos/{}/pages requires
+      # ADMIN on the repository, which GITHUB_TOKEN does not carry no matter
+      # what `permissions:` says. POST (create) is allowed with pages: write,
+      # which is exactly why configure-pages' enablement works only for a site
+      # that does not exist yet.
+      #
+      # The step is kept because it is correct and costs nothing: it works for
+      # a repository where Pages was never enabled, and it works here the
+      # moment it is given a token with admin (a PAT in a secret). Until then a
+      # repository admin has to set Settings -> Pages -> Source to
+      # "GitHub Actions" once, by hand.
+      #
+      # Deliberately not fatal either way. deploy-pages below publishes the
+      # site regardless, and failing the build over a refused settings call
+      # would trade a wrong setting for no documentation at all.
       - name: Deploy from this workflow, not from a branch
         env:
           GH_TOKEN: ${{ github.token }}

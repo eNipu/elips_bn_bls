@@ -2317,13 +2317,30 @@ before it was caught, and the only reason it was caught is that the acceptance
 criterion had been written down as "pages build and deployment no longer runs
 at all" rather than "the workflow is green".
 
-So the build type is now set directly, with `gh api -X PUT repos/{}/pages -f
-build_type=workflow` and a `POST` fallback for a repository where Pages was
-never enabled. The step is deliberately **not** fatal: `deploy-pages` publishes
-the site whether or not the settings call is permitted, and failing the build
-over a refused settings call would trade a wrong setting for no documentation
-at all. It reads the resulting `build_type` back and warns if it is not
-`workflow`, so the outcome is visible instead of assumed a second time.
+The second attempt set it directly, `gh api -X PUT repos/{}/pages -f
+build_type=workflow`. **That does not work either, and the reason is a hard
+limit rather than a bug.** `PUT /repos/{}/pages` requires *admin* on the
+repository. `GITHUB_TOKEN` never carries admin, whatever `permissions:` says.
+`POST` (create) is allowed with `pages: write`, which is exactly why
+`configure-pages`' enablement works only for a site that does not yet exist.
+
+The test that settled it: the legacy builder fired again on the push made two
+and a half minutes *after* the PUT ran. Had the build type changed, GitHub
+would not have triggered it.
+
+So this one really does need a human with repository admin, once:
+**Settings, Pages, Source, "GitHub Actions"**. The workflow step is kept, since
+it is correct and free, works for a repository where Pages was never enabled,
+and starts working here the moment it is handed a PAT with admin. It is
+deliberately not fatal, because `deploy-pages` publishes the site regardless
+and failing the build over a refused settings call would trade a wrong setting
+for no documentation at all.
+
+What is verified: the site is generated from current source, is guarded against
+being empty, and `deploy-pages` reports a successful deployment. What is *not*
+verified is which of the two Pages mechanisms the live URL is serving while
+`build_type` is still `legacy`. The egress policy blocks `enipu.github.io` from
+the session, so that cannot be settled from here either.
 
 Two consequences. The site is no longer committed anywhere, so `gh-pages` stops
 being written to and is now vestigial. And an empty site fails the build instead
