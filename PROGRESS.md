@@ -2473,6 +2473,73 @@ the output did not move.
 
 ---
 
+## An unresolved dudect reading on the macOS runner (BN only)
+
+Recorded because it is NOT explained, and a future session should not have to
+rediscover it.
+
+CI run 57 failed on macOS Release with two BN timing targets:
+
+    dudect.bn.ep_mul_glv    max|t| = 20.66 (n=3000)  ->  31.34 (n=12000)
+    dudect.bn.fp12_exp_gt   max|t| = 37.17 (n=2000)  ->  78.36 (n=8000)
+
+against a threshold of 25. The readings GROW with sample size, and 37 -> 78 at
+four times the samples is close to the sqrt(n) growth of a real systematic
+bias. Noise does not scale that way. That is the part that should stop anyone
+from waving this off.
+
+### What argues against a leak in the library
+
+**It does not reproduce on x86-64, at any sample size.** Run locally at the
+same confirm sizes and then at six times them:
+
+    ep_mul_glv    n=3000  1.70    n=12000  1.88    n=48000  2.04
+    fp12_exp_gt   n=2000  1.40    n= 8000  2.76    n=32000  2.03
+
+Flat. A control-flow leak grows with n on every platform, not one.
+
+**It is intermittent on macOS.** Runs 55, 56 and 58 passed the same two
+targets on the same runner; only 57 failed. Run 58's binaries are identical to
+57's, since that commit changed only PROGRESS.md.
+
+**Neither path has data-dependent control flow.** Re-read after the failure:
+every loop bound comes from a public bit length, every conditional is a mask,
+every table entry is scanned under a mask on every step. The BN G1
+decomposition's widths are compile-time constants.
+
+**There is precedent in this repository.** A GLV routine previously read
+|t| = 57 on Apple silicon at -O2 while staying under 2.3 on x86-64, and was
+concluded to be operand-value dependence in the hardware multiplier rather
+than a branch. BN is the plausible worst case for that: the largest field, and
+16-limb wide arithmetic in the G1 decomposition, so the most multiplier work
+whose timing could vary with operand values.
+
+### Why it is not closed
+
+"Microarchitectural" is a hypothesis, not a measurement. Nobody has run this
+on Apple silicon directly and watched the reading grow. Until someone does,
+the honest status is: a real signal on one platform, absent on another, cause
+unknown.
+
+What was deliberately NOT done: the threshold was not raised, and the tests
+were not unregistered. Raising a threshold past a reading is precisely what
+the `sensitivity` control exists to prevent, and it would make the harness
+agree with whatever the code does.
+
+### The experiment that would settle it
+
+On an Apple-silicon machine, Release build:
+
+    ./build/dudect_test_bn fp12_exp_gt 32000
+
+several times. Growing past 150 there while x86-64 stays at 2 confirms the
+hardware explanation and the right response is a documented platform caveat. A
+reading that stays low means run 57 was a runner artefact after all. A reading
+that grows on x86-64 too would mean the review above missed something, and
+that is the case worth finding.
+
+---
+
 # HAND-OFF — next session starts at Phase 6
 
 **Phases 0 to 5b are complete.** Phase 6 (assembly) is next, and §10.10 of the
