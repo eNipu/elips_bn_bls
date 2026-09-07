@@ -32,6 +32,13 @@ Alternation works because the two binaries meet the same machine within seconds
 of each other, over and over. Drift moves both members of a pair together, and
 the comparison is of pairs.
 
+RUN THIS ON AN IDLE MACHINE. ABBA cancels drift that is smooth across a round;
+it does not cancel a load that arrives partway through the sequence. Running a
+compile alongside one of these produced +9 to +13% on all twelve operations at
+100% agreement, including several the change could not possibly have touched.
+100% agreement on everything at once is the signature of that mistake, not of a
+real regression: a real one moves one or two operations, not the whole table.
+
 Exit status is 1 if anything regressed, so this can gate a pull request.
 """
 import argparse

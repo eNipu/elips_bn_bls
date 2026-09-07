@@ -55,6 +55,17 @@ void ep2_add(ep2_t *r, const ep2_t *p, const ep2_t *q);
 void ep2_from_affine(ep2_t *r, const fp2_t x, const fp2_t y);
 int  ep2_to_affine(fp2_t x, fp2_t y, const ep2_t *p);
 void ep2_mul(ep2_t *r, const ep2_t *p, const limb_t *k, int kbits);
+
+/* [k0]P0 + [k1]P1 in a single interleaved ladder, constant time.
+ *
+ * One set of doublings instead of two, and one shared table. Each scalar
+ * carries its OWN bit length, both public: they are commonly different, and a
+ * single shared length reads the shorter one past its end. Both must be
+ * non-negative, so negate the point rather than the scalar. No subgroup
+ * precondition: this uses no endomorphism and is correct anywhere on the
+ * twist. */
+void ep2_mul2(ep2_t *r, const ep2_t *P0, const limb_t *k0, int k0bits,
+              const ep2_t *P1, const limb_t *k1, int k1bits);
 /* The skew Frobenius on the twist. On G2 it acts as multiplication by a fixed
  * eigenvalue, which is what makes GLV possible. */
 void ep2_psi(ep2_t *r, const ep2_t *p);

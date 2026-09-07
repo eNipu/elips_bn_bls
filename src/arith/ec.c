@@ -144,15 +144,48 @@ static void glv_ladder2_##SUF(PTT *r, const PTT *P0, const PTT *P1,            \
 }
 
 GLV_DEF_LADDER2(ep,  ep_t,  ep,  fp)
-#ifdef ELIPS_FAMILY_BN
-/* Only BN has a two-dimensional G2 split. On BLS12, psi acts as [x] and the G2
- * scalar has four digits, which a 2-bit window would index with a 256-entry
- * table -- more point operations to build than the whole ladder saves. */
+/* The ep2 instance serves BN's two-dimensional G2 split and, on both families,
+ * ep2_mul2 below. BLS12's own G2 GLV stays four-dimensional and bitwise: four
+ * digits at width two would index a 256-entry table, more point operations to
+ * build than the ladder saves. */
 GLV_DEF_LADDER2(ep2, ep2_t, ep2, fp2)
-#endif
 
 /* Digit length rounded up to a whole number of two-bit windows. */
 #define GLV_TOP(bits) ((((bits) + 1 + 1) / 2) * 2)
+
+/* [k0]P0 + [k1]P1, in one interleaved ladder.
+ *
+ * Two separate ep2_mul calls do two sets of doublings; this does one, and
+ * shares a single 16-entry table between the two scalars. Constant time, with
+ * the same masked table scan as everything else here.
+ *
+ * kbits is the length of the LONGER scalar and is public. The shorter one is
+ * read with the same bound, so its leading zeros cost nothing extra beyond
+ * what the shared ladder was already doing.
+ *
+ * Both scalars are non-negative. A caller with a negative one negates the
+ * corresponding point instead, which on a curve is free.
+ *
+ * No subgroup precondition: unlike the GLV routines this uses no endomorphism,
+ * so it is correct for any two points on the twist. */
+void ep2_mul2(ep2_t *r, const ep2_t *P0, const limb_t *k0, int k0bits,
+              const ep2_t *P1, const limb_t *k1, int k1bits)
+{
+    /* Copy into full-width zeroed buffers first, each read only as far as its
+     * OWN length. The ladder rounds up to a whole number of two-bit windows
+     * and reads a limb per window, so a tightly sized constant would be read
+     * past its end: H2C_G2_CLEAR_A is two limbs for 128 bits against a rounded
+     * top of 130, and the two multipliers differ in length by a factor of two.
+     * The hash-to-curve vectors caught both mistakes, one after the other. */
+    limb_t b0[GLV_W], b1[GLV_W];
+    memset(b0, 0, sizeof b0);
+    memset(b1, 0, sizeof b1);
+    for (int i = 0; i < GLV_W && i < (k0bits + 63) / 64; i++) b0[i] = k0[i];
+    for (int i = 0; i < GLV_W && i < (k1bits + 63) / 64; i++) b1[i] = k1[i];
+
+    int top = k0bits > k1bits ? k0bits : k1bits;
+    glv_ladder2_ep2(r, P0, P1, b0, b1, GLV_TOP(top));
+}
 
 #ifdef ELIPS_FAMILY_BLS12
 
