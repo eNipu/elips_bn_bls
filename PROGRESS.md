@@ -1582,6 +1582,51 @@ is deleted.
 part no longer exists. Untracking it is a one-line change once Pages serves from
 `gh-pages`; the workflow for that already exists.
 
+## A dudect finding: the fixed class must not be degenerate
+
+`dudect.ep2_mul_glv` failed on macOS Release with max|t| = 57.44, confirmed at
+70.82 on an independent second sample. It passed on every Linux job and on
+macOS Asan and Ubsan, and the commit that exposed it changed no C code at all.
+
+**It was the harness, and the reason is worth writing down.** Class 0 was
+`k = 0`. With a zero scalar every digit of the GLV decomposition is zero, the
+ladder selects the identity at every step, and the accumulator sits at infinity
+from the first doubling to the last. Class 0 therefore ran every field
+multiplication on all-zero operands while class 1 ran on random ones.
+
+`ep2_mul_glv` was read line by line before the harness was touched, and it is
+structurally constant time: every loop bound is a public bit length, the
+restoring division's conditional subtraction is applied by mask, and the
+16-entry table is scanned in full with `fp2_cselect` on each entry. The
+instruction counts of the two classes are identical. Checked the compiler too,
+since a mask-select turning into a branch at -O2 is the classic way this goes
+wrong: clang 18 at -O2 emits `cmove` for the division step, no branch.
+
+So the two classes differed only in operand values, and what the t-test found
+was operand-value dependence in the hardware. That reading is consistent with
+where it appeared: Apple silicon at -O2 only, quiet at the lower optimisation
+levels the sanitizer builds use, and 0.8 to 2.3 across ten runs on x86-64.
+
+That comparison is not the threat model. The question a leakage test has to ask
+is whether timing separates one realistic secret from another, so both classes
+must be realistic. Class 0 is now a pinned pseudorandom scalar, `splitmix64`
+from a fixed seed, masked below `2^(ORDER_BITS-1)` so it is in range without a
+reduction. Verified nonzero, less than r, and roughly half its bits set on all
+three curves.
+
+This is the second time this file measured something other than the routine.
+The first was `fp_add` reading |t| = 98 because random inputs were generated
+inside the timed loop for one class only. Both failures share a shape: the
+routine was fine and the experiment was not. The negative control is what makes
+the difference visible either way, and it still fires at 909, so the harness has
+not been blunted.
+
+Ten consecutive local runs after the change: 0.79 to 3.03. Whether macOS Release
+agrees is what the next CI run answers; if it still reports a leak the finding is
+real and the hardware reading above is wrong.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6
@@ -1652,7 +1697,10 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
   is correct — `E(Fp)` is not cyclic there. Do not "fix" it.
 - The Budroni–Pintore G2 cofactor chain is verified against `[h_eff]` on random
   points of the **twist**. Checking it on G2 points proves nothing.
-- dudect must prepare every input before it times anything.
+- dudect must prepare every input before it times anything, and its fixed
+  class must be a representative secret. `k = 0` is not one: it holds the
+  accumulator at infinity and compares all-zero operands against random
+  ones, which is a hardware question, not a control-flow one.
 - A whole-`fp6` or whole-`fp2` access to an element of a nested array parameter
   trips GCC's `-Wstringop-overflow`. Pass the halves, or take an element macro.
 - Every routine in `fp.h`, `fpx.h` and `ec.h` must tolerate its output aliasing

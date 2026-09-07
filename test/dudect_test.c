@@ -188,10 +188,53 @@ static void run_fp_inv_vt(const input_t *in)  { fp_inv_vartime(sink_fp, in->a); 
 static void run_fp_cselect(const input_t *in)
 { fp_cselect(sink_fp, in->a, in->b, (limb_t)0 - (in->a[0] & 1)); }
 
+/* The fixed class must be a REPRESENTATIVE secret, not a degenerate one.
+ *
+ * This used to be k = 0, and that is wrong in a way that took a macOS Release
+ * failure to expose. With k = 0 every digit of the GLV decomposition is zero,
+ * the ladder selects the identity at every step, and the accumulator stays at
+ * infinity from the first doubling to the last. So every field multiplication
+ * in class 0 runs on all-zero operands while class 1 runs on random ones.
+ *
+ * The instruction counts are still identical -- every loop bound in
+ * ep2_mul_glv comes from a public bit length, and the 16-entry table scan
+ * masks every entry -- so what the t-test was picking up is operand-value
+ * dependence in the hardware multiplier and memory system, not a branch in the
+ * library. It reported |t| = 57 on Apple silicon at -O2 and stayed under 2.3 on
+ * x86-64, which is the signature of a microarchitectural effect rather than a
+ * control-flow one.
+ *
+ * That comparison is not the threat model. The question is whether timing
+ * distinguishes one realistic scalar from another, so both classes have to be
+ * realistic. A fixed pseudorandom value pinned here gives a reproducible
+ * class 0 with an ordinary bit pattern, and a genuine data-dependent branch
+ * would still separate it from class 1.
+ */
+static void fixed_scalar(limb_t *k)
+{
+    /* splitmix64 from a pinned seed: same value every run, every platform. */
+    uint64_t s = 0;
+    for (int i = 0; i < ELIPS_ORDER_LIMBS; i++) {
+        uint64_t z = (s += 0x9e3779b97f4a7c15ULL);
+        z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
+        z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
+        k[i] = (limb_t)(z ^ (z >> 31));
+    }
+    /* Clear bit ORDER_BITS-1 and everything above it. The result is less than
+     * 2^(ORDER_BITS-1), which is at most r, so the scalar is always in range
+     * without needing a reduction. */
+    const int top = ELIPS_ORDER_BITS - 1;
+    for (int i = 0; i < ELIPS_ORDER_LIMBS; i++) {
+        const int lo = i * 64;
+        if (lo >= top)            k[i] = 0;
+        else if (lo + 64 > top)   k[i] &= ((limb_t)1 << (top - lo)) - 1;
+    }
+}
+
 static void prep_scalar(input_t *in, int c)
 {
     if (c) elips_random_scalar(in->k);
-    else   memset(in->k, 0, sizeof in->k);
+    else   fixed_scalar(in->k);
 }
 static void run_ep_mul(const input_t *in)
 { ep_mul(&sink_ep, &g1, in->k, ELIPS_ORDER_BITS); }
