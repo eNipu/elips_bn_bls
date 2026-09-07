@@ -2074,6 +2074,57 @@ condition §10.5 recorded as the thing that would change its answer.
 
 ---
 
+## GLV on G1, and on BN's G2 (plan §10.4)
+
+Two of §10.4's three gaps are closed. The third turned out to be blocked for a
+reason worth recording rather than a job left undone.
+
+**G1, BLS12 only.** `phi(x,y) = (beta x, y)` acts as `[-x²]`, and `|x²|` is
+sqrt(r) to within a bit. So the scalar splits in **base x²** — one
+constant-time division, no lattice reduction, no Babai rounding. `glv_divrem`
+was already there for G2, and `EP_BETA` and `ep_phi` already existed from the
+subgroup work, so this reused everything.
+
+**BN G1 is not implemented, and that is a finding.** Its `lambda` is 348 bits
+against sqrt(r) = 231 — checked, not assumed — so no base-B split exists and it
+would need a genuinely reduced lattice basis with Babai rounding. `ep_mul`
+stays the routine there.
+
+**BN G2, built.** `psi` acts as `6x²`: 231 bits against 462, *exactly* sqrt(r),
+so the same base trick applies. `ELIPS_6XSQ` already existed because the fast
+subgroup test uses the same multiplier. Two dimensions, not four — BLS12 gets
+four because `psi` acts as `[x]` there, a quarter of `r`.
+
+**Measured, best of 7 runs of 200:**
+
+| curve | G1 plain | G1 GLV | | G2 plain | G2 GLV | |
+|---|---|---|---|---|---|---|
+| BLS12-381 | 349.8 µs | 313.7 µs | 1.11x | 1017.6 µs | 512.4 µs | 1.99x |
+| BLS12-461 | 632.0 µs | 498.9 µs | 1.27x | 1985.6 µs | 1174.1 µs | 1.69x |
+| BN-462 | — | — | — | 3254.3 µs | 2483.2 µs | 1.31x |
+
+**G1 came in under the plan's estimate of 1.4x, and the reason matters.**
+Halving the ladder does not halve the cost. The two-dimensional form adds one
+point addition per bit, and the decomposition runs two bit-at-a-time
+constant-time divisions over the full order width. On the smaller curve that
+fixed cost is a large share of an already-short ladder, which is why BLS12-461
+gains *more* than BLS12-381 rather than less. If G1 GLV is ever worth pushing
+further, the decomposition is where the time goes, not the ladder.
+
+**Test coverage was the real gap here.** `ec_test.c` built for one curve only,
+so a new BN-only routine and a new BLS12-only routine would both have shipped
+untested. It now builds for all three. Each GLV routine is checked against the
+plain ladder on 40 scalars including 0, 1, `r-1`, and values straddling the
+decomposition base. Both were confirmed to fail under sabotage: dropping the
+negation on the G1 base point, and giving BN's G2 split the wrong base.
+
+`dudect.ep_mul_glv` is a new timing target and reads 1.9.
+
+45 CTest on Release (up from 43), 34 under each sanitizer, no warnings under
+`-Werror`.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6

@@ -166,12 +166,32 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
                  "  static const signed char ELIPS_PARAM[%d] = { %s };\n"
                  % (xtop + 1, ", ".join(str(d) for d in xdigits)))
 
+    # x^2, the base for the two-dimensional GLV split on G1.
+    #
+    # phi acts on G1 as [-x^2] (asserted with EP_BETA above), and |x^2| is
+    # exactly sqrt(r) to within a bit, so writing the scalar in base x^2 gives
+    # two digits of half length and needs no lattice reduction: one division by
+    # x^2 replaces the Babai rounding a general GLV would need.
+    #
+    # Not emitted for BN: there lambda is 348 bits against sqrt(r) = 231, so no
+    # base-B split exists and BN G1 needs a reduced lattice basis instead.
+    absx2 = cv.X * cv.X
+    if cv.family == "bls12":
+        a2n = (absx2.bit_length() + W - 1) // W
+        param_txt2 = ("  #define ELIPS_ABSX2_BITS   %d\n" % absx2.bit_length() +
+                      "  static const limb_t ELIPS_ABSX2[%d] = {\n        %s\n  };\n"
+                      % (a2n, limb_list(absx2, a2n)))
+        # phi must really act as [-x^2] on G1; EP_BETA is chosen for that above.
+    else:
+        param_txt2 = ""
+
     absx = abs(cv.X)
     axn = (absx.bit_length() + W - 1) // W
     param_txt += ("  #define ELIPS_ABSX_BITS    %d\n" % absx.bit_length() +
                   "  #define ELIPS_X_NEGATIVE   %d\n" % (1 if cv.X < 0 else 0) +
                   "  static const limb_t ELIPS_ABSX[%d] = {\n        %s\n  };\n"
                   % (axn, limb_list(absx, axn)))
+    param_txt += param_txt2
 
     # How many line functions one Miller loop evaluates: one doubling line per
     # iteration, plus an addition line wherever the digit is non-zero, plus BN's

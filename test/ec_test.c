@@ -107,29 +107,62 @@ int main(void)
         ok(ep2_is_infinity(&cof), "[r]P == O for the G2 generator");
     }
 
-#ifdef ELIPS_FAMILY_BLS12
-    {   /* GLV must agree with the plain ladder, including at the edges. */
+    {   /* Every GLV routine must agree with the plain ladder it replaces,
+         * including at the edges. A GLV split that is wrong for one scalar in
+         * a million would pass a casual test and lose funds in production, so
+         * this runs 40 scalars including 0, 1, r-1, and values that straddle
+         * the base used by the decomposition. */
         mpz_t R_, kk; mpz_inits(R_, kk, NULL);
         mpz_import(R_, (ELIPS_ORDER_BITS+63)/64, -1, sizeof(limb_t), 0, 0, ELIPS_ORDER);
-        gmp_randstate_t rs; gmp_randinit_default(rs); gmp_randseed_ui(rs, 20260906UL);
-        int bad = 0;
-        for (int i = 0; i < 25; i++) {
-            if (i == 0) mpz_set_ui(kk, 0);
+        gmp_randstate_t rs; gmp_randinit_default(rs); gmp_randseed_ui(rs, 20260907UL);
+
+        ep_t G1;
+        ep_generator(&G1);
+
+        int bad2 = 0;
+#ifdef ELIPS_FAMILY_BLS12
+        int bad1 = 0;
+#endif
+        for (int i = 0; i < 40; i++) {
+            if (i == 0)      mpz_set_ui(kk, 0);
             else if (i == 1) mpz_set_ui(kk, 1);
             else if (i == 2) mpz_sub_ui(kk, R_, 1);
+            else if (i == 3) mpz_set_ui(kk, 2);
+            else if (i < 12) {
+                /* straddle the decomposition base: 2^b - 1, 2^b, 2^b + 1 for
+                 * b near half the order, which is where a digit boundary is */
+                int b = ELIPS_ORDER_BITS / 2 + (i - 4) - 2;
+                mpz_ui_pow_ui(kk, 2, (unsigned)(b > 1 ? b : 1));
+                if (i % 3 == 1) mpz_sub_ui(kk, kk, 1);
+                if (i % 3 == 2) mpz_add_ui(kk, kk, 1);
+                mpz_mod(kk, kk, R_);
+            }
             else mpz_urandomm(kk, rs, R_);
+
             limb_t buf[16]; memset(buf, 0, sizeof buf);
             mpz_export(buf, NULL, -1, sizeof(limb_t), 0, 0, kk);
             int bits = mpz_sgn(kk) ? (int)mpz_sizeinbase(kk, 2) : 1;
-            ep2_t g1_, g2_;
-            ep2_mul(&g1_, &P, buf, bits);
-            ep2_mul_glv(&g2_, &P, buf, bits);
-            if (!ep2_same(&g1_, &g2_)) { bad++; break; }
+
+            ep2_t a2, b2;
+            ep2_mul(&a2, &P, buf, bits);
+            ep2_mul_glv(&b2, &P, buf, bits);
+            if (!ep2_same(&a2, &b2)) bad2++;
+
+#ifdef ELIPS_FAMILY_BLS12
+            ep_t a1, b1;
+            ep_mul(&a1, &G1, buf, bits);
+            ep_mul_glv(&b1, &G1, buf, bits);
+            fp_t ax, ay, bx, by;
+            int ai = ep_to_affine(ax, ay, &a1), bi = ep_to_affine(bx, by, &b1);
+            if (ai != bi || (ai && !(fp_eq(ax, bx) && fp_eq(ay, by)))) bad1++;
+#endif
         }
-        ok(bad == 0, "GLV matches the plain ladder on 25 scalars incl. 0, 1, r-1");
+        ok(bad2 == 0, "ep2_mul_glv matches the plain ladder on 40 scalars");
+#ifdef ELIPS_FAMILY_BLS12
+        ok(bad1 == 0, "ep_mul_glv matches the plain ladder on 40 scalars");
+#endif
         gmp_randclear(rs); mpz_clears(R_, kk, NULL);
     }
-#endif
 
     printf("%s: %s (%d failure%s)\n", ELIPS_CURVE_NAME,
            failures ? "FAILED" : "OK", failures, failures == 1 ? "" : "s");

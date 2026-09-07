@@ -59,13 +59,16 @@ void ep2_mul(ep2_t *r, const ep2_t *p, const limb_t *k, int kbits);
  * eigenvalue, which is what makes GLV possible. */
 void ep2_psi(ep2_t *r, const ep2_t *p);
 
-#ifdef ELIPS_FAMILY_BLS12
-/* GLV scalar multiplication on G2, four-dimensional via psi.
+/* GLV scalar multiplication on G2. Four-dimensional via psi on BLS12,
+ * two-dimensional on BN.
+ *
  *
  * On BLS12, psi acts on G2 as multiplication by the mother parameter x, which
  * is only 64 to 77 bits against a 255 to 308 bit group order. Writing the
  * scalar in base |x| therefore gives four short digits and cuts the ladder to a
- * quarter of its length.
+ * quarter of its length. On BN, psi acts as 6x^2 -- 231 bits against a 462-bit
+ * order, exactly sqrt(r) -- so the split is base 6x^2 and two-dimensional,
+ * halving the ladder rather than quartering it.
  *
  * Constant time throughout, decomposition included: the division is restoring,
  * one bit at a time, with the conditional subtraction done by mask. Safe for
@@ -78,6 +81,15 @@ void ep2_psi(ep2_t *r, const ep2_t *p);
  * which is general-purpose and has no such requirement. This is why ep2_mul
  * does not simply dispatch here. */
 void ep2_mul_glv(ep2_t *r, const ep2_t *q, const limb_t *k, int kbits);
+
+#ifdef ELIPS_FAMILY_BLS12
+/* Two-dimensional GLV on G1, using phi. Same precondition: p must be in G1.
+ *
+ * BLS12 only. phi acts as [-x^2] there and |x^2| is sqrt(r), so the scalar
+ * splits in base x^2 with no lattice reduction. BN's lambda is 348 bits
+ * against sqrt(r) = 231, so no such split exists and ep_mul stays the routine
+ * to use there. */
+void ep_mul_glv(ep_t *r, const ep_t *p, const limb_t *k, int kbits);
 #endif
 int  ep2_on_curve(const ep2_t *p);
 int  ep2_eq(const ep2_t *a, const ep2_t *b);

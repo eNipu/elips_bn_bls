@@ -281,6 +281,11 @@ static void run_ep2_mul(const input_t *in)
 #ifdef ELIPS_FAMILY_BLS12
 static void run_ep2_glv(const input_t *in)
 { ep2_mul_glv(&sink_ep2, &g2, in->k, ELIPS_ORDER_BITS); }
+static void run_ep_glv(const input_t *in)
+{ ep_mul_glv(&sink_ep, &g1, in->k, ELIPS_ORDER_BITS); }
+#else
+static void run_ep2_glv(const input_t *in)
+{ ep2_mul_glv(&sink_ep2, &g2, in->k, ELIPS_ORDER_BITS); }
 #endif
 
 /* The pairing's secret is the point, not the loop bound: the Miller loop runs
@@ -341,8 +346,9 @@ static const target_t TARGETS[] = {
     { "fp_inv",      prep_fp_pair, run_fp_inv,       1, 20000, 0 },
     { "ep_mul",      prep_scalar,  run_ep_mul,       1,  3000, 0 },
     { "ep2_mul",     prep_scalar,  run_ep2_mul,      1,  2000, 0 },
-#ifdef ELIPS_FAMILY_BLS12
     { "ep2_mul_glv", prep_scalar,  run_ep2_glv,      1,  2000, 0 },
+#ifdef ELIPS_FAMILY_BLS12
+    { "ep_mul_glv",  prep_scalar,  run_ep_glv,       1,  3000, 0 },
 #endif
     { "miller",      prep_pairing, run_pairing,      1,  1000, 0 },
     { "hash_to_g1",  prep_h2c,     run_h2c_g1,       1,  1000, 0 },

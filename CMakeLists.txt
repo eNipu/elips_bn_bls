@@ -246,7 +246,7 @@ if(ELIPS_BUILD_TESTS)
     #                    honest: raise the threshold past a one-multiply leak and
     #                    this test starts failing.
     foreach(_t fp_mul fp_add fp_cselect fp_inv ep_mul ep2_mul ep2_mul_glv
-               hash_to_g1 hash_to_g2 sensitivity control_vartime)
+               ep_mul_glv hash_to_g1 hash_to_g2 sensitivity control_vartime)
       add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})
       set_tests_properties(dudect.${_t} PROPERTIES TIMEOUT 900)
     endforeach()
@@ -294,13 +294,16 @@ if(ELIPS_BUILD_TESTS)
                    -DPATTERN=outg2 -DRELABEL=ing2
                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
 
-  # Group-law properties. One curve is enough: the code is a template shared by
-  # all three, and the vectors cover each curve's arithmetic separately.
-  add_executable(ec_test test/ec_test.c)
-  target_link_libraries(ec_test PRIVATE elips_arith_BLS12_461 GMP::GMP)
-  elips_test_warnings(ec_test)
-  add_test(NAME ec.properties COMMAND ec_test)
-  set_tests_properties(ec.properties PROPERTIES TIMEOUT 900)
+  # Group-law properties, built for every curve. The GLV routines differ by family (four
+  # dimensions on BLS12 G2, two on BN G2 and on BLS12 G1), so a single-curve
+  # build would leave most of them untested.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(ec_test_${_cv} test/ec_test.c)
+    target_link_libraries(ec_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(ec_test_${_cv})
+    add_test(NAME ec.properties.${_cv} COMMAND ec_test_${_cv})
+    set_tests_properties(ec.properties.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
 
 endif()
 

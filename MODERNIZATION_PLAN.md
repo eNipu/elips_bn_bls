@@ -849,7 +849,7 @@ Short of the "roughly a third" estimated above, because that estimate assumed
 the checks vanished rather than becoming shorter ladders. BN's G2 multiplier is
 `6x²`, half the width of `r`, so BN gains least on G2 and most on G1.
 
-### 10.4 GLV for BN, and for G1 everywhere — SCHEDULED, Phase 6
+### 10.4 GLV for BN, and for G1 — DONE where a split exists
 
 **Algorithm of record: Gallant, Lambert and Vanstone (CRYPTO 2001)**, with a
 short lattice basis for the decomposition. For the BLS12 G2 case already
@@ -859,15 +859,48 @@ Pintore**; the four-dimensional structure is the one analysed in **ePrint
 Recent surveys of the multidimensional case: **ePrint 2024/038**, and **ePrint
 2025/1151** for the 3-dimensional signature-verification variant.
 
-Three gaps remain:
+**Two of the three gaps are closed, and the third turned out not to be a gap.**
 
-- **G1 GLV on all three curves.** `(x, y) -> (beta x, y)` with `beta³ = 1` gives
-  a two-dimensional split, roughly 1.4x. G1 is the last group still on a plain
-  fixed-window ladder.
-- **BN G2 GLV.** There `psi` acts as `6x²`, 231 bits against a 462-bit order, so
-  only a two-dimensional split exists and the win is about half of BLS12's.
-- **G_T exponentiation** by the same decomposition, using the Frobenius on the
-  cyclotomic subgroup.
+**G1 GLV, BLS12 only.** `phi(x,y) = (beta x, y)` acts as `[-x²]`, and `|x²|` is
+sqrt(r) to within a bit, so the scalar splits in **base x²** with one
+constant-time division and no lattice reduction at all — `glv_divrem` was
+already there for G2. No Babai rounding, no reduced basis.
+
+**BN G1 has no such split and is not implemented.** Its `lambda` is 348 bits
+against sqrt(r) = 231, checked rather than assumed, so a base-B decomposition
+does not exist and BN G1 would need a genuinely reduced lattice basis. `ep_mul`
+remains the routine there. This is a real remaining item, smaller than it looks:
+see below.
+
+**BN G2 GLV, built.** `psi` acts as `6x²`, which is 231 bits against 462 —
+*exactly* sqrt(r) — so the same base trick applies, and `ELIPS_6XSQ` already
+existed because the fast subgroup test uses the same multiplier. Two dimensions,
+not four: BLS12 gets four because `psi` acts as `[x]` there, a quarter of `r`.
+
+**Measured, best of 7 runs of 200:**
+
+| curve | G1 plain | G1 GLV | | G2 plain | G2 GLV | |
+|---|---|---|---|---|---|---|
+| BLS12-381 | 349.8 µs | 313.7 µs | 1.11x | 1017.6 µs | 512.4 µs | 1.99x |
+| BLS12-461 | 632.0 µs | 498.9 µs | 1.27x | 1985.6 µs | 1174.1 µs | 1.69x |
+| BN-462 | — | — | — | 3254.3 µs | 2483.2 µs | 1.31x |
+
+**G1 came in under the estimate and it is worth saying why.** The section
+predicted roughly 1.4x; the measurement is 1.11x on BLS12-381 and 1.27x on
+BLS12-461. Halving the ladder does not halve the cost: the two-dimensional form
+adds one point addition per bit, and the decomposition itself runs two
+bit-at-a-time constant-time divisions over the full order width. On the smaller
+curve that fixed cost is a large share of an already-short ladder, which is why
+BLS12-461 gains more than BLS12-381 rather than less.
+
+**G_T exponentiation** by the same decomposition is still open and untouched.
+
+Every routine is checked against the plain ladder it replaces on 40 scalars per
+curve, including 0, 1, `r-1`, and values straddling the decomposition base;
+`test/ec_test.c` now builds for all three curves rather than one, since the GLV
+routines differ by family and a single-curve build left most of them untested.
+Both were confirmed to fail under sabotage. `dudect.ep_mul_glv` is a new timing
+target and reads 1.9.
 
 The decomposition must stay constant time. This library already has a restoring,
 mask-driven division for the BLS12 G2 case at 1.6% overhead; reuse it rather

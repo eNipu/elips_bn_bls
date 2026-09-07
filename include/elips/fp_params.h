@@ -63,6 +63,11 @@ typedef mp_limb_t limb_t;
   static const limb_t ELIPS_ABSX[1] = {
         UINT64_C(0xd201000000010000)
   };
+  #define ELIPS_ABSX2_BITS   128
+  static const limb_t ELIPS_ABSX2[2] = {
+        UINT64_C(0x0000000100000000),
+        UINT64_C(0xac45a4010001a402)
+  };
   #define ELIPS_LOOP_TOP     64
   #define ELIPS_FAMILY_BLS12   1
   #define ELIPS_MILLER_LINES 69
@@ -480,6 +485,12 @@ typedef mp_limb_t limb_t;
   static const limb_t ELIPS_ABSX[2] = {
         UINT64_C(0xfffbfffe00000000),
         UINT64_C(0x0000000000001fff)
+  };
+  #define ELIPS_ABSX2_BITS   154
+  static const limb_t ELIPS_ABSX2[3] = {
+        UINT64_C(0x0000000000000000),
+        UINT64_C(0xffff801000100004),
+        UINT64_C(0x0000000003fffffe)
   };
   #define ELIPS_LOOP_TOP     77
   #define ELIPS_FAMILY_BLS12   1
