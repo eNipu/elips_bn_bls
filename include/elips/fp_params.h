@@ -210,6 +210,15 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x3636b76660701c6e),
         UINT64_C(0x051ba4ab241b6160)
   };
+  /* Closes the 2^62 vs 2^64 gap in the divstep inversion. */
+  static const limb_t FP_INV_FIX[6] = {
+        UINT64_C(0x037740e68756b3df),
+        UINT64_C(0x0515b243abe50dd9),
+        UINT64_C(0xeff70d431292a34a),
+        UINT64_C(0xa99e361d3f3cfe02),
+        UINT64_C(0x2e314f4d96f19179),
+        UINT64_C(0x165890b82b48dbff)
+  };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][6] = {
     { UINT64_C(0x07089552b319d465),
@@ -652,6 +661,17 @@ typedef mp_limb_t limb_t;
         UINT64_C(0x8640d7ae779cfd76),
         UINT64_C(0x1b78f28f56a2aaf0),
         UINT64_C(0x00000000000012ca)
+  };
+  /* Closes the 2^62 vs 2^64 gap in the divstep inversion. */
+  static const limb_t FP_INV_FIX[8] = {
+        UINT64_C(0x9970cce391e15e23),
+        UINT64_C(0x6bc80a98c8695a80),
+        UINT64_C(0xd9fd7c5c4fade2d9),
+        UINT64_C(0x0fc62942171deb40),
+        UINT64_C(0xc3a859832825ffc7),
+        UINT64_C(0x4f2c552a60dca8d8),
+        UINT64_C(0x7b1de9eb8b86b30b),
+        UINT64_C(0x0000000000000d56)
   };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {
@@ -1153,6 +1173,17 @@ typedef mp_limb_t limb_t;
         UINT64_C(0xff6ffe8000000000),
         UINT64_C(0xfffffffffffffff3),
         UINT64_C(0x00000060060017ff)
+  };
+  /* Closes the 2^62 vs 2^64 gap in the divstep inversion. */
+  static const limb_t FP_INV_FIX[8] = {
+        UINT64_C(0xa152e4597ff1f59d),
+        UINT64_C(0xcb578d0fb654de2c),
+        UINT64_C(0x8efd2a29b8733c63),
+        UINT64_C(0xc1c98acd00883b61),
+        UINT64_C(0x013363c2dc804e7a),
+        UINT64_C(0xf0378352b61a91d1),
+        UINT64_C(0x7404aebcb6bb35a0),
+        UINT64_C(0x0000000000001098)
   };
   /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */
   static const limb_t FROB_P1_1[2][8] = {

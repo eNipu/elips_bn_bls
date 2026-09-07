@@ -191,6 +191,63 @@ static void test_aliasing(void)
     }
 
     {
+        /* Constant-time inversion: the batched-divstep fp_inv against the
+         * mpn_sec_invert fp_inv_sec it replaced, which is kept for exactly
+         * this. Both must agree on every value, and both must satisfy the
+         * defining property. Edge cases first, because that is where a
+         * divstep bound or a sign select goes wrong. */
+        fp_t a, x, y, one, chk, zero;
+        fp_set_one(one);
+        fp_set_zero(zero);
+
+        static const unsigned small[] = { 1, 2, 3, 4, 5, 7, 255, 256 };
+        for (unsigned k = 0; k < sizeof small / sizeof *small; k++) {
+            limb_t l[FP_LIMBS];
+            memset(l, 0, sizeof l);
+            l[0] = small[k];
+            fp_from_limbs(a, l);
+            fp_inv(x, a); fp_inv_sec(y, a);
+            ok(fp_eq(x, y), "fp_inv == fp_inv_sec on a small value");
+            fp_mul(chk, a, x);
+            ok(fp_eq(chk, one), "a * fp_inv(a) == 1 on a small value");
+        }
+
+        /* p-1 and p-2, the top of the range. */
+        for (int k = 1; k <= 2; k++) {
+            limb_t l[FP_LIMBS];
+            for (int i = 0; i < FP_LIMBS; i++) l[i] = FP_MODULUS[i];
+            l[0] -= (limb_t)k;
+            fp_from_limbs(a, l);
+            fp_inv(x, a); fp_inv_sec(y, a);
+            ok(fp_eq(x, y), "fp_inv == fp_inv_sec near the modulus");
+            fp_mul(chk, a, x);
+            ok(fp_eq(chk, one), "a * fp_inv(a) == 1 near the modulus");
+        }
+
+        int disagree = 0, notone = 0;
+        for (int i = 0; i < 400; i++) {
+            fp_rand(a);
+            fp_inv(x, a); fp_inv_sec(y, a);
+            if (!fp_eq(x, y)) disagree++;
+            fp_mul(chk, a, x);
+            if (!fp_eq(chk, one)) notone++;
+        }
+        ok(disagree == 0, "fp_inv == fp_inv_sec on 400 random values");
+        ok(notone == 0,   "a * fp_inv(a) == 1 on 400 random values");
+
+        /* Zero has no inverse and the contract says the answer is zero, with
+         * no branch taken to get there. */
+        fp_inv(x, zero);
+        ok(fp_is_zero(x), "fp_inv(0) == 0");
+        fp_inv_sec(y, zero);
+        ok(fp_is_zero(y), "fp_inv_sec(0) == 0");
+
+        /* Output aliasing input, which fp2_inv does. */
+        fp_rand(a); fp_copy(x, a); fp_inv(y, a); fp_inv(x, x);
+        ok(fp_eq(x, y), "fp_inv tolerates r == a");
+    }
+
+    {
         fp12_t f, g, rr, aa;
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < 3; j++)

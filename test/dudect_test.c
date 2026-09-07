@@ -347,7 +347,12 @@ static const target_t TARGETS[] = {
     { "miller",      prep_pairing, run_pairing,      1,  1000, 0 },
     { "hash_to_g1",  prep_h2c,     run_h2c_g1,       1,  1000, 0 },
     { "hash_to_g2",  prep_h2c,     run_h2c_g2,       1,   700, 0 },
-    { "sensitivity",     prep_scalar_and_fp, run_sensitivity_probe, 1, 2000, 1 },
+    /* n is large because the probed operation is tiny: one field multiply
+     * against a scalar multiplication's ~900 us. At n=2000 the reading
+     * swung 19 to 79 on a loaded machine and the control itself became
+     * flaky, which is the failure it exists to prevent. More samples
+     * steady the reading without changing what it detects. */
+    { "sensitivity",     prep_scalar_and_fp, run_sensitivity_probe, 1, 40000, 1 },
     { "control_vartime", prep_fp_pair, run_fp_inv_vt, 1, 20000, 1 },
 };
 #define NTARGET ((int)(sizeof TARGETS / sizeof TARGETS[0]))

@@ -13,6 +13,7 @@
  */
 #include "elips/fp.h"
 #include <gmp.h>
+#include <stdint.h>
 
 typedef unsigned __int128 dlimb_t;
 
@@ -195,7 +196,204 @@ int fp_eq(const fp_t a, const fp_t b)
  * Montgomery multiplications by R^2 make up the missing factor of R^2, since
  * montmul(montmul(x, R2), R2) = x * R^2.
  */
-void fp_inv(fp_t r, const fp_t a)
+/* ------------------------------------------- constant-time inversion ----
+ *
+ * Batched "divsteps", after Bernstein and Yang (ePrint 2019/266) and Pornin
+ * (ePrint 2020/972). The routine this replaces was mpn_sec_invert, which is
+ * correct but does one full-width pass per bit: 417 field multiplications'
+ * worth on BLS12-381, against 94 ns for a multiply.
+ *
+ * ONE DIVSTEP, on state (delta, f, g) with f odd:
+ *
+ *   delta > 0 and g odd :  (1-delta,  g, (g-f)/2)
+ *   otherwise           :  (1+delta,  f, (g + (g&1) f)/2)
+ *
+ * WHY IT BATCHES SAFELY. The branch depends only on delta and the LOW BIT of
+ * g. So 62 consecutive divsteps can be run on nothing but delta and the low
+ * limbs of f and g, in registers, accumulating a 2x2 integer matrix; the
+ * expensive full-width work then happens once per 62 steps instead of once per
+ * step. This needs no approximation of the high bits, which is the part of
+ * Pornin's variant carrying a correctness obligation. Truncating to 64 bits is
+ * exact for the decisions: each step consumes one bit, and 62 < 64.
+ *
+ * Each divstep is one half of an integer matrix,
+ *
+ *   case A: (1/2) [[0, 2], [-1, 1]]      case B: (1/2) [[2, 0], [c, 1]]
+ *
+ * so a block of K steps is (1/2^K) times an integer matrix M, and
+ * (f, g) <- M (f, g) >> K exactly.
+ *
+ * THE INVERSE. Track d, e with f == d*a and g == e*a (mod p), starting from
+ * (f,g) = (p,a) and (d,e) = (0,1). The same matrix drives them. When g reaches
+ * zero f is +-1, and d is the inverse up to sign and a power of two.
+ *
+ * d and e get ONE Montgomery step per block, radix 2^64, because that is the
+ * reduction this file already has. So they pick up 2^-64 a block while f and g
+ * pick up 2^-62. FP_INV_FIX closes that gap and restores the Montgomery factor
+ * in a single multiplication at the end.
+ *
+ * ITERATION COUNT. Fixed at 3*FP_BITS: above the bound in 2019/266 (about
+ * 2.88*bits) and 38% above the worst case measured over ~6000 inputs per curve,
+ * including Fibonacci pairs and all-ones patterns. tools/reference/divstep_ref.py
+ * carries that measurement and says plainly which part is measured and which
+ * part is recalled. The count is fixed and public, so it leaks nothing.
+ *
+ * CONSTANT TIME IS NOT OBVIOUS HERE, AND WAS NOT FREE. Two branches on
+ * secret-derived values -- the signs of f and g in mat_shift, and the delta > 0
+ * test -- made dudect read |t| = 80 on fp_inv. Both are masks now. That is why
+ * test/dudect_test.c exists; reading the code had not found them.
+ *
+ * The whole algorithm was modelled at limb level in Python and checked against
+ * exact inverses before any of this was written. test/edge_test.c checks it
+ * against fp_inv_sec, the implementation it replaced, which is kept. */
+
+#define INV_K       62
+#define INV_ITERS   (3 * FP_BITS)
+#define INV_BLOCKS  ((INV_ITERS + INV_K - 1) / INV_K)
+#define INV_N       (FP_LIMBS + 1)
+
+/* 62 divsteps from delta and the low limbs alone. Branchless: both cases are
+ * evaluated and selected under a mask. */
+static void divsteps(int64_t *deltap, limb_t f, limb_t g,
+                     int64_t *up, int64_t *vp, int64_t *qp, int64_t *rp)
+{
+    int64_t u = 1, v = 0, q = 0, r = 1, delta = *deltap;
+
+    for (int i = 0; i < INV_K; i++) {
+        limb_t podd = (limb_t)0 - (limb_t)(g & 1u);          /* g odd     */
+        /* delta evolves from the secret's low bits, so its sign is secret too.
+         * An arithmetic shift of (delta-1), not a compare, so there is nothing
+         * a compiler could turn back into a branch. */
+        limb_t pos  = ~(limb_t)(uint64_t)((int64_t)(delta - 1) >> 63);
+        limb_t m    = podd & pos;                            /* case A    */
+        int64_t im  = (int64_t)m;
+
+        delta = 1 + ((delta ^ im) - im);                     /* 1 -+ delta */
+
+        limb_t nf = f ^ ((f ^ g) & m);                       /* m ? g : f  */
+        limb_t cf = f & podd;                                /* (g&1) * f  */
+        limb_t t  = g + ((cf ^ m) - m);                      /* g -+ that  */
+
+        /* case A: (u,v,q,r) <- (2q, 2r, q-u, r-v)
+         * case B: (u,v,q,r) <- (2u, 2v, c*u+q, c*v+r)
+         * With m all ones, (cu ^ m) - m is -cu = -u, so one form serves both. */
+        int64_t nu = (int64_t)((limb_t)u ^ (((limb_t)u ^ (limb_t)q) & m));
+        int64_t nv = (int64_t)((limb_t)v ^ (((limb_t)v ^ (limb_t)r) & m));
+        limb_t  cu = (limb_t)u & podd;
+        limb_t  cv = (limb_t)v & podd;
+        int64_t aq = q + (int64_t)((cu ^ m) - m);
+        int64_t ar = r + (int64_t)((cv ^ m) - m);
+
+        u = (int64_t)((limb_t)nu << 1);
+        v = (int64_t)((limb_t)nv << 1);
+        q = aq;
+        r = ar;
+        f = nf;
+        g = t >> 1;
+    }
+    *deltap = delta; *up = u; *vp = v; *qp = q; *rp = r;
+}
+
+/* out = (u*F + v*G) >> INV_K, with F and G two's complement in INV_N limbs. */
+static void mat_shift(limb_t *out, int64_t u, const limb_t *F,
+                      int64_t v, const limb_t *G)
+{
+    limb_t t[INV_N + 1];
+    __int128 carry = 0;
+    for (int i = 0; i < INV_N; i++) {
+        carry += (__int128)u * (__int128)(unsigned long long)F[i];
+        carry += (__int128)v * (__int128)(unsigned long long)G[i];
+        t[i] = (limb_t)carry;
+        carry >>= 64;
+    }
+    /* The loop treated F and G as unsigned digits. Two's complement means the
+     * true value is that sum minus 2^(64*INV_N) when the top bit is set, so
+     * correct the final carry rather than every limb.
+     *
+     * By mask, not by "if". The signs here depend on the operand, and when
+     * these were two "if" statements dudect read |t| = 80 on fp_inv. */
+    limb_t mF = (limb_t)0 - (F[INV_N - 1] >> 63);
+    limb_t mG = (limb_t)0 - (G[INV_N - 1] >> 63);
+    carry -= (__int128)(int64_t)((limb_t)u & mF);
+    carry -= (__int128)(int64_t)((limb_t)v & mG);
+    t[INV_N] = (limb_t)carry;
+
+    for (int i = 0; i < INV_N; i++)
+        out[i] = (t[i] >> INV_K) | (t[i + 1] << (64 - INV_K));
+}
+
+/* out = (u*d + v*e) with one Montgomery step, normalised into [0, p). */
+static void redc_lin(fp_t out, int64_t u, const fp_t d, int64_t v, const fp_t e)
+{
+    limb_t t[FP_LIMBS + 2];
+    __int128 carry = 0;
+    for (int i = 0; i < FP_LIMBS; i++) {
+        carry += (__int128)u * (__int128)(unsigned long long)d[i];
+        carry += (__int128)v * (__int128)(unsigned long long)e[i];
+        t[i] = (limb_t)carry;
+        carry >>= 64;
+    }
+    t[FP_LIMBS]     = (limb_t)carry;
+    t[FP_LIMBS + 1] = (limb_t)(carry >> 64);          /* sign extension */
+
+    limb_t m = (limb_t)(t[0] * FP_MONT_N0);
+    limb_t c = 0;
+    for (int i = 0; i < FP_LIMBS; i++) {
+        /* Unsigned: m and the modulus limb are both full 64-bit, so their
+         * product reaches 2^128 and would overflow a SIGNED __int128. */
+        unsigned __int128 s = (unsigned __int128)m
+                            * (unsigned __int128)FP_MODULUS[i]
+                            + (unsigned __int128)t[i]
+                            + (unsigned __int128)c;
+        t[i] = (limb_t)s;
+        c = (limb_t)(s >> 64);
+    }
+    /* Built unsigned on purpose: this value is genuinely negative sometimes,
+     * and shifting a negative signed __int128 left is undefined. Unsigned
+     * wraparound is defined and gives the same bits. This was a real bug --
+     * correct at -O2, wrong at -O3, until UBSan named the line. */
+    unsigned __int128 hi = ((unsigned __int128)t[FP_LIMBS + 1] << 64)
+                         | (unsigned __int128)t[FP_LIMBS];
+    hi += (unsigned __int128)c;
+    for (int i = 0; i < FP_LIMBS - 1; i++) t[i] = t[i + 1];
+    t[FP_LIMBS - 1] = (limb_t)hi;
+    t[FP_LIMBS]     = (limb_t)(hi >> 64);
+
+    /* |value| < 2p, signed, in FP_LIMBS+1 limbs. Add 2p, then subtract p while
+     * it stays at least p. Fixed trip count, conditional subtraction by mask. */
+    limb_t acc[FP_LIMBS + 1];
+    for (int i = 0; i <= FP_LIMBS; i++) acc[i] = t[i];
+    for (int k = 0; k < 2; k++) {
+        limb_t cc = 0;
+        for (int i = 0; i < FP_LIMBS; i++) {
+            limb_t s0 = acc[i] + FP_MODULUS[i];
+            limb_t c1 = s0 < acc[i];
+            limb_t s1 = s0 + cc;
+            acc[i] = s1;
+            cc = c1 | (s1 < s0);
+        }
+        acc[FP_LIMBS] += cc;
+    }
+    for (int k = 0; k < 4; k++) {
+        limb_t tmp[FP_LIMBS + 1], borrow = 0;
+        for (int i = 0; i < FP_LIMBS; i++) {
+            limb_t s0 = acc[i] - FP_MODULUS[i];
+            limb_t b1 = acc[i] < FP_MODULUS[i];
+            limb_t s1 = s0 - borrow;
+            tmp[i] = s1;
+            borrow = b1 | (s0 < borrow);
+        }
+        tmp[FP_LIMBS] = acc[FP_LIMBS] - borrow;
+        limb_t keep = (limb_t)0 - (limb_t)((tmp[FP_LIMBS] >> 63) == 0);
+        for (int i = 0; i <= FP_LIMBS; i++)
+            acc[i] = (tmp[i] & keep) | (acc[i] & ~keep);
+    }
+    for (int i = 0; i < FP_LIMBS; i++) out[i] = acc[i];
+}
+
+/* The previous implementation, kept as the reference the new one is checked
+ * against, and as the fallback if this ever has to be backed out. */
+void fp_inv_sec(fp_t r, const fp_t a)
 {
     mp_limb_t scratch[64];                            /* itch is 4n; 64 covers n<=16 */
     fp_t t, out, zero;
@@ -211,6 +409,50 @@ void fp_inv(fp_t r, const fp_t a)
      * thing this routine is not allowed to do. mpn_sec_invert runs on zero
      * without complaint -- it just reports failure and leaves a meaningless
      * result -- so run it unconditionally and select. */
+    fp_set_zero(zero);
+    fp_cselect(r, zero, out, (limb_t)0 - (limb_t)fp_is_zero(a));
+}
+
+void fp_inv(fp_t r, const fp_t a)
+{
+    limb_t F[INV_N], G[INV_N];
+    fp_t d, e, out, zero, nd;
+    int64_t delta = 1;
+
+    /* f = p, g = a in plain form: the divsteps are integer arithmetic, not
+     * field arithmetic, so the Montgomery factor comes off here and goes back
+     * on via FP_INV_FIX at the end. */
+    for (int i = 0; i < FP_LIMBS; i++) F[i] = FP_MODULUS[i];
+    F[INV_N - 1] = 0;
+    fp_to_limbs(G, a);
+    G[INV_N - 1] = 0;
+
+    fp_set_zero(d);                 /* f == d*a (mod p), and p == 0 */
+    fp_set_zero(e); e[0] = 1;       /* g == e*a (mod p), plain 1    */
+
+    for (int b = 0; b < INV_BLOCKS; b++) {
+        int64_t u, v, q, w;
+        limb_t Fn[INV_N], Gn[INV_N];
+        fp_t dn, en;
+        divsteps(&delta, F[0], G[0], &u, &v, &q, &w);
+        mat_shift(Fn, u, F, v, G);
+        mat_shift(Gn, q, F, w, G);
+        redc_lin(dn, u, d, v, e);
+        redc_lin(en, q, d, w, e);
+        for (int i = 0; i < INV_N; i++) { F[i] = Fn[i]; G[i] = Gn[i]; }
+        fp_copy(d, dn); fp_copy(e, en);
+    }
+
+    /* f is now +-1; a negative one means d has the wrong sign. Select, because
+     * the sign depends on the operand. */
+    limb_t neg = (limb_t)0 - (F[INV_N - 1] >> 63);
+    fp_neg(nd, d);
+    fp_cselect(d, nd, d, neg);
+
+    fp_mul(out, d, FP_INV_FIX);
+
+    /* Zero has no inverse and fp_inv(0) is defined to be 0, selected rather
+     * than branched for the same reason as in fp_inv_sec. */
     fp_set_zero(zero);
     fp_cselect(r, zero, out, (limb_t)0 - (limb_t)fp_is_zero(a));
 }

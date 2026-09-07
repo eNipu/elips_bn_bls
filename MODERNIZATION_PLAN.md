@@ -1084,7 +1084,7 @@ per-use saving, so it breaks even at 2.0 uses (2.7 on BN-462). Verifying once
 with a fresh public key is a loss; verifying twice is already ahead. The
 generator is fixed forever and should simply be precomputed at startup.
 
-### 10.7 Constant-time inversion — DECIDED, no change, now with numbers
+### 10.7 Constant-time inversion — REVERSED AND DONE
 
 **safegcd (Bernstein and Yang, "Fast constant-time gcd computation and modular
 inversion", TCHES 2019, ePrint 2019/266) is still not adopted**, and neither is
@@ -1107,14 +1107,48 @@ against runs whose longest is 32, 33 and 87. Inversion is not a fraction of a
 percent here; it is the entire gate. A 5x faster inversion would move Karabina
 from 0% on two curves to 8.9%, 16.9% and 19.8% of the final exponentiation.
 
-So the ordering flips: **inversion first, then Karabina.** Pornin's optimized
-binary GCD (ePrint 2020/972) is the one to read, since it is the fastest of the
-three and the reported margin over safegcd is on the same core. The Phase 6 gate
-in §10.10 applies unchanged — the new routine ships beside the `mpn_sec_invert`
-it replaces, both run against the same vectors, and it is deleted if it does not
-measure a win. Note that this is a constant-time requirement, not a
-nice-to-have: `fp_inv_vartime` exists and is 19x faster, and is unusable here
-because the value being inverted is derived from the pairing's input.
+So the ordering flipped: **inversion first, then Karabina.**
+
+**BUILT.** `fp_inv` is now batched divsteps (Bernstein-Yang, ePrint 2019/266;
+Pornin, 2020/972). One divstep's branch depends only on `delta` and the low bit
+of `g`, so 62 of them run in registers on the low limbs alone, producing a 2x2
+integer matrix; the full-width work happens once per 62 steps instead of once
+per step. No approximation of the high bits is involved, which is the part of
+Pornin's variant that carries a correctness obligation.
+
+| curve | before | after | |
+|---|---|---|---|
+| BLS12-381 | 29629 ns | 6998 ns | 4.2x |
+| BLS12-461 | 52575 ns | 8483 ns | 6.2x |
+| BN-462 | 52205 ns | 9778 ns | 5.3x |
+
+The §10.10 gate was honoured: the old routine is kept as `fp_inv_sec`, and
+`test/edge_test.c` checks the new one against it on 400 random values plus
+1, 2, 3, 4, 5, 7, 255, 256, p-1, p-2, zero, and an aliased call.
+
+**Two bugs, both caught by tooling rather than by reading.**
+
+*Undefined behaviour.* The code was correct at `-O2` and wrong at `-O3`. UBSan
+named both lines: a left shift of a negative `__int128`, and a `m * modulus[i]`
+product that reaches 2^128 and overflows a **signed** `__int128`. Both are
+unsigned now, where wraparound is defined and the bit pattern is the same.
+
+*A timing leak.* dudect read `|t| = 80` on the new `fp_inv`, confirming at 115.
+Two branches on secret-derived values: the signs of `f` and `g` in the matrix
+application, and the `delta > 0` test. Both are masks now, and the reading fell
+to 1-3. Reading the code had not found them; this is what that harness is for.
+
+**The iteration count** is fixed at `3*bits` — it cannot depend on the input
+without leaking. `tools/reference/divstep_ref.py` models the algorithm at limb
+level, checks it against exact inverses, and measures the worst case actually
+reached over ~6000 inputs per curve including Fibonacci pairs: about `2.17*bits`,
+so the margin is 38%. It also states plainly which part is measured and which
+part (the 2019/266 bound of about `2.88*bits`) is recalled rather than read.
+
+**This unlocks §10.5.** Karabina's break-even was 40-48 squarings and is now
+**6.4 on BLS12-381 and 8.7 on BN-462**, against runs of `2,2,3,9,32,16`,
+`27,17,33` and `13,87,14`. Most runs now clear it, which is what the §10.5
+analysis said would change the answer. Re-run `karabina_ref.py` to re-decide.
 
 ### 10.8 A BLS signature layer — STILL OUT OF SCOPE
 

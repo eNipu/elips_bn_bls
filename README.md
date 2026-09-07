@@ -177,6 +177,7 @@ python3 tools/reference/gen_vectors.py test/kat          # field and curve
 python3 tools/reference/gen_pairing_vectors.py test/kat  # the pairing itself
 python3 tools/reference/gen_h2c_vectors.py test/kat      # hash to curve
 python3 tools/reference/subgroup_ref.py    # subgroup tests, derived and proved
+python3 tools/reference/divstep_ref.py     # inversion model and its iteration count
 python3 tools/reference/karabina_ref.py    # compressed squaring: derive, then decide
 python3 tools/reference/gen_subgroup_vectors.py test/kat  # accept/reject points
 python3 tools/reference/trace_finalexp.py  # exponent of each final-exp chain

@@ -2003,6 +2003,77 @@ addition chain — and re-deciding should cost one command, not a re-derivation.
 
 ---
 
+## Faster constant-time inversion (plan §10.7, reversed and done)
+
+`fp_inv` was `mpn_sec_invert`: correct, but one full-width pass per bit, which
+measured 417 field multiplications per call. It is now batched divsteps
+(Bernstein-Yang ePrint 2019/266, Pornin 2020/972).
+
+**Why it batches safely.** One divstep's branch depends only on `delta` and the
+low bit of `g`. So 62 of them run in registers on the low limbs alone,
+accumulating a 2x2 integer matrix, and the full-width work happens once per 62
+steps instead of once per step. No approximation of the high bits is involved,
+which is the part of Pornin's variant that carries a correctness obligation.
+
+| curve | before | after | |
+|---|---|---|---|
+| BLS12-381 | 29629 ns | 6998 ns | 4.2x |
+| BLS12-461 | 52575 ns | 8483 ns | 6.2x |
+| BN-462 | 52205 ns | 9778 ns | 5.3x |
+
+**Two bugs, neither found by reading the code.**
+
+*Undefined behaviour.* Correct at `-O2`, wrong at `-O3` — the classic signature.
+UBSan named both lines in seconds: a left shift of a negative `__int128`, and a
+`m * modulus[i]` product that reaches 2^128 and overflows a **signed**
+`__int128`. Both unsigned now, where wraparound is defined and the bits are the
+same. Worth noting how this was found: the sanitizer, not inspection, and not
+the test suite either, which passed at `-O2`.
+
+*A timing leak in the new code.* dudect read `|t| = 80`, confirming at 115. Two
+branches on secret-derived values: the signs of `f` and `g` in the matrix
+application, and the `delta > 0` test. Both are masks now and the reading fell
+to 1-3. This is the second time the harness has earned its place, and the first
+time it caught a leak in code written to be constant time.
+
+**The iteration count is the one number that has to be right.** It is fixed at
+`3*bits`, because a count that depended on the input would leak the input.
+`tools/reference/divstep_ref.py` models the whole algorithm at limb level,
+checks it against exact inverses, and measures the worst case reached over
+~6000 inputs per curve including Fibonacci pairs and all-ones patterns: about
+`2.17*bits`, so the margin is 38%. That file also says plainly which half of
+the justification is measured here and which half (the 2019/266 bound of about
+`2.88*bits`) is recalled rather than read, because the paper was not reachable.
+A reader wanting certainty is pointed at the theorem.
+
+**The old routine is kept** as `fp_inv_sec`, per the §10.10 gate.
+`test/edge_test.c` checks the two against each other on 400 random values plus
+1, 2, 3, 4, 5, 7, 255, 256, p-1, p-2, zero and an aliased call. 112 checks in
+edge_test, up from 87.
+
+**Also fixed: my own dudect calibration was too tight.** The `sensitivity`
+control began flickering — 19 to 79 — because the operation it probes is one
+field multiply and n=2000 was too few samples to measure it steadily on a
+loaded machine. A control that is itself flaky is the failure it exists to
+prevent. n is now 40000; readings are 42-126 confirming at 59-210, against a
+threshold of 25. The threshold did not move: only the measurement of the
+control did.
+
+**A process note worth keeping.** Midway through this I ran
+`git checkout src/arith/fp.c` intending to undo a temporary benchmark hack, and
+it reverted the entire new implementation. Nothing was lost, because the work
+was reconstructible from the session, but the lesson is cheap to record: use a
+scratch copy for throwaway edits to a file that holds uncommitted work.
+
+**This unlocks §10.5.** Karabina's break-even was 40-48 squarings; it is now
+6.4 on BLS12-381 and 8.7 on BN-462, against runs of `2,2,3,9,32,16`,
+`27,17,33` and `13,87,14`. Most runs now clear it. That is exactly the
+condition §10.5 recorded as the thing that would change its answer.
+
+43 CTest on Release, 32 under each sanitizer, no warnings under `-Werror`.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6

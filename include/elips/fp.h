@@ -52,6 +52,11 @@ void fp_mul(fp_t r, const fp_t a, const fp_t b);   /* Montgomery product */
 void fp_sqr(fp_t r, const fp_t a);
 void fp_inv(fp_t r, const fp_t a);         /* constant time; 0 maps to 0 */
 /* Variable time. Only for values that are already public -- never a secret. */
+/* The previous constant-time inversion, mpn_sec_invert based. Kept as the
+ * reference fp_inv is checked against, and as the fallback if the batched
+ * divstep version ever has to be backed out. Same contract, ~6x slower. */
+void fp_inv_sec(fp_t r, const fp_t a);
+
 void fp_inv_vartime(fp_t r, const fp_t a);
 
 /* --- predicates ------------------------------------------------------------

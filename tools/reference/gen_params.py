@@ -349,6 +349,21 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
                     "  static const limb_t ELIPS_6XSQ[%d] = {\n        %s\n  };\n"
                     % (mn, limb_list(m2, mn)))
 
+    # Constant-time inversion by batched divsteps (src/arith/fp.c).
+    #
+    # Blocks of 62 divsteps drive f,g down by 2^62 each, while d,e are reduced
+    # by ONE Montgomery step each, so they come down by 2^64. FP_INV_FIX closes
+    # that gap and restores the Montgomery factor in a single multiplication:
+    #     2^(2*blocks) * R  (mod p)
+    # The iteration count is 3*bits, which exceeds both the bound in ePrint
+    # 2019/266 (about 2.88*bits) and the measured worst case; see
+    # tools/reference/divstep_ref.py.
+    inv_k = 62
+    inv_iters = 3 * p.bit_length()
+    inv_blocks = (inv_iters + inv_k - 1) // inv_k
+    inv_fix = pow(2, 2 * inv_blocks, p) * R % p
+    inv_txt = fp_const("FP_INV_FIX", inv_fix)
+
     frob_txt = ""
     for k in (1, 2, 3):
         for i, (a, b) in enumerate(frob[k], start=1):
@@ -374,6 +389,7 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
         "  /* Group generators, verified on-curve and of order exactly r. */\n" + gen_txt +
         "  /* Skew Frobenius on the twist: psi and psi^2 multipliers. */\n" + psi_txt +
         "  /* Fast subgroup tests; exactness asserted by the generator. */\n" + sub_txt +
+        "  /* Closes the 2^62 vs 2^64 gap in the divstep inversion. */\n" + inv_txt +
         "  /* Frobenius: gamma^i for the p, p^2 and p^3 power maps, Montgomery form. */\n" +
         frob_txt +
         "#endif\n")
