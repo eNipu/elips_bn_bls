@@ -2457,9 +2457,15 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 
 ## Known limitations, stated plainly
 
-- Subgroup checks are full scalar multiplications: 2175 µs of `elips_pairing`'s
-  6033 µs on BLS12-381. Correct, and slow. §10.3 is the fix.
-- No multi-pairing, so a two-pairing product costs two final exponentiations.
+- ~~Subgroup checks are full scalar multiplications.~~ Done: `ep_in_subgroup`
+  and `ep2_in_subgroup` are endomorphism tests, proved exact per curve.
+- ~~No multi-pairing.~~ Done: `elips_pairing_multi` shares one Miller
+  accumulator and one final exponentiation, and `elips_pairing_prec` adds
+  fixed-argument precomputation.
+- G_T exponentiation has no GLV. The Frobenius gives a cheap endomorphism on
+  the cyclotomic subgroup and the same two-digit ladder would apply, but
+  `fp12_mul` is a different cost balance from `ep_add`, so it needs measuring
+  before it is built.
 - BN-462 has no fast G2 cofactor chain. (GLV on both its groups is done.)
 - `hash_to_g2` rebuilds a window table for each of its two short ladders; a
   shared table would help.
