@@ -893,7 +893,7 @@ Also worth reading before starting:
 
 Expected 10–15% on the final exponentiation, which is roughly 60% of a pairing.
 
-### 10.6 Multi-pairing — DONE. Fixed-argument precomputation — still scheduled
+### 10.6 Multi-pairing and fixed-argument precomputation — DONE
 
 **Algorithm of record: one shared Miller loop with a single final
 exponentiation** — Scott, "On the Efficient Implementation of Pairing-Based
@@ -938,13 +938,47 @@ chunking costs only the sharing of squarings across a boundary.
 `examples/03_bls_signature.c` now verifies as `e(-sigma, G2) * e(H(m), pk) == 1`
 in one call, which is the 1.45x row.
 
-**Fixed-argument precomputation is not done.** Costello and Stebila,
+**Fixed-argument precomputation, also built.** Costello and Stebila,
 "Fixed Argument Pairings" (ePrint 2010/342), report **25–37% fewer field
-multiplications** in the Miller loop when one argument is fixed and its line
-coefficients are precomputed. In a signature verification one argument always is
-fixed — the generator, or a long-lived public key — so this is not a
-hypothetical case. It is separable from the multi-pairing above and is the
-remaining half of this item.
+multiplications** in the Miller loop when one argument is fixed. Measured here
+as a 1.58x Miller loop on BLS12-381, which is the top of that range.
+
+The saving is the point arithmetic, not the line evaluation. Writing the line at
+`P` as `c0 = yP·a`, `c3 = c`, `c5 = xP·b`, the triple `(a, b, c)` depends on the
+G2 argument alone, so `ep2_precompute` walks the loop once per `Q` and stores
+every line. Replay costs one accumulator squaring, two `fp2`-by-`fp` scalings
+and one sparse `fp12` multiply per step, with no G2 point arithmetic at all.
+
+`ELIPS_MILLER_LINES` is derived by `gen_params.py` from the loop's own digits,
+so the table is sized exactly rather than by a bound a new curve could exceed,
+and `test/pairing_test.c` counts the loop independently and checks the two agree.
+
+The split is exact: `dbl_line` and `add_line` hand over the same field elements
+the direct path used to compute inline, so a precomputed Miller loop is
+**bit-identical** to `pairing_miller`. The test asserts that, not the weaker
+"equal after the final exponentiation" — the exponentiation kills any per-line
+`Fp2` scaling and would hide exactly the errors worth catching. Three sabotages
+(swapped `a`/`b`, a skipped addition line, a line index that ignores the digit)
+were each injected and each caught.
+
+`ep2_precompute` performs the G2 subgroup check itself, because once the lines
+are extracted nothing downstream can check `Q` any more.
+
+**Measured, x86-64 gcc -O2:**
+
+| | BLS12-381 | BN-462 |
+|---|---|---|
+| Miller loop, precomputed vs direct | 1.58x | 1.48x |
+| one pairing | 1.33x | 1.55x |
+| 2-term product vs 2 separate pairings | 2.02x | 2.52x |
+| 4-term | 3.00x | 3.37x |
+| 8-term | 3.85x | 4.58x |
+
+**The cost, stated plainly.** A table is 19.9 KB on BLS12-381 and 47.6 KB on
+BN-462, and building one costs about two Miller loops: 1258 µs against a 634 µs
+per-use saving, so it breaks even at 2.0 uses (2.7 on BN-462). Verifying once
+with a fresh public key is a loss; verifying twice is already ahead. The
+generator is fixed forever and should simply be precomputed at startup.
 
 ### 10.7 Constant-time inversion — DECIDED, no change, now with numbers
 

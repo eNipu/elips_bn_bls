@@ -1813,6 +1813,65 @@ differs most.
 
 ---
 
+## Phase 6 — fixed-argument precomputation (plan §10.6, second half)
+
+§10.6 is now complete. The multi-pairing shared the accumulator across terms;
+this removes the G2 point arithmetic from the loop entirely when the G2 argument
+is reused, which in a verification it always is.
+
+**How the split works.** Writing the line at `P` as
+
+    c0 = yP * a        c3 = c        c5 = xP * b
+
+the triple `(a, b, c)` depends on the G2 argument alone. `dbl_step` and
+`add_step` were split into a line-producing half and a line-applying half;
+`ep2_precompute` walks the loop once per `Q` and keeps every line, and replay
+costs one accumulator squaring, two `fp2`-by-`fp` scalings and one sparse
+`fp12` multiply per step. No G2 point arithmetic at all.
+
+**The split is exact, and the test says so.** `dbl_line` and `add_line` hand
+over the same field elements the direct path used to compute inline, so a
+precomputed Miller loop is **bit-identical** to `pairing_miller`. That is what
+is asserted, not "equal after the final exponentiation": the exponentiation
+kills any per-line `Fp2` scaling, so the weaker check would hide precisely the
+errors worth catching. Three sabotages were injected and each was caught:
+swapping `a` and `b` in the stored line, skipping the addition line on replay,
+and advancing the line index once per iteration regardless of the digit.
+
+**Table sizing is derived, not bounded.** `gen_params.py` emits
+`ELIPS_MILLER_LINES` from the loop's own digits (69 on BLS12-381, 79 on
+BLS12-461, 124 on BN-462), so the table is exactly the right size. Since a
+mismatch there would mean `ep2_precompute` writes past the end, the test counts
+the loop independently and checks the two agree.
+
+`ep2_precompute` performs the G2 subgroup check itself. Once the lines are
+extracted nothing downstream can check `Q` any more, so it has to happen there.
+
+**Measured, x86-64 gcc -O2:**
+
+| | BLS12-381 | BN-462 |
+|---|---|---|
+| Miller loop, precomputed vs direct | 1.58x | 1.48x |
+| one pairing | 1.33x | 1.55x |
+| 2-term product vs 2 separate pairings | 2.02x | 2.52x |
+| 4-term | 3.00x | 3.37x |
+| 8-term | 3.85x | 4.58x |
+
+1.58x on the Miller loop is the top of Costello and Stebila's reported 25 to 37
+percent range.
+
+**The cost, stated plainly.** A table is 19.9 KB on BLS12-381, 47.6 KB on
+BN-462, and building one costs about two Miller loops: 1258 µs against a 634 µs
+per-use saving, breaking even at 2.0 uses (2.7 on BN-462). Verifying once with a
+fresh public key is a loss. This is why `examples/03_bls_signature.c` still uses
+the plain multi-pairing in `verify()` and explains the trade rather than
+quietly using the faster call in a case where it would not pay.
+
+62 checks per curve in the pairing runner, up from 41. 43 CTest on Release, 32
+under each sanitizer, no warnings under `-Werror`.
+
+---
+
 ---
 
 # HAND-OFF — next session starts at Phase 6

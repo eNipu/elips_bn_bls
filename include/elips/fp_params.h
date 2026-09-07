@@ -65,6 +65,7 @@ typedef mp_limb_t limb_t;
   };
   #define ELIPS_LOOP_TOP     64
   #define ELIPS_FAMILY_BLS12   1
+  #define ELIPS_MILLER_LINES 69
   static const signed char ELIPS_LOOP[65] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 1, 0, -1 };
   /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
   #define ELIPS_HARD_BITS    1268
@@ -472,6 +473,7 @@ typedef mp_limb_t limb_t;
   };
   #define ELIPS_LOOP_TOP     77
   #define ELIPS_FAMILY_BLS12   1
+  #define ELIPS_MILLER_LINES 79
   static const signed char ELIPS_LOOP[78] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1 };
   /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
   #define ELIPS_HARD_BITS    1534
@@ -974,6 +976,7 @@ typedef mp_limb_t limb_t;
   };
   #define ELIPS_LOOP_TOP     116
   #define ELIPS_FAMILY_BN   1
+  #define ELIPS_MILLER_LINES 124
   static const signed char ELIPS_LOOP[117] = { 0, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 };
   /* (p^4 - p^2 + 1)/r, the hard part of the final exponentiation. */
   #define ELIPS_HARD_BITS    1384

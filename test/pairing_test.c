@@ -191,6 +191,20 @@ int main(int argc, char **argv)
         ok(elips_pairing(whole, &P, &Q) == 1, "elips_pairing accepts the inputs");
         ok(fp12_eq(whole, fast), "elips_pairing == miller + fast final exp");
 
+        /* Fixed-argument precomputation. The claim is bit-identity with the
+         * direct Miller loop, not agreement after the final exponentiation --
+         * the exponentiation would hide any per-line Fp2 scaling, and hiding
+         * the difference is exactly what would let a wrong table pass. */
+        ep2_prec_t pc;
+        ok(ep2_precompute(&pc, &Q) == 1, "ep2_precompute accepts a G2 point");
+        fp12_t fprec;
+        pairing_miller_prec(fprec, &pc, px, py);
+        ok(fp12_eq(fprec, raw), "precomputed Miller == direct Miller, bit for bit");
+
+        fp12_t eprec;
+        ok(elips_pairing_prec(eprec, &P, &pc) == 1, "elips_pairing_prec accepts P");
+        ok(fp12_eq(eprec, whole), "elips_pairing_prec == elips_pairing");
+
         if (records < MAXREC) {
             ep_copy(&allP[records], &P);
             ep2_copy(&allQ[records], &Q);
@@ -279,6 +293,44 @@ int main(int argc, char **argv)
         ok(elips_pairing_multi(empty, allP, allQ, 0) == 1,
            "multi-pairing of nothing succeeds");
         ok(fp12_eq(empty, one), "multi-pairing of nothing is one");
+
+        /* Precomputation and multi-pairing together, which is the shape a
+         * verification actually has: fixed G2 arguments, one product. */
+        ep2_prec_t pcs[MAXREC];
+        int pc_ok = 1;
+        for (long i = 0; i < nrec; i++)
+            if (ep2_precompute(&pcs[i], &allQ[i]) != 1) pc_ok = 0;
+        ok(pc_ok, "every vector G2 point precomputes");
+
+        fp12_t mprec;
+        ok(elips_pairing_multi_prec(mprec, allP, pcs, (size_t)nrec) == 1,
+           "elips_pairing_multi_prec accepts the vector points");
+        ok(fp12_eq(mprec, multi),
+           "multi-pairing with precomputation == multi-pairing without");
+
+        /* The count the table is sized by must match the loop that fills it.
+         * If these disagree, ep2_precompute writes past the end of the table,
+         * so it is checked here rather than discovered there. */
+        {
+            int lines = 0;
+            for (int i = ELIPS_LOOP_TOP - 1; i >= 0; i--)
+                lines += (ELIPS_LOOP[i] != 0) ? 2 : 1;
+#ifdef ELIPS_FAMILY_BN
+            lines += 2;
+#endif
+            ok(lines == ELIPS_MILLER_LINES,
+               "ELIPS_MILLER_LINES matches the loop that fills the table");
+        }
+
+        /* A precomputed table must refuse a Q outside G2, since nothing
+         * downstream can check it any more. */
+        {
+            ep2_prec_t bad_pc;
+            ep2_t inf2;
+            ep2_set_infinity(&inf2);
+            ok(ep2_precompute(&bad_pc, &inf2) == 0,
+               "ep2_precompute rejects the identity");
+        }
 
         /* And a bad input must be refused, with the result left at one rather
          * than a product over whichever pairs were checked first. */

@@ -204,6 +204,14 @@ int main(void)
            "  single product, so one Miller loop and one final exponentiation\n"
            "  serve both terms. Measured 1.45x against two separate pairings on\n"
            "  BLS12-381 and 1.32x on BN-462. Aggregating more signers than this\n"
-           "  gains more: 2.24x at sixteen terms.\n");
+           "  gains more: 2.24x at sixteen terms.\n"
+           "\n"
+           "  Both G2 arguments here are fixed -- the generator always, a public\n"
+           "  key for as long as that signer is known -- so ep2_precompute and\n"
+           "  elips_pairing_multi_prec apply, taking the two-term case to 2.02x\n"
+           "  and eight terms to 3.85x. Not used above because it only pays\n"
+           "  when the key is reused: a table costs about two Miller loops to\n"
+           "  build and 20 KB to hold, so verifying once with a fresh key is a\n"
+           "  loss. Verify twice with the same key and it is already ahead.\n");
     return 0;
 }

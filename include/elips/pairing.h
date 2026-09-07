@@ -11,6 +11,23 @@
 
 #include "elips/ec.h"
 
+/* One line function of the Miller loop, with the G1 argument factored out.
+ *
+ * The line through the running point T evaluated at P has only its w^0, w^3
+ * and w^5 coefficients non-zero, and P enters only as
+ *
+ *     c0 = yP * a      c3 = c      c5 = xP * b
+ *
+ * so a, b and c depend on the G2 argument alone. That is what makes
+ * fixed-argument precomputation possible: everything below is computed once per
+ * Q and replayed against as many P as you like. */
+typedef struct { fp2_t a, b, c; } ep2_line_t;
+
+/* Every line one Miller loop evaluates, for one fixed Q. ELIPS_MILLER_LINES is
+ * derived by the parameter generator from the loop's own digits, not bounded by
+ * a guess. */
+typedef struct { ep2_line_t l[ELIPS_MILLER_LINES]; } ep2_prec_t;
+
 /* Miller loop only, no final exponentiation. Q must be affine on the twist. */
 void pairing_miller(fp12_t f, const fp2_t qx, const fp2_t qy,
                     const fp_t px, const fp_t py);
@@ -20,6 +37,11 @@ void pairing_miller(fp12_t f, const fp2_t qx, const fp2_t qy,
  * values, which still needs a final exponentiation. */
 void pairing_miller_multi(fp12_t f, const fp2_t *qx, const fp2_t *qy,
                           const fp_t *px, const fp_t *py, size_t n);
+
+/* The Miller loop replayed from a precomputed table. Bit-identical to
+ * pairing_miller on the Q the table was built from. */
+void pairing_miller_prec(fp12_t f, const ep2_prec_t *pc,
+                         const fp_t px, const fp_t py);
 
 /* f^((p^12-1)/r), computed exactly. Slow but definitionally correct; used to
  * validate the fast chain. */
@@ -106,5 +128,23 @@ int elips_pairing(fp12_t out, const ep_t *P, const ep2_t *Q);
  * processes longer inputs in chunks, which never costs more than one
  * final exponentiation. */
 int elips_pairing_multi(fp12_t out, const ep_t *P, const ep2_t *Q, size_t n);
+
+/* Fixed-argument precomputation (Costello and Stebila, ePrint 2010/342).
+ *
+ * In a verification the G2 arguments are fixed -- the generator, a long-lived
+ * public key -- so the entire G2 side of the Miller loop can be computed once
+ * and replayed against as many G1 points as you like. What is saved is the
+ * point arithmetic, which is most of an iteration's work.
+ *
+ * ep2_precompute checks Q's subgroup membership and returns 0 if it fails,
+ * because a table has no point left to check afterwards. The pairing calls
+ * then check only P.
+ *
+ * A precomputed pairing returns exactly what the direct one does, bit for bit,
+ * not merely the same value after the final exponentiation. */
+int  ep2_precompute(ep2_prec_t *pc, const ep2_t *Q);
+int  elips_pairing_prec(fp12_t out, const ep_t *P, const ep2_prec_t *pc);
+int  elips_pairing_multi_prec(fp12_t out, const ep_t *P,
+                              const ep2_prec_t *pc, size_t n);
 
 #endif /* ELIPS_PAIRING_H */

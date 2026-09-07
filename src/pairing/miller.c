@@ -107,13 +107,13 @@ static void fp12_mul_sparse035(fp6_t f0, fp6_t f1,
  * which is a term simpler than the Jacobian version this replaced. The xi and
  * the common denominator both live in Fp2 and die in the final exponentiation,
  * so the pairing value is unchanged. */
-static void dbl_step(fp12_t f, ep2_t *T, const fp_t px, const fp_t py)
+static void dbl_line(ep2_line_t *L, ep2_t *T)
 {
     /* The line and the doubled point are computed together so that X^2, Y^2,
      * Z^2, XY and YZ are each formed once. Splitting them into a line
      * evaluation followed by a call to ep2_dbl cost 11% of the Miller loop,
      * measured -- the shared subexpressions are most of the work. */
-    fp2_t XX, YY, ZZ, XY, YZ, t, u, c0, c3, c5, b3;
+    fp2_t XX, YY, ZZ, XY, YZ, t, u, la, lb, c3, b3;
     fp2_t z3, x3, y3;
 
     fp2_sqr(XX, T->x);
@@ -130,13 +130,11 @@ static void dbl_step(fp12_t f, ep2_t *T, const fp_t px, const fp_t py)
 
     fp2_mul(t, XX, T->z);                       /* X^2 Z      */
     fp2_add(u, t, t); fp2_add(u, u, t);         /* 3 X^2 Z    */
-    fp2_mul_fp(c5, u, px);
-    fp2_neg(c5, c5);
+    fp2_neg(lb, u);                             /* c5 = xP * lb */
 
     fp2_mul(t, YZ, T->z);                       /* Y Z^2      */
     fp2_add(t, t, t);
-    fp2_mul_fp(c0, t, py);
-    fp2_mul_xi(c0, c0);
+    fp2_mul_xi(la, t);                          /* c0 = yP * la */
 
     /* ---- RCB doubling, reusing the same squares ---- */
     ep2_curve_b(b3);
@@ -156,7 +154,7 @@ static void dbl_step(fp12_t f, ep2_t *T, const fp_t px, const fp_t py)
 
     fp2_copy(T->x, x3); fp2_copy(T->y, y3); fp2_copy(T->z, z3);
 
-    fp12_mul_sparse035(f[0], f[1], c0, c3, c5);
+    fp2_copy(L->a, la); fp2_copy(L->b, lb); fp2_copy(L->c, c3);
 }
 
 /* T <- T + Q (Q affine), and f *= the chord line evaluated at P.
@@ -168,10 +166,9 @@ static void dbl_step(fp12_t f, ep2_t *T, const fp_t px, const fp_t py)
  *     c3 = R*X - Y*H
  *     c5 = -R * Z * xP
  */
-static void add_step(fp12_t f, ep2_t *T, const fp2_t qx, const fp2_t qy,
-                     const fp_t px, const fp_t py)
+static void add_line(ep2_line_t *L, ep2_t *T, const fp2_t qx, const fp2_t qy)
 {
-    fp2_t H, R, t, c0, c3, c5;
+    fp2_t H, R, t, la, lb, c3;
     ep2_t Qp;
 
     fp2_mul(H, qx, T->z); fp2_sub(H, H, T->x);
@@ -181,17 +178,45 @@ static void add_step(fp12_t f, ep2_t *T, const fp2_t qx, const fp2_t qy,
     fp2_mul(t, T->y, H);
     fp2_sub(c3, c3, t);
 
-    fp2_mul(c5, R, T->z);
-    fp2_mul_fp(c5, c5, px);
-    fp2_neg(c5, c5);
+    fp2_mul(t, R, T->z);
+    fp2_neg(lb, t);                             /* c5 = xP * lb */
 
-    fp2_mul(c0, H, T->z);
-    fp2_mul_fp(c0, c0, py);
-    fp2_mul_xi(c0, c0);
+    fp2_mul(t, H, T->z);
+    fp2_mul_xi(la, t);                          /* c0 = yP * la */
 
     ep2_from_affine(&Qp, qx, qy);
     ep2_add(T, T, &Qp);
-    fp12_mul_sparse035(f[0], f[1], c0, c3, c5);
+
+    fp2_copy(L->a, la); fp2_copy(L->b, lb); fp2_copy(L->c, c3);
+}
+
+/* Apply one line to the accumulator. This is the only place P enters, which is
+ * the whole point of the split: everything above depends on Q alone, so it can
+ * be computed once for a fixed argument and replayed. */
+static void line_mul(fp12_t f, const ep2_line_t *L, const fp_t px, const fp_t py)
+{
+    fp2_t c0, c5;
+    fp2_mul_fp(c0, L->a, py);
+    fp2_mul_fp(c5, L->b, px);
+    fp12_mul_sparse035(f[0], f[1], c0, L->c, c5);
+}
+
+/* The direct forms, unchanged in behaviour: line then apply. Splitting them
+ * costs nothing -- the values are the same ones, just handed over instead of
+ * consumed on the spot. */
+static void dbl_step(fp12_t f, ep2_t *T, const fp_t px, const fp_t py)
+{
+    ep2_line_t L;
+    dbl_line(&L, T);
+    line_mul(f, &L, px, py);
+}
+
+static void add_step(fp12_t f, ep2_t *T, const fp2_t qx, const fp2_t qy,
+                     const fp_t px, const fp_t py)
+{
+    ep2_line_t L;
+    add_line(&L, T, qx, qy);
+    line_mul(f, &L, px, py);
 }
 
 void pairing_miller(fp12_t f, const fp2_t qx, const fp2_t qy,
@@ -314,6 +339,141 @@ void pairing_miller_multi(fp12_t f, const fp2_t *qx, const fp2_t *qy,
         miller_chunk(g, qx + base, qy + base, px + base, py + base, m);
         fp12_mul(f, f, g);
     }
+}
+
+/* --------------------------------------------- fixed-argument pairing ----
+ *
+ * Costello and Stebila, "Fixed Argument Pairings" (ePrint 2010/342). When one
+ * argument is reused -- the generator, or a long-lived public key, which is
+ * every signature verification -- the whole G2 side of the Miller loop can be
+ * computed once and replayed.
+ *
+ * What is saved is not the line evaluation, it is the point arithmetic. An
+ * iteration currently doubles T and forms a chord, which is most of the work.
+ * With the lines already in hand an iteration costs one squaring of the
+ * accumulator, two fp2-by-fp scalings and one sparse fp12 multiply.
+ *
+ * The split is exact rather than an approximation of the direct path.
+ * dbl_line and add_line produce the same field elements the direct path used
+ * to compute inline, so a precomputed Miller loop returns bit-identical output
+ * to pairing_miller. That is what test/pairing_test.c asserts, rather than the
+ * weaker statement that the two agree after the final exponentiation. */
+
+int ep2_precompute(ep2_prec_t *pc, const ep2_t *Q)
+{
+    /* Checked here because a table has no point left to check later: once the
+     * lines are extracted the caller cannot tell whether Q was in G2. Doing it
+     * at precompute time costs nothing that matters, since running once is the
+     * entire purpose. */
+    if (ep2_is_infinity(Q) || !ep2_in_subgroup(Q)) return 0;
+
+    fp2_t qx, qy, nqy;
+    if (!ep2_to_affine(qx, qy, Q)) return 0;
+    fp2_neg(nqy, qy);
+
+    ep2_t T;
+    if (ELIPS_LOOP[ELIPS_LOOP_TOP] > 0) ep2_from_affine(&T, qx, qy);
+    else                                ep2_from_affine(&T, qx, nqy);
+
+    size_t k = 0;
+    for (int i = ELIPS_LOOP_TOP - 1; i >= 0; i--) {
+        dbl_line(&pc->l[k++], &T);
+        if (ELIPS_LOOP[i] > 0)      add_line(&pc->l[k++], &T, qx, qy);
+        else if (ELIPS_LOOP[i] < 0) add_line(&pc->l[k++], &T, qx, nqy);
+    }
+#ifdef ELIPS_FAMILY_BN
+    {
+        fp2_t q1x, q1y, q2x, q2y;
+        fp2_conj(q1x, qx); fp2_mul(q1x, q1x, PSI_X);
+        fp2_conj(q1y, qy); fp2_mul(q1y, q1y, PSI_Y);
+        fp2_mul(q2x, qx, PSI2_X);
+        fp2_mul(q2y, qy, PSI2_Y);
+        fp2_neg(q2y, q2y);
+        add_line(&pc->l[k++], &T, q1x, q1y);
+        add_line(&pc->l[k++], &T, q2x, q2y);
+    }
+#endif
+    /* The table is sized by ELIPS_MILLER_LINES, which the parameter generator
+     * derives from the same digits this loop walks, so the two cannot disagree
+     * unless the generator is wrong. edge_test.c counts the loop independently
+     * and checks it, which catches that before anything is written here. */
+    return k == (size_t)ELIPS_MILLER_LINES;
+}
+
+/* Replay the loop structure for m fixed arguments at once, consuming one line
+ * per step from each table. The structure is walked rather than the array
+ * flattened because the squaring belongs once per iteration, and an iteration
+ * carries one line or two. */
+static void miller_prec_chunk(fp12_t f, const ep2_prec_t *pc,
+                              const fp_t *px, const fp_t *py, size_t m)
+{
+    size_t k = 0;
+    fp12_set_one(f);
+    for (int i = ELIPS_LOOP_TOP - 1; i >= 0; i--) {
+        fp12_sqr(f, f);
+        int two = (ELIPS_LOOP[i] != 0);
+        for (size_t j = 0; j < m; j++) {
+            line_mul(f, &pc[j].l[k], px[j], py[j]);
+            if (two) line_mul(f, &pc[j].l[k + 1], px[j], py[j]);
+        }
+        k += 1 + (size_t)two;          /* once per iteration, not once per pair */
+    }
+#ifdef ELIPS_FAMILY_BN
+    for (size_t j = 0; j < m; j++) {
+        line_mul(f, &pc[j].l[k],     px[j], py[j]);
+        line_mul(f, &pc[j].l[k + 1], px[j], py[j]);
+    }
+#endif
+}
+
+void pairing_miller_prec(fp12_t f, const ep2_prec_t *pc,
+                         const fp_t px, const fp_t py)
+{
+    /* Copied into real arrays rather than passed as &px: an fp_t parameter has
+     * already decayed to a pointer here, so &px would be a pointer-to-pointer
+     * and miller_prec_chunk wants a pointer to the array. */
+    fp_t x1, y1;
+    fp_copy(x1, px);
+    fp_copy(y1, py);
+    miller_prec_chunk(f, pc, &x1, &y1, 1);
+}
+
+int elips_pairing_prec(fp12_t out, const ep_t *P, const ep2_prec_t *pc)
+{
+    return elips_pairing_multi_prec(out, P, pc, 1);
+}
+
+int elips_pairing_multi_prec(fp12_t out, const ep_t *P,
+                             const ep2_prec_t *pc, size_t n)
+{
+    fp12_set_one(out);
+
+    /* Validate everything before computing anything, as elips_pairing_multi
+     * does. Only P is left to check: Q was checked when its table was built. */
+    for (size_t j = 0; j < n; j++)
+        if (ep_is_infinity(&P[j]) || !ep_in_subgroup(&P[j])) return 0;
+
+    fp_t px[ELIPS_MULTI_CHUNK], py[ELIPS_MULTI_CHUNK];
+    fp12_t f, g;
+    fp12_set_one(f);
+
+    size_t m = 0, base = 0;
+    for (size_t j = 0; j < n; j++) {
+        if (!ep_to_affine(px[m], py[m], &P[j])) return 0;
+        if (++m == ELIPS_MULTI_CHUNK) {
+            miller_prec_chunk(g, pc + base, px, py, m);
+            fp12_mul(f, f, g);
+            base = j + 1;
+            m = 0;
+        }
+    }
+    if (m) {
+        miller_prec_chunk(g, pc + base, px, py, m);
+        fp12_mul(f, f, g);
+    }
+
+    pairing_final_exp_fast(out, f);     /* once, whatever n is */
+    return 1;
 }
 
 void pairing_final_exp_plain(fp12_t r, const fp12_t f)

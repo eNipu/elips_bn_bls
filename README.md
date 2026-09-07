@@ -108,6 +108,30 @@ fp12_set_one(one);
 int ok = elips_pairing_multi(prod, Ps, Qs, 2) && fp12_eq(prod, one);
 ```
 
+When the G2 arguments are reused, which in a verification they are, precompute
+the line functions once and replay them. That removes the G2 point arithmetic
+from the loop entirely:
+
+```c
+ep2_prec_t pc[2];                 /* built once, per fixed Q */
+if (!ep2_precompute(&pc[0], &G2)) { /* Q is not in G2 */ }
+if (!ep2_precompute(&pc[1], &pk)) { /* ... */ }
+
+/* then, for each verification */
+int ok = elips_pairing_multi_prec(prod, Ps, pc, 2) && fp12_eq(prod, one);
+```
+
+`ep2_precompute` checks the subgroup itself, because a table has no point left
+to check afterwards. A table costs about two Miller loops to build and 20 KB
+(BLS12-381) to hold, so it pays from the second use onward.
+
+| | BLS12-381 | BN-462 |
+|---|---|---|
+| Miller loop, precomputed vs direct | 1.58x | 1.48x |
+| one pairing | 1.33x | 1.55x |
+| 2-term product vs 2 separate pairings | 2.02x | 2.52x |
+| 8-term product vs 8 separate pairings | 3.85x | 4.58x |
+
 `ELiPS::elips` is kept as an alias of the same library, so a build file written
 against the old name still configures.
 

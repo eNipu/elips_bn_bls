@@ -173,8 +173,18 @@ for macro, cname in (("ELIPS_CURVE_BLS12_381", "BLS12-381"),
                   "  static const limb_t ELIPS_ABSX[%d] = {\n        %s\n  };\n"
                   % (axn, limb_list(absx, axn)))
 
+    # How many line functions one Miller loop evaluates: one doubling line per
+    # iteration, plus an addition line wherever the digit is non-zero, plus BN's
+    # two correction lines. This is the exact size of a fixed-argument
+    # precomputation table, so it is derived here rather than bounded by a
+    # guess that a new curve could exceed.
+    n_lines = top + sum(1 for d in digits[:top] if d != 0)
+    if cv.family == "bn":
+        n_lines += 2
+
     loop_txt = param_txt + ("  #define ELIPS_LOOP_TOP     %d\n" % top +
                 "  #define ELIPS_FAMILY_%s   1\n" % cv.family.upper() +
+                "  #define ELIPS_MILLER_LINES %d\n" % n_lines +
                 "  static const signed char ELIPS_LOOP[%d] = { %s };\n"
                 % (top + 1, ", ".join(str(d) for d in digits)))
 
