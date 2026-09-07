@@ -1,10 +1,13 @@
 name: Documentation
 
-# Regenerates the Doxygen site and publishes it to the gh-pages branch.
+# Builds the Doxygen site from source and deploys it straight to GitHub Pages.
 #
-# The site is not tracked. gh-pages holds the only copy, rebuilt from source on
-# every push to master, so nothing in the repository can describe code that no
-# longer exists.
+# Pages is deployed from this workflow, not from a branch. That matters: the
+# repository was previously configured to serve master:/docs through Jekyll, so
+# untracking the generated site left Pages building nothing and quietly serving
+# the last successful build, which documented headers that had been deleted.
+# Deploying from the workflow means the site can only ever be what the current
+# source generates, and nothing generated is committed anywhere.
 
 on:
   push:
@@ -12,21 +15,52 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time, and never cancel one part way through: a half
+# written site is worse than a stale one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   doxygen:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
       - run: sudo apt-get update && sudo apt-get install -y doxygen graphviz
+
       - name: Generate
         run: |
           sed -e 's|^OUTPUT_DIRECTORY.*|OUTPUT_DIRECTORY = doxygen-out|' \
               -e 's|^HTML_OUTPUT.*|HTML_OUTPUT = html|' Doxyfile_101 > Doxyfile.ci
           doxygen Doxyfile.ci
-      - name: Publish to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+
+      # An empty site deploys as happily as a real one. Doxyfile_101 once had
+      # INPUT set to an absolute path on a developer's machine, which produces
+      # exactly that, so the count is checked rather than assumed.
+      - name: Refuse to deploy an empty site
+        run: |
+          test -f doxygen-out/html/index.html || { echo "::error::no index.html"; exit 1; }
+          n=$(find doxygen-out/html -name '*.html' | wc -l)
+          echo "generated $n HTML pages"
+          test "$n" -gt 10 || { echo "::error::only $n pages, the generator found nothing"; exit 1; }
+
+      # enablement: true switches the Pages build type from the legacy Jekyll
+      # builder to this workflow, through the API, using the token below. It is
+      # the settings change, made from the repository.
+      - uses: actions/configure-pages@v5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./doxygen-out/html
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: doxygen-out/html
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
