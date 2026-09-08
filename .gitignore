@@ -15,31 +15,6 @@ _deps/
 *.tar.gz
 test/a.out
 
-# Legacy autotools output (build system removed in favour of CMake)
-/configure
-/Makefile
-/Makefile.in
-/aclocal.m4
-/autom4te.cache/
-/config.h
-/config.h.in
-/config.log
-/config.status
-/config.guess
-/config.sub
-/libtool
-/ltmain.sh
-/install-sh
-/missing
-/depcomp
-/compile
-/stamp-h1
-/m4/
-src/Makefile
-src/Makefile.in
-src/.deps/
-src/.libs/
-
 # Python
 __pycache__/
 *.pyc
