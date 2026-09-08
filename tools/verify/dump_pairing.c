@@ -17,15 +17,15 @@
 #include "elips/fpx.h"
 #include "elips/pairing.h"
 
-static void emit(const char *label, const fp_t a)
+/* No snprintf'd labels here. Building "e %d %d %d" into a fixed buffer trips
+ * -Wformat-truncation at the sanitizer builds' optimisation level: GCC cannot
+ * prove the loop counters are small and assumes the whole int range. Printing
+ * the indices directly sidesteps it and is shorter anyway. */
+static void to_mpz(mpz_t v, const fp_t a)
 {
     limb_t l[FP_LIMBS];
-    mpz_t v;
-    mpz_init(v);
     fp_to_limbs(l, a);
     mpz_import(v, FP_LIMBS, -1, sizeof(limb_t), 0, 0, l);
-    gmp_printf("%s %Zd\n", label, v);
-    mpz_clear(v);
 }
 
 int main(void)
@@ -46,18 +46,24 @@ int main(void)
     pairing_miller(f, qx, qy, px, py);
     pairing_final_exp_plain(e, f);
 
-    emit("P.x", px);
-    emit("P.y", py);
-    emit("Q.x0", qx[0]); emit("Q.x1", qx[1]);
-    emit("Q.y0", qy[0]); emit("Q.y1", qy[1]);
+    mpz_t v;
+    mpz_init(v);
+
+    to_mpz(v, px);    gmp_printf("P.x %Zd\n",  v);
+    to_mpz(v, py);    gmp_printf("P.y %Zd\n",  v);
+    to_mpz(v, qx[0]); gmp_printf("Q.x0 %Zd\n", v);
+    to_mpz(v, qx[1]); gmp_printf("Q.x1 %Zd\n", v);
+    to_mpz(v, qy[0]); gmp_printf("Q.y0 %Zd\n", v);
+    to_mpz(v, qy[1]); gmp_printf("Q.y1 %Zd\n", v);
 
     /* a[0] = (g0, g2, g4) and a[1] = (g1, g3, g5), by powers of w. */
     for (int d = 0; d < 2; d++)
         for (int c = 0; c < 3; c++)
             for (int b = 0; b < 2; b++) {
-                char lbl[32];
-                snprintf(lbl, sizeof lbl, "e %d %d %d", d, c, b);
-                emit(lbl, e[d][c][b]);
+                to_mpz(v, e[d][c][b]);
+                gmp_printf("e %d %d %d %Zd\n", d, c, b, v);
             }
+
+    mpz_clear(v);
     return 0;
 }
