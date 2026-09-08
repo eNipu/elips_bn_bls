@@ -312,6 +312,15 @@ if(ELIPS_BUILD_TESTS)
                    -DPATTERN=outg2 -DRELABEL=ing2
                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/CorruptCheck.cmake)
 
+  # Independent verification helper (tools/verify/).
+  #
+  # Prints the exact pairing for crosscheck_pyecc.py to compare against py_ecc,
+  # an implementation sharing no code, no author and no representation with
+  # this one. BLS12-381 only, because py_ecc implements nothing else.
+  add_executable(dump_pairing tools/verify/dump_pairing.c)
+  target_link_libraries(dump_pairing PRIVATE elips_arith_BLS12_381 GMP::GMP)
+  elips_test_warnings(dump_pairing)
+
   # Benchmarks (issue #15).
   #
   # Built for every curve, but NOT registered with CTest. A benchmark that runs

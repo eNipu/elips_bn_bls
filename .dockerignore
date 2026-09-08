@@ -1,0 +1,10 @@
+# Keep the build context small: the build trees are large, machine-specific,
+# and regenerated inside the image anyway.
+build*/
+cmake-build*/
+.git/
+docs/
+doxygen-out/
+__pycache__/
+*.o
+*.a

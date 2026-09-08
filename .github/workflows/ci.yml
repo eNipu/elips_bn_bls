@@ -108,6 +108,30 @@ jobs:
       - name: Final exponentiation chains compute their claimed exponents
         run: python3 tools/reference/trace_finalexp.py
 
+  # Checks that share nothing with the library: PARI counts the curves itself,
+  # the identities are proved in Z[X] for every seed, and the BLS12-381 pairing
+  # is compared against py_ecc. Everything else in CI compares this code
+  # against tools/reference/, and one author wrote both.
+  #
+  # Runs tools/verify/run.sh directly rather than through the container, so a
+  # broken Dockerfile cannot quietly stop the verification from running. The
+  # container exists for reproducing this locally.
+  verify:
+    name: independent verification (PARI and py_ecc)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Install PARI/GP and GMP
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pari-gp libgmp-dev
+      - name: Install the pinned third-party reference
+        run: pip install -r tools/verify/requirements.txt
+      - name: Verify
+        run: tools/verify/run.sh
+
   install:
     name: install and consume via find_package
     runs-on: ubuntu-latest

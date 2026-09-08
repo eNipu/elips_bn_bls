@@ -1,0 +1,5 @@
+# Pinned so the cross-check compares against a KNOWN third-party version.
+# An unpinned dependency that silently changes is not much of an independent
+# reference. This is the version the cross-check was actually run against; an
+# earlier draft pinned 7.0.1, which had never been executed here.
+py_ecc==8.0.0
