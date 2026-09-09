@@ -181,9 +181,17 @@ python3 tools/reference/divstep_ref.py     # inversion model and its iteration c
 python3 tools/reference/karabina_ref.py    # compressed squaring: derive, then decide
 python3 tools/reference/gen_subgroup_vectors.py test/kat  # accept/reject points
 python3 tools/reference/trace_finalexp.py  # exponent of each final-exp chain
+python3 tools/reference/normalized_miller_ref.py  # experimental 8M2 prepared-line kernel
 ```
 
-`trace_finalexp.py` is the odd one out: it produces no vectors. It walks the
+`normalized_miller_ref.py` is a Python-only research prototype, not a change to
+the C pairing. It tests a normalized, subfield-scaled line multiplication that
+uses eight Fp2 multiplications instead of fifteen. Raw Miller values change;
+final-exponentiated values must match the pairing vectors. It also checks
+multi-pairing, normalization costs, and invalid inputs. It makes no claim of
+novelty or constant-time execution.
+
+`trace_finalexp.py` also produces no vectors. It walks the
 two `pairing_final_exp_fast` chains in `src/pairing/miller.c` symbolically,
 tracking the exponent rather than the field element, and asserts that each
 computes what its comment claims: `lambda` for BN, `3*lambda` for BLS12. A
