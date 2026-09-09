@@ -1,0 +1,23 @@
+PASS 2000 kernels against dense multiplication, including zero coefficients
+PASS 32 projectively rescaled tangent-line checks
+PASS 36 full multi-pairing comparisons, n=0..8, two candidate kernels
+PASS exact final-exponent comparison
+TABLE bytes old=19872 normalized=13248
+BENCH n=1 miller repository15 median=330.267 us min=326.467 max=343.633
+BENCH n=1 miller normalized10 median=286.467 us min=280.100 max=295.800
+BENCH n=1 miller scaled8 median=266.733 us min=264.700 max=272.767
+BENCH n=1 miller+final repository15 median=791.600 us min=774.433 max=799.500
+BENCH n=1 miller+final normalized10 median=746.567 us min=726.733 max=795.433
+BENCH n=1 miller+final scaled8 median=728.667 us min=712.300 max=741.300
+BENCH n=2 miller repository15 median=515.367 us min=508.033 max=519.400
+BENCH n=2 miller normalized10 median=425.033 us min=418.400 max=431.200
+BENCH n=2 miller scaled8 median=387.667 us min=384.500 max=396.400
+BENCH n=2 miller+final repository15 median=977.567 us min=963.333 max=984.733
+BENCH n=2 miller+final normalized10 median=888.400 us min=868.567 max=913.833
+BENCH n=2 miller+final scaled8 median=851.800 us min=840.100 max=866.267
+BENCH n=8 miller repository15 median=1630.600 us min=1614.700 max=1640.900
+BENCH n=8 miller normalized10 median=1271.500 us min=1263.767 max=1286.767
+BENCH n=8 miller scaled8 median=1122.700 us min=1109.067 max=1129.333
+BENCH n=8 miller+final repository15 median=2089.533 us min=2051.100 max=2110.533
+BENCH n=8 miller+final normalized10 median=1735.733 us min=1722.233 max=1790.500
+BENCH n=8 miller+final scaled8 median=1580.400 us min=1566.267 max=1591.467

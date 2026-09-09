@@ -1,0 +1,52 @@
+[
+  {
+    "original_directory": "elips-bls381-research.aoHAvY",
+    "path": "normalized-line/experiment.c",
+    "sha256_at_import": "4aa297428eedc6f215652ea5297981053709ad230a8f99a15f938b5e3a186f1c"
+  },
+  {
+    "original_directory": "elips-bls381-research.aoHAvY",
+    "path": "normalized-line/RESEARCH.md",
+    "sha256_at_import": "87b599faa2a083d398e64dcc286184516a1d58bb2bbc7b28eab1062e720034d1"
+  },
+  {
+    "original_directory": "elips-bls381-research.aoHAvY",
+    "path": "normalized-line/benchmark.log",
+    "sha256_at_import": "531f538880a248cbb4945aa8b78396867febad3856e943f326e3e51ced405636"
+  },
+  {
+    "original_directory": "elips-bls381-research.aoHAvY",
+    "path": "normalized-line/benchmark-fullwidth.log",
+    "sha256_at_import": "79b21a32301fcade72f0d8cffbbfea57531c5feb3f8051f88875d92c53ca5971"
+  },
+  {
+    "original_directory": "elips-quotient-squaring.7cNVpr",
+    "path": "norm-and-exponent/norm_state.py",
+    "sha256_at_import": "3482cd64c66c4df32c1463bb2ee47a4cd27302ed4eef8fe4a8740ccbd409f5dd"
+  },
+  {
+    "original_directory": "elips-quotient-squaring.7cNVpr",
+    "path": "norm-and-exponent/ratios.c",
+    "sha256_at_import": "ea334bd0ac29c6bf2b5d9ed39e717c0ec5053e3f34e9f836bb7379ccdfa64ebb"
+  },
+  {
+    "original_directory": "elips-quotient-squaring.7cNVpr",
+    "path": "norm-and-exponent/OUT_OF_BOX.md",
+    "sha256_at_import": "7f59a7658f32f8592ef83efa7bb2bf58034302368dac67856939fb0b2e4583f9"
+  },
+  {
+    "original_directory": "elips-pairing-update.oQAzI4",
+    "path": "scaled-square/gaussian_ref.py",
+    "sha256_at_import": "c9fe38e0ab3f477169ddb976c1fcfa10a3c65f9d726bec6e1698a68c68b77c3d"
+  },
+  {
+    "original_directory": "elips-pairing-update.oQAzI4",
+    "path": "scaled-square/kernels.h",
+    "sha256_at_import": "2fa0281e93f2ea247df93561bdeaf5f8304c7e4f4e9e56a8b3d94370564b6351"
+  },
+  {
+    "original_directory": "elips-pairing-update.oQAzI4",
+    "path": "scaled-square/experiment.c",
+    "sha256_at_import": "0b84dd8de2290b9e17c69916e9351094764351535121f8ace380b23b2bc85747"
+  }
+]
