@@ -2538,6 +2538,166 @@ reading that stays low means run 57 was a runner artefact after all. A reading
 that grows on x86-64 too would mean the review above missed something, and
 that is the case worth finding.
 
+## Phase 6 — assembly Montgomery multiplication (issue #7)
+
+Issue #7 opens with a condition: **conditional on Phase 4 measurement showing
+limb arithmetic is the bottleneck. Do not write assembly to make `malloc`
+faster.** That measurement had never been taken on x86-64, so it came first.
+
+### The gate, measured two ways
+
+`perf` is not available in this environment, so neither way is a profiler.
+
+**In situ.** Run a pairing. Run it again with `fp_mul` doing its work twice,
+into a scratch destination that is then consumed, and subtract. The difference
+IS the time that routine occupies inside the pairing, at the pairing's own
+cache state and instruction mix. Both runs go through the same wrapper, so the
+call overhead cancels, and the pairing result is checked unchanged.
+
+    BLS12-381    fp_mul 49.5%    fp_add 20.9%    fp_sub 11.7%
+    BN-462       fp_mul 66.6%    fp_add 13.6%    fp_sub 12.3%
+
+**Count times cost.** `--wrap` at link time counts the calls one pairing makes,
+with no source change; a separate binary times each primitive standalone.
+
+    BLS12-381    19871 fp_mul, 42039 fp_add, 29635 fp_sub
+    BN-462       31229 fp_mul, 61776 fp_add, 47456 fp_sub
+
+The two agree on BLS12-381 (50-55% against 49.5%). On BN-462 the estimate came
+to more than the whole pairing, which is how you learn that multiplying a
+standalone per-call latency by a call count overstates the in-pairing cost. The
+in-situ number is the one to believe.
+
+Either way: limb arithmetic is essentially all of it, `fp_mul` is the largest
+single piece, and there is no `malloc` in the path to blame.
+
+### What C can and cannot do
+
+Before assuming assembly was needed, the best plain C was tried: the width
+fixed at compile time, the CIOS loops unrolled by hand, the accumulator in
+named locals, and `-mbmi2` so `mulx` was available. **1.19x.**
+
+What it cannot express is two carry chains. `adcx` carries through the carry
+flag and `adox` through the overflow flag, so the low and the high halves of
+the partial products accumulate at the same time instead of queueing behind one
+flag. There is no C for that. GCC at `-O2` also left the outer CIOS loop rolled
+with only 11 `mul` instructions in the body and 122 `mov`s of spill traffic.
+
+AArch64 has no second carry chain, so it wins differently: `mul`, `umulh` and
+`ldp` do not touch the flags, so the multiplies and loads for the next limbs
+issue in between the `adds` and `adcs` that consume the previous ones.
+
+### Results
+
+`fp_mul` alone, x86-64, measured against the portable C in the same binary:
+
+    6 limbs (BLS12-381)   63.73 -> 32.19 ns   1.91x
+    8 limbs (BN-462)     105.85 -> 52.96 ns   2.00x
+    8 limbs (BLS12-461)  115.56 -> 54.64 ns   2.11x
+
+End to end, `bench/compare.py --ab` over six rounds, every operation faster and
+none regressed:
+
+    BLS12-381   pairing 2118.8 -> 1559.2 us   1.36x
+    BN-462      pairing 5158.9 -> 2921.8 us   1.77x
+
+AArch64, on the macOS arm64 runner, same harness, five rounds:
+
+    BLS12-381   pairing 1523.8 -> 1166.9 us   1.31x
+    BN-462      pairing 3814.8 -> 2651.9 us   1.45x
+
+All four routines are above the 1.2x the issue sets as the price of being
+carried, so none is deleted. Every operation moved in the right direction on
+both architectures, with 100% sign agreement across rounds.
+
+### No dedicated squaring, and why
+
+An older note in `fp_sqr` deferred a squaring routine to Phase 6. Phase 6
+measured what one would be worth and did not write it. Only **4.7%** of the
+`fp_mul` calls in a BLS12-381 pairing have `a == b`, and 5.4% on BN-462,
+because the Fp2, Fp6 and Fp12 layers carry their own squaring formulas and
+never reach `fp_sqr` with equal operands. A third off the partial products of
+5% of the multiplies is under 1% of a pairing, for four more hand-written
+routines to keep correct.
+
+### Two preconditions, proved rather than recalled
+
+Both are stated at the top of each `.S` file, because someone adding a curve
+will need them.
+
+1. **`a < p` on entry**, which is what keeps `T < 2p` through every round and
+   makes ONE conditional subtraction enough at the end. Every caller satisfies
+   it because Montgomery representatives are reduced.
+2. **A sparse modulus, `p < 2^(64n-1)`.** The `n+1` word accumulator then never
+   overflows, so the high-half chain's carry out of the top word is always zero
+   and is not added anywhere. 381 < 383, and 461 and 462 are both < 511. A
+   `_Static_assert` on `FP_BITS` holds it for a future curve.
+
+### How the fallback is kept honest
+
+The portable C is not a second-best copy left to rot. It is the definition of
+what `fp_mul` means:
+
+- `fp_mul_portable` is public and `test/fp_difftest.c` runs BOTH against GMP on
+  every check, then compares them to each other bit for bit, including the
+  three aliasing shapes. Vectors never alias, and the assembly writes its
+  output only after its last read of `a` and `b`, so no value-based test would
+  catch that if it broke.
+- CI runs the entire suite a second time with `ELIPS_NO_ASM=1`.
+- The backend is chosen once from CPUID and `fp_difftest` prints which one it
+  used, so a green run states the path it exercised instead of leaving it to be
+  inferred from the build flags.
+
+dudect at twenty times the CI sample: `max|t|` 1.26 on BLS12-381 and 1.54 on
+BN-462, against a threshold of 25. On the macOS arm64 runner all eighteen
+dudect targets pass with the assembly in, including the two BN ones recorded
+above as an unresolved intermittent reading.
+
+### Verifying AArch64 from an x86-64 machine
+
+This session had no arm64 hardware. Two substitutes, and it matters which
+question each one answers.
+
+**Correctness: qemu-user with a cross toolchain.** The whole library
+cross-builds for AArch64 and every non-timing test passes under emulation, all
+three curves, both limb widths, with the assembly and again with
+`ELIPS_NO_ASM=1`. 34 tests each way, including the RFC 9380 vectors.
+
+    cmake -B build-a64 -DCMAKE_TOOLCHAIN_FILE=... -DCMAKE_BUILD_TYPE=Release
+
+with `CMAKE_CROSSCOMPILING_EMULATOR=/usr/bin/qemu-aarch64-static`, needing
+`gcc-aarch64-linux-gnu`, `qemu-user-static` and `libgmp-dev:arm64`.
+
+**Speed: not qemu.** qemu translates instructions; it does not model a
+pipeline. Any number taken under it would be invented. The speed half of the
+gate needs arm64 hardware, which for this repository means the macOS runner, so
+there is a manual-only `aarch64-benchmark` CI job that measures it there. Its
+numbers are in **Results** above. Run it from the Actions tab when the assembly
+changes; it is deliberately not on the push path, because it is a measurement
+and should not fail a pull request on a noisy shared runner.
+
+### A bug that assembles cleanly and links nowhere
+
+The first AArch64 push turned the macOS jobs red:
+
+    Undefined symbols for architecture arm64:
+      "_elips_fp_mul_6_aarch64", referenced from: _fp_mul in ...
+
+A cpp macro cannot contain a newline, so `FUNC_BEGIN` separated its directives
+with semicolons. **On arm64 Darwin `;` begins a comment.** The `.globl` on that
+line survived; the `.p2align` and the label itself did not. The result is an
+object that declares the symbol and never defines it, and the assembler says
+nothing at all.
+
+Each macro now expands to at most one directive and the call sites stack them
+on separate source lines.
+
+It can be checked without a Mac, and this is worth keeping: clang
+cross-assembles for Darwin targets and `llvm-nm` reads Mach-O.
+
+    clang -target arm64-apple-macos11 -c src/arith/fp_mul_aarch64.S -o /tmp/a.o
+    llvm-nm /tmp/a.o        # U before the fix, T after
+
 ---
 
 # HAND-OFF — next session starts at Phase 6
@@ -2574,9 +2734,9 @@ so their vectors pin self-consistency.
 1. **Read `MODERNIZATION_PLAN.md` §10.** Every open item now has a decision, a
    citation and a status. §10.10 revises the Phase 6 assembly target and §10.3
    is the largest available win.
-2. **Take a profile on an x86-64 machine.** Every measurement through Phase 4
-   was on Apple Silicon and Phase 5's on a slow VM. Phase 6 is conditional on a
-   profile and that profile has not been taken on the target architecture.
+2. ~~**Take a profile on an x86-64 machine.**~~ Done, see the Phase 6 assembly
+   section: `fp_mul` is 49.5% of a BLS12-381 pairing and 66.6% of a BN-462 one,
+   measured in situ rather than estimated.
 
 ## Ranked by value, from the survey
 
@@ -2633,7 +2793,9 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 - ~~`hash_to_g2` rebuilds a window table for each of its two short ladders.~~
   Done, though not the way that note suggested: the tables could never be
   shared, the doublings could.
-- No assembly (issue #7), deferred.
+- ~~No assembly (issue #7).~~ Done on x86-64 and AArch64, both limb
+  widths. AVX-512 IFMA (plan §10.10) is still open and is the larger win
+  on x86-64.
 - No signature layer. §10.8 explains why that line is where it is.
 - BN-462 has no fast G2 cofactor chain. (GLV on both its groups is done.)
 - `gh-pages` is vestigial. Pages deploys from `.github/workflows/docs.yml` as

@@ -255,9 +255,15 @@ const char *fp_mul_backend_name(void)
 
 void fp_sqr(fp_t r, const fp_t a)
 {
-    /* A dedicated squaring saves roughly a third of the partial products.
-     * Deferred: Phase 6 writes it in assembly, and doing it twice is waste.
-     * ponytail: reuse fp_mul until a measurement says squaring is the ceiling. */
+    /* A dedicated squaring saves roughly a third of the partial products, and
+     * an earlier note here deferred one to the Phase 6 assembly. Phase 6 then
+     * measured what it would be worth and did not write it.
+     *
+     * Only 4.7% of the fp_mul calls in a BLS12-381 pairing have a == b, and
+     * 5.4% on BN-462, because the Fp2, Fp6 and Fp12 layers carry their own
+     * squaring formulas and never reach this path with equal operands. A third
+     * off 5% of the multiplies is under 1% of a pairing, for four more
+     * hand-written routines to keep correct. */
     fp_mul(r, a, a);
 }
 
