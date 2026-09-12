@@ -444,7 +444,55 @@ static const target_t TARGETS[] = {
 
 /* --------------------------------------------------------------- driver ---- */
 
-static double measure(const target_t *tg, long n)
+/* THE NOISE CEILING, MEASURED RATHER THAN REMEMBERED.
+ *
+ * The problem this solves: max_abs_t is the largest of 21 correlated crops, and
+ * how large that gets under the null depends on the machine and on how long the
+ * measured operation is. A single fp_mul is ~50 ns and reads 1 to 3. One fp_inv
+ * is 3*FP_BITS divsteps, a window wide enough to catch a preemption, and reads
+ * 4 to 18 on a quiet machine and into the twenties on a shared runner. One
+ * global constant cannot be right for both, and issue #32 is what happens when
+ * it is asked to be: fp_inv, constant time by construction, tripping a gate
+ * calibrated on a different target on a different runner.
+ *
+ * So the ceiling is measured here, on this machine, for this target, from the
+ * measurements just taken: shuffle the class labels and recompute. The two
+ * groups are then drawn from one population by construction, so whatever |t|
+ * comes out is noise and nothing else. Do it NPERM times and the real reading
+ * is simply another draw from the same distribution if the routine does not
+ * leak. "It beat every one of them" is then a permutation test at
+ * p < 1/(NPERM+1), with no threshold to calibrate and nothing to re-measure
+ * when the CI image changes.
+ *
+ * Note what it does NOT do: relabelling a routine that really leaks mixes its
+ * two timing populations together, which pushes the null DOWN, not up. A leak
+ * cannot raise its own bar.
+ *
+ * The labels here are a plain splitmix64, not elips_random_bytes. They decide
+ * nothing secret, and the real class labels below take one syscall each, which
+ * is already more than this is worth. */
+#define NPERM 19
+
+static double perm_ceiling(const uint64_t *ticks, long n, uint64_t seed)
+{
+    uint8_t *lab = malloc((size_t)n);
+    if (!lab) return 0.0;
+    double worst = 0.0;
+    for (int p = 0; p < NPERM; p++) {
+        for (long i = 0; i < n; i++) {
+            uint64_t x = (seed += 0x9e3779b97f4a7c15ULL);
+            x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+            x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+            lab[i] = (uint8_t)((x >> 31) & 1u);
+        }
+        double v = max_abs_t(ticks, lab, n, NULL);
+        if (v > worst) worst = v;
+    }
+    free(lab);
+    return worst;
+}
+
+static double measure(const target_t *tg, long n, double *ceiling_out)
 {
     input_t  *in    = malloc((size_t)n * sizeof *in);
     uint64_t *ticks = malloc((size_t)n * sizeof *ticks);
@@ -468,6 +516,11 @@ static double measure(const target_t *tg, long n)
     }
 
     double t = max_abs_t(ticks, cls, n, NULL);
+    if (ceiling_out) {
+        uint64_t seed = 0;
+        if (elips_random_bytes(&seed, sizeof seed) != 0) seed = (uint64_t)n;
+        *ceiling_out = perm_ceiling(ticks, n, seed);
+    }
     free(in); free(ticks); free(cls);
     return t;
 }
@@ -506,7 +559,15 @@ int main(int argc, char **argv)
      * already saturated at n=2000, so requiring growth reported two genuine
      * leaks out of six as clean. A gate that misses real leaks is worse than
      * one that occasionally cries wolf, so magnitude decides and the larger
-     * sample is used only to make that magnitude a steadier reading. */
+     * sample is used only to make that magnitude a steadier reading.
+     *
+     * 25 IS NOW A FLOOR, NOT THE WHOLE TEST. It is still the smallest effect
+     * this file is willing to call a leak, and the sensitivity control still
+     * pins it from above. What it is no longer asked to be is the noise
+     * ceiling for every target on every runner, which is the job it was
+     * quietly doing and failing at -- see the note on perm_ceiling and issue
+     * #32. A reading must now clear 25 AND beat the ceiling measured from its
+     * own samples. */
     const long   CONFIRM_SCALE = 4;
     const double T_CONFIRM = 25.0;
 
@@ -519,11 +580,11 @@ int main(int argc, char **argv)
         ran++;
 
         long n = override_n > 0 ? override_n : tg->dflt;
-        double t = measure(tg, n);
+        double t = measure(tg, n, NULL);
         if (t < 0.0) { printf("  [FAIL ] %-16s out of memory\n", tg->name); fails++; continue; }
 
         int leaking = 0;
-        double t2 = -1.0;
+        double t2 = -1.0, ceiling = -1.0;
         if (t > T_LEAK) {
             /* Anything over T_LEAK is only a suspicion. Re-measure with four
              * times the data and judge that reading, which is both steadier
@@ -532,8 +593,15 @@ int main(int argc, char **argv)
              * it is much weaker than it sounds: a second sample taken a second
              * later on a shared runner sees the same noise burst as the first.
              * See the note on T_CONFIRM above. */
-            t2 = measure(tg, n * CONFIRM_SCALE);
-            leaking = (t2 > T_CONFIRM);
+            t2 = measure(tg, n * CONFIRM_SCALE, &ceiling);
+            if (t2 < 0.0) {
+                printf("  [FAIL ] %-16s out of memory\n", tg->name);
+                fails++; continue;
+            }
+            /* Both, and for different reasons. Above the ceiling says the
+             * difference is not this machine's noise; above T_CONFIRM says it
+             * is big enough to be worth calling a leak at all. */
+            leaking = (t2 > T_CONFIRM) && (t2 > ceiling);
         }
 
         const char *verdict;
@@ -550,8 +618,9 @@ int main(int argc, char **argv)
         }
 
         if (t2 >= 0.0)
-            printf("  [%s] %-16s max|t| = %8.2f (n=%ld)  ->  %8.2f (n=%ld)%s\n",
-                   verdict, tg->name, t, n, t2, n * CONFIRM_SCALE,
+            printf("  [%s] %-16s max|t| = %8.2f (n=%ld)  ->  %8.2f (n=%ld), "
+                   "noise ceiling %.2f%s\n",
+                   verdict, tg->name, t, n, t2, n * CONFIRM_SCALE, ceiling,
                    tg->expect_leak ? "  <- negative control, must leak" : "");
         else
             printf("  [%s] %-16s max|t| = %8.2f  (n=%ld)%s\n",
