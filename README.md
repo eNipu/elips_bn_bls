@@ -3,18 +3,17 @@
 Pairing-based cryptography over BLS12 and BN curves, in C, with no runtime
 dependencies.
 
-If you are here to **verify a BLS signature**, start below and you will have
-one working in a couple of minutes. If you are here for the **pairing itself**,
-skip to [Using the C library](#using-the-c-library).
+If you are here to **verify a BLS signature**, start below. If you are here for
+the **pairing itself**, skip to [the C library](#the-c-library).
 
 **[Try it in your browser](https://enipu.github.io/elips_bn_bls/demo/)** — many
 signatures collapsing into one, computed in the page, no backend.
 
 ---
 
-## Signatures in two minutes
+## Quick start
 
-BLS signatures on BLS12-381: 32-byte keys, 48-byte public keys, 96-byte
+BLS signatures on BLS12-381: 32-byte secret keys, 48-byte public keys, 96-byte
 signatures, and any number of signatures aggregate into one that is still 96
 bytes.
 
@@ -99,25 +98,22 @@ hash-to-curve and pairing underneath are pinned against RFC 9380's published
 vectors and against a Python oracle written from the defining equations.
 
 The parts that handle a secret key are constant time, and that is tested rather
-than asserted: `dudect` runs on every build with negative controls that must
-leak, so a harness that has stopped detecting anything fails instead of passing
-quietly.
+than asserted: a statistical timing test and a scan of the generated object
+code both run on every build. See
+[Constant time](CONTRIBUTING.md#constant-time) for what each one catches and
+why both are needed.
 
 **It is not audited.** Implementing the draft and agreeing with another
 implementation is a different claim from having been reviewed by a
-cryptographer. There are also two known open issues worth reading before
-trusting it with anything: [#30](https://github.com/eNipu/elips_bn_bls/issues/30),
-an unexplained timing signal in the GLV scalar multiplication under clang, and
-the fact that no formal review has happened at all.
+cryptographer. No formal review has happened. Do not use it to protect
+anything that matters yet.
 
-## How fast
+## Performance
 
-Measured on an Intel Xeon, same machine. The pairing figure is the one
-recorded in [`bench/baseline.json`](bench/baseline.json); the sign and verify
-figures were taken in one run against each other. `bench/compare.py` alternates
-two builds rather than comparing separate runs, because on this machine the
-absolute numbers wander by about 20% between runs while the ratios between
-operations do not.
+Measured on an Intel Xeon, same machine. The pairing figure is the one recorded
+in [`bench/baseline.json`](bench/baseline.json); sign and verify were taken in
+one run against each other, because on this machine the absolute numbers wander
+by about 20% between runs while the ratios do not.
 
 | | native | WebAssembly | |
 |---|---|---|---|
@@ -128,42 +124,30 @@ operations do not.
 The browser is slower for a structural reason rather than a missing
 optimisation: `wasm32` has no 64×64 → 128 bit multiply, so every field
 multiplication goes through a software helper and a pairing is tens of
-thousands of them. Native x86-64 and AArch64 do it in one instruction. The
-number is published rather than omitted because omitting an unflattering
-measurement is the one thing this repository has consistently refused to do.
+thousands of them. Native x86-64 and AArch64 do it in one instruction.
 
 ---
 
-# Using the C library
+# The C library
 
 The layer the bindings are built on. Two headers matter:
 `include/elips/bls.h` for signatures, and `include/elips/pairing.h` with its
 neighbours for the pairing itself.
 
-## Requirements
-
-- CMake 3.16 or newer
-- A C11 compiler
-
-That is all. **The library has no runtime dependencies**: nothing under `src/`
-includes a third-party header, and the installed library links nothing but
-libc.
-
-To build and run the **test suite** you also need
-[GMP](https://gmplib.org/) (`libgmp-dev` on Debian/Ubuntu, `brew install gmp`
-on macOS). GMP is kept deliberately, as an independent oracle: the tests check
-the Montgomery layer, the wide reduction and both inversions against it, and
-agreement with a separate implementation is evidence in a way that agreement
-with ourselves is not. Configure with `-DELIPS_BUILD_TESTS=OFF` to build
-without it.
-
 ## Build
+
+Requirements are CMake 3.16 or newer and a C11 compiler. That is all: **the
+library has no runtime dependencies**. Nothing under `src/` includes a
+third-party header, and the installed library links nothing but libc.
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
-ctest --test-dir build --output-on-failure
 ```
+
+Building the test suite additionally needs GMP, which is used as an
+independent oracle rather than by the library. See
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Signatures, in C
 
@@ -190,27 +174,6 @@ zero, or a negative code. `if (elips_bls_verify(...))` is therefore true on
 the core, so a project that wants the pairing and not the protocol can ignore
 it entirely.
 
-## Choosing a curve
-
-The arithmetic is compiled for one curve: the field width has to be a
-compile-time constant for the loops to unroll and for the assembly to target a
-known width.
-
-```bash
-cmake -B build -DELIPS_CURVE=BLS12_381    # default, and the only standardised one
-cmake -B build -DELIPS_CURVE=BLS12_461
-cmake -B build -DELIPS_CURVE=BN_462
-```
-
-**Use BLS12-381 unless you have a reason not to.** It is the curve with a
-specification, so it is the one whose generators, encodings and hash-to-curve
-outputs match other implementations byte for byte. The signature layer is
-BLS12-381 only, because the other two have no registered ciphersuite and an
-"IETF BLS signature on BN-462" would interoperate with nothing.
-
-The test suite always builds all three, because the vectors have to cover all
-three.
-
 ## Install and consume
 
 ```bash
@@ -224,6 +187,15 @@ target_link_libraries(app PRIVATE ELiPS::arith)   # or ELiPS::bls
 
 `ELiPS_CURVE` is set in the package config so a consumer can read back which
 curve was installed. No dependency is imposed on the consumer.
+
+## Curves
+
+The library is compiled for one curve, chosen with `-DELIPS_CURVE`.
+**Use BLS12-381 unless you have a reason not to**: it is the only one with a
+specification, so it is the only one that interoperates. BLS12-461 and BN-462
+are also supported, and the signature layer is BLS12-381 only.
+
+Sizes, generators, encodings and the BLS12 `e³` convention: [`CURVES.md`](CURVES.md).
 
 ## Examples
 
@@ -246,98 +218,10 @@ than the IETF ciphersuite and has no proof of possession. **Use
 
 ---
 
-# Contributing
+## Contributing
 
-**Status: under active modernization.** See
-[`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) for the roadmap,
-[`PROGRESS.md`](PROGRESS.md) for what has landed and why, and
-[`PRD-developer-api.md`](PRD-developer-api.md) for the bindings and demo.
-
-## Sanitizer builds
-
-```bash
-cmake -B build-asan -DCMAKE_BUILD_TYPE=Asan     # address + undefined
-cmake -B build-ubsan -DCMAKE_BUILD_TYPE=Ubsan   # undefined only
-```
-
-MemorySanitizer is not wired up: it needs every dependency instrumented, and
-the GMP the tests link is not, so it would report noise rather than findings.
-
-## Test oracle
-
-`tools/reference/` holds an independent Python implementation of the field
-tower, curve arithmetic and the optimal ate pairing, written from the defining
-equations rather than from `src/`. It generates the vectors in `test/kat/` and
-is what found the final exponentiation defect.
-
-```bash
-python3 tools/reference/selftest.py        # field axioms and tower relations
-python3 tools/reference/h2c_ref.py         # RFC 9380 maps, isogenies, SvdW
-python3 tools/reference/gen_vectors.py test/kat          # field and curve
-python3 tools/reference/gen_pairing_vectors.py test/kat  # the pairing itself
-python3 tools/reference/gen_h2c_vectors.py test/kat      # hash to curve
-python3 tools/reference/subgroup_ref.py    # subgroup tests, derived and proved
-python3 tools/reference/divstep_ref.py     # inversion model and its iteration count
-python3 tools/reference/karabina_ref.py    # compressed squaring: derive, then decide
-python3 tools/reference/gen_subgroup_vectors.py test/kat  # accept/reject points
-python3 tools/reference/trace_finalexp.py  # exponent of each final-exp chain
-python3 tools/reference/normalized_miller_ref.py  # experimental 8M2 prepared-line kernel
-```
-
-`normalized_miller_ref.py` is a Python-only research prototype, not a change to
-the C pairing. It tests a normalized, subfield-scaled line multiplication that
-uses eight Fp2 multiplications instead of fifteen. Raw Miller values change;
-final-exponentiated values must match the pairing vectors. It also checks
-multi-pairing, normalization costs, and invalid inputs. It makes no claim of
-novelty or constant-time execution.
-
-`trace_finalexp.py` also produces no vectors. It walks the
-two `pairing_final_exp_fast` chains in `src/pairing/miller.c` symbolically,
-tracking the exponent rather than the field element, and asserts that each
-computes what its comment claims: `lambda` for BN, `3*lambda` for BLS12. A
-numeric vector says the answer is right today; this says the chain is the
-right chain, and fails if an edit changes its exponent.
-
-Every suite in `test/` is driven by these vectors, so the library is checked
-against a Python implementation written from the defining equations rather than
-against a second C implementation of the same ideas. That distinction is why the
-pairing reference survived retiring the old layer: the oracle was never the old
-code.
-
-A useful structural fact: the tower collapses to a single polynomial. Since
-`v = w²` and `1+u = v³ = w⁶`, we have `u = w⁶−1` and therefore
-
-```
-Fp12 = Fp[w] / (w¹² − 2w⁶ + 2)
-```
-
-which is irreducible over all three primes. Sage can build exactly this field
-rather than an abstract `GF(p¹²)`, so its pairing is comparable coefficient by
-coefficient.
-
-## Curves
-
-| Curve | p | r | Generators | Serialized G1 / G2 | hash-to-curve |
-|---|---|---|---|---|---|
-| BLS12-381 | 381 bits | 255 bits | from the specification | 48 / 96 bytes | RFC 9380 `SSWU_RO_`, byte-exact |
-| BLS12-461 | 461 bits | 308 bits | generated | 58 / 116 bytes | RFC 9380 `SVDW_RO_`, no registered suite |
-| BN-462 | 462 bits | 462 bits | generated | 59 / 118 bytes | RFC 9380 `SVDW_RO_`, no registered suite |
-
-Sizes are the compressed encodings; uncompressed is twice each. BN-462 needs one
-byte more than its field width because the three flag bits do not fit otherwise.
-
-Only BLS12-381 has a specification to conform to. For it, the generators, the
-point encodings and the hash-to-curve outputs are pinned against the published
-values and match any conforming implementation. The other two curves have no
-standard, so their vectors pin self-consistency rather than interoperability.
-
-**On BLS12 the pairing returns `e³`, not `e`.** That is a property of the
-standard final-exponentiation chain, which RELIC and the original library also
-use, and not a defect: since `gcd(3, r) = 1` it is still bilinear and
-non-degenerate, so any protocol that only compares pairings is unaffected. Raw
-values will not match an implementation that outputs `e`; use
-`pairing_final_exp_plain` when the exact value is needed. On BN the value is
-`e` exactly.
+Build and test instructions, the sanitizer builds, the constant-time checks and
+the Python reference oracle: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licence
 
