@@ -33,14 +33,18 @@ int fp_rand(fp_t r)
     return 0;
 }
 
+void elips_scalar_reduce_wide(limb_t *wide, int nn)
+{
+    elips_mod_wide(wide, nn, ELIPS_ORDER, ELIPS_ORDER_LIMBS);
+}
+
 int elips_random_scalar(limb_t *k)
 {
     limb_t wide[ELIPS_ORDER_LIMBS + RAND_EXTRA_LIMBS];
 
     memset(k, 0, ELIPS_ORDER_LIMBS * sizeof(limb_t));
     if (elips_random_bytes(wide, sizeof wide) != 0) return -1;
-    elips_mod_wide(wide, ELIPS_ORDER_LIMBS + RAND_EXTRA_LIMBS,
-                   ELIPS_ORDER, ELIPS_ORDER_LIMBS);
+    elips_scalar_reduce_wide(wide, ELIPS_ORDER_LIMBS + RAND_EXTRA_LIMBS);
 
     memcpy(k, wide, ELIPS_ORDER_LIMBS * sizeof(limb_t));
     return 0;

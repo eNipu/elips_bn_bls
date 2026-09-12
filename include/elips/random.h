@@ -38,4 +38,15 @@ int elips_random_scalar(limb_t *k);
  * silently maps two encodings to the same point. */
 int elips_scalar_is_reduced(const limb_t *k);
 
+/* Reduce a wide little-endian value modulo the group order, in constant time.
+ * The remainder is left in the low ELIPS_ORDER_LIMBS limbs and the rest is
+ * zeroed.
+ *
+ * Public because two callers need it and only one of them is randomness:
+ * elips_random_scalar turns a wide draw into a uniform scalar, and the BLS
+ * KeyGen of draft-irtf-cfrg-bls-signature has to compute OS2IP(OKM) mod r on a
+ * 48-byte HKDF output. Constant time because in the second case the input is
+ * derived from the seed the secret key comes from. */
+void elips_scalar_reduce_wide(limb_t *wide, int nn);
+
 #endif /* ELIPS_RANDOM_H */

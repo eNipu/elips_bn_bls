@@ -134,6 +134,29 @@ foreach(_cv IN LISTS ELIPS_CURVES)
     SOVERSION ${PROJECT_VERSION_MAJOR})
 endforeach()
 
+# ------------------------------------------------------------- BLS layer
+# A separate target, deliberately.
+#
+# MODERNIZATION_PLAN.md sections 8 and 10.8 keep protocol code out of the core
+# library, on the reasoning that signing, aggregation and a ciphersuite
+# registry are not curve concerns. That reasoning stands. Section 10.8 also
+# says such a layer "can be built on top without touching this library", and
+# this is that: elips_bls links elips_arith and includes only its PUBLIC
+# headers. Deleting this target would leave the core exactly as it is.
+#
+# BLS12-381 only. The other two curves have no registered ciphersuite, so an
+# "IETF BLS signature on BN-462" would interoperate with nothing and would be a
+# claim the layer cannot make. See issue #25.
+add_library(elips_bls STATIC src/bls/bls.c src/bls/hkdf.c)
+target_link_libraries(elips_bls PUBLIC elips_arith_BLS12_381)
+target_include_directories(elips_bls PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/bls)
+target_compile_options(elips_bls PRIVATE -Wall -Wextra)
+if(ELIPS_WERROR)
+  target_compile_options(elips_bls PRIVATE -Werror)
+endif()
+set_target_properties(elips_bls PROPERTIES POSITION_INDEPENDENT_CODE ON)
+add_library(ELiPS::bls ALIAS elips_bls)
+
 # The selected curve, under a stable name. This is what gets installed, so a
 # downstream project writes target_link_libraries(app PRIVATE ELiPS::arith)
 # and never names a curve in its own build files.
@@ -178,6 +201,16 @@ if(ELIPS_BUILD_TESTS)
     add_test(NAME wide.${_cv} COMMAND wide_test_${_cv} 4000)
     set_tests_properties(wide.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
+
+  # The BLS layer without Python. crosscheck_bls_pyecc.py is the stronger
+  # test, and it needs py_ecc installed; a suite that cannot run without a pip
+  # package is a suite that stops being run.
+  add_executable(bls_test test/bls_test.c)
+  target_link_libraries(bls_test PRIVATE elips_bls)
+  target_include_directories(bls_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/bls)
+  elips_test_warnings(bls_test)
+  add_test(NAME bls.vectors COMMAND bls_test)
+  set_tests_properties(bls.vectors PROPERTIES TIMEOUT 900)
 
   # The Phase 0 field and curve vectors, from the independent Python oracle.
   # Vector file and compiled curve must match; the runner enforces it.
@@ -260,7 +293,8 @@ if(ELIPS_BUILD_TESTS)
   # different widths, and three copies of a slow statistical test is not three
   # times the information.
   add_executable(dudect_test test/dudect_test.c)
-  target_link_libraries(dudect_test PRIVATE elips_arith_BLS12_381 GMP::GMP m)
+  target_link_libraries(dudect_test PRIVATE elips_arith_BLS12_381 elips_bls GMP::GMP m)
+  target_compile_definitions(dudect_test PRIVATE ELIPS_DUDECT_HAS_BLS)
   elips_test_warnings(dudect_test)
 
   # BN-462 as well, and the reason is a real exception to the paragraph above.
@@ -296,7 +330,7 @@ if(ELIPS_BUILD_TESTS)
     #                    honest: raise the threshold past a one-multiply leak and
     #                    this test starts failing.
     foreach(_t fp_mul fp_add fp_cselect fp_inv mod_wide ep_mul ep2_mul ep2_mul_glv
-               ep_mul_glv fp12_exp_gt hash_to_g1 hash_to_g2
+               ep_mul_glv fp12_exp_gt hash_to_g1 hash_to_g2 bls_sign
                sensitivity control_vartime)
       add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})
       set_tests_properties(dudect.${_t} PROPERTIES TIMEOUT 900)
@@ -358,6 +392,13 @@ if(ELIPS_BUILD_TESTS)
   # this one. BLS12-381 only, because py_ecc implements nothing else.
   add_executable(dump_pairing tools/verify/dump_pairing.c)
   target_link_libraries(dump_pairing PRIVATE elips_arith_BLS12_381 GMP::GMP)
+
+  # The driver tools/verify/crosscheck_bls_pyecc.py uses to reach the C
+  # implementation. Hex in, hex out, so the comparison stays in Python against
+  # py_ecc rather than against a second C routine of ours.
+  add_executable(bls_cli tools/verify/bls_cli.c)
+  target_link_libraries(bls_cli PRIVATE elips_bls)
+  elips_test_warnings(bls_cli)
   elips_test_warnings(dump_pairing)
 
   # Benchmarks (issue #15).

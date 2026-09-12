@@ -97,6 +97,32 @@ cannot fail proves nothing, and `e^3` is precisely what issue #16 computed.
 design. It prints the generators too: agreeing on an output while disagreeing on
 the input proves nothing.
 
+### `crosscheck_bls_pyecc.py` — signatures checked by someone else
+
+`py_ecc` also implements `draft-irtf-cfrg-bls-signature`, so the same reference
+that checks the pairing checks the signature layer on top of it. Randomized
+inputs, and **both directions**: a signature `elips_bls` produced that `py_ecc`
+accepts shows our signing follows the draft, and one `py_ecc` produced that we
+accept shows our verification does. An implementation can be self-consistently
+wrong and pass either one alone.
+
+It reaches the C through `build/bls_cli`, a hex-in hex-out shell around
+`include/elips/bls.h`, so the comparison stays against an implementation nobody
+here wrote rather than against a second C routine of ours.
+
+The rejection cases are half the file and are not decoration: tampered message,
+wrong key, mangled signature, the identity as a public key, truncated inputs,
+reordered messages in an aggregate, a repeated message without proofs of
+possession, and a bad proof in the shared-message path. Every one of them fails
+if the corresponding check is deleted from `src/bls/bls.c` — that was tested by
+deleting them.
+
+It caught a design error on its first run. The layer signed under the basic
+scheme's `NUL_` tag and aggregated under proof-of-possession rules. Those are
+two different schemes with two different domain separation tags, so the
+aggregate paths would have silently refused signatures the same file produced.
+No amount of self-consistency checking would have found that.
+
 ## What none of this does
 
 It verifies the **mathematics the library is supposed to implement**, not the C

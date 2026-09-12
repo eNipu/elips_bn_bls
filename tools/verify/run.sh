@@ -62,6 +62,23 @@ if [ "$WANT" = all ] || [ "$WANT" = crosscheck ]; then
         fi
         if $PY -c 'import py_ecc' >/dev/null 2>&1; then
             $PY tools/verify/crosscheck_pyecc.py "$BIN" || rc=1
+
+            # The signature layer, against the same reference. Both
+            # directions: a signature we produced that py_ecc accepts proves
+            # our signing follows the draft, and one py_ecc produced that we
+            # accept proves our verification does. An implementation can be
+            # self-consistently wrong and pass either alone.
+            hdr "BLS signatures against py_ecc"
+            CLI=build/bls_cli
+            if [ ! -x "$CLI" ]; then
+                printf '  building %s\n' "$CLI"
+                cmake --build build --target bls_cli -j"$(nproc 2>/dev/null || echo 4)" >/dev/null 2>&1
+            fi
+            if [ -x "$CLI" ]; then
+                $PY tools/verify/crosscheck_bls_pyecc.py "$CLI" || rc=1
+            else
+                miss "could not build $CLI"
+            fi
         else
             miss "py_ecc unavailable and the venv could not be created.
            pip install -r tools/verify/requirements.txt"

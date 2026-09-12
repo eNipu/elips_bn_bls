@@ -60,6 +60,14 @@
  * It is reachable because src/ is on the include path for this target. */
 #include "arith/wide.h"
 
+/* The signature layer, when this binary is the BLS12-381 one. Signing is the
+ * only place in the library where a scalar is a long-term secret, so it is the
+ * one that most needs a timing test. Guarded because dudect_test is also built
+ * against BN-462, and elips_bls is BLS12-381 only by design. */
+#ifdef ELIPS_DUDECT_HAS_BLS
+#include "elips/bls.h"
+#endif
+
 /* ---------------------------------------------------------------- timing --- */
 
 static inline uint64_t cycles(void)
@@ -177,6 +185,7 @@ typedef struct {
     ep2_t   Q;
     uint8_t msg[H2C_MSG_LEN];
     limb_t  wide[2 * FP_LIMBS + 2];
+    uint8_t sk[32];
 } input_t;
 
 static ep_t  g1;
@@ -234,6 +243,29 @@ static void prep_wide(input_t *in, int c)
 }
 
 static limb_t sink_wide[2 * FP_LIMBS + 2];
+
+#ifdef ELIPS_DUDECT_HAS_BLS
+/* The fixed class is a real key from a pinned seed, not zero and not one. A
+ * degenerate fixed class measures the hardware multiplier rather than the
+ * control flow; PROGRESS.md records what that cost to learn here. */
+static uint8_t sink_sig[ELIPS_BLS_SIG_BYTES];
+
+static void prep_bls_sign(input_t *in, int c)
+{
+    uint8_t ikm[32];
+    if (c) {
+        elips_random_bytes(ikm, sizeof ikm);
+    } else {
+        for (int i = 0; i < 32; i++) ikm[i] = (uint8_t)(0x9e * (i + 1) + 0x37);
+    }
+    elips_bls_keygen(in->sk, ikm, sizeof ikm);
+}
+
+static void run_bls_sign(const input_t *in)
+{
+    elips_bls_sign(sink_sig, in->sk, (const uint8_t *)"dudect", 6);
+}
+#endif
 
 static void run_mod_wide(const input_t *in)
 {
@@ -389,6 +421,9 @@ static const target_t TARGETS[] = {
     { "fp_cselect",  prep_fp_pair, run_fp_cselect, 200, 20000, 0 },
     { "fp_inv",      prep_fp_pair, run_fp_inv,       1, 20000, 0 },
     { "mod_wide",    prep_wide,    run_mod_wide,    20, 20000, 0 },
+#ifdef ELIPS_DUDECT_HAS_BLS
+    { "bls_sign",    prep_bls_sign, run_bls_sign,     1,  1000, 0 },
+#endif
     { "ep_mul",      prep_scalar,  run_ep_mul,       1,  3000, 0 },
     { "ep2_mul",     prep_scalar,  run_ep2_mul,      1,  2000, 0 },
     { "ep2_mul_glv", prep_scalar,  run_ep2_glv,      1,  2000, 0 },
