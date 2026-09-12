@@ -179,6 +179,12 @@ jobs:
       - name: Scan
         run: python3 tools/verify/ct_branch_scan.py build
 
+      # Cheap, and it catches a class this job otherwise cannot: an .S file
+      # added to the CMake build and not to the Python one links fine here and
+      # fails at import time in the wheel job. See issue #37.
+      - name: Every assembly source is in every build that links it
+        run: python3 tools/verify/asm_sources_listed.py
+
       # The timing tests too, under clang on Linux. The codegen scan above
       # finds the one defect it knows; dudect is what finds the ones nobody has
       # named yet, and it was only ever running under gcc here.

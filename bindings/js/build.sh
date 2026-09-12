@@ -5,8 +5,8 @@
 #
 # No CMake and no GMP: as of issue #24 the library has no runtime dependencies,
 # which is the only reason a browser build is a build script rather than a
-# project. The .S files are listed and compile to nothing off their target, so
-# the same command works on any host.
+# project. No .S files either: this targets wasm32, where every one of them is
+# guarded out to an empty object and fp.c takes the portable path anyway.
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)

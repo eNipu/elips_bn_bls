@@ -94,6 +94,7 @@ C_SOURCES = [
 # extension; setup.py teaches it, and drops these if that does not take.
 ASM_SOURCES = [
     _rel("src", "arith", "fp_mul_x86_64.S"),
+    _rel("src", "arith", "fp_addsub_x86_64.S"),
     _rel("src", "arith", "fp_mul_aarch64.S"),
 ]
 
