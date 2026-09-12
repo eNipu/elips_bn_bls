@@ -1,27 +1,153 @@
-# ELiPS — Efficient Library for Pairing-based Systems
+# ELiPS
 
-Pairing-based cryptography over BN and BLS12 curves.
+Pairing-based cryptography over BLS12 and BN curves, in C, with no runtime
+dependencies.
 
-> **Status: under active modernization.** See [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md)
-> for the roadmap and [`PROGRESS.md`](PROGRESS.md) for what has landed.
->
-> The API is `include/elips/*.h`: fixed-width Montgomery arithmetic,
-> constant-time scalar multiplication, standard serialization and RFC 9380
-> hash-to-curve. The original runtime-curve `mpz_t` layer under
-> `include/ELiPS_bn_bls/` was retired by
-> [issue #17](https://github.com/eNipu/elips_bn_bls/issues/17), taking with it
-> the wrong-exponent final exponentiation of
-> [issue #16](https://github.com/eNipu/elips_bn_bls/issues/16) and the two
-> global-state defects that depended on it.
+If you are here to **verify a BLS signature**, start below and you will have
+one working in a couple of minutes. If you are here for the **pairing itself**,
+skip to [Using the C library](#using-the-c-library).
+
+**[Try it in your browser](https://enipu.github.io/elips_bn_bls/demo/)** — many
+signatures collapsing into one, computed in the page, no backend.
+
+---
+
+## Signatures in two minutes
+
+BLS signatures on BLS12-381: 32-byte keys, 48-byte public keys, 96-byte
+signatures, and any number of signatures aggregate into one that is still 96
+bytes.
+
+> The `elips` packages are **not on PyPI or npm yet**. Until they are, install
+> from a clone. Everything below is a command you can paste.
+
+### Python
+
+```bash
+git clone https://github.com/eNipu/elips_bn_bls
+pip install ./elips_bn_bls/bindings/python
+```
+
+A C compiler is the only requirement. There is no system library to install.
+
+```python
+import elips
+
+sk  = elips.keygen()
+pk  = elips.sk_to_pk(sk)
+sig = elips.sign(sk, b"hello")
+
+elips.verify(pk, b"hello", sig)          # returns None, or raises
+```
+
+**Verification raises; it does not return a boolean.** A verify that returns a
+value invites `if verify(...): accept()`, which is wrong in the direction that
+matters. Returning `None` makes that branch never fire, so the mistake shows up
+on the first *valid* signature rather than on the first forged one.
+
+```python
+try:
+    elips.verify(pk, msg, sig)
+except elips.ElipsError:
+    reject()
+```
+
+Aggregation, which is the reason to choose BLS at all:
+
+```python
+agg = elips.aggregate([elips.sign(sk, m) for sk, m in zip(sks, msgs)])
+len(agg)                                 # 96, whatever the number of signers
+elips.aggregate_verify(pks, msgs, agg)
+```
+
+Full reference: [`bindings/python/README.md`](bindings/python/README.md).
+
+### JavaScript and the browser
+
+```bash
+cd elips_bn_bls/bindings/js
+. /path/to/emsdk/emsdk_env.sh && ./build.sh
+```
+
+```js
+import { load } from "./elips.mjs";
+const elips = await load();
+
+const sk  = elips.keygen();
+const pk  = elips.skToPk(sk);
+const msg = new TextEncoder().encode("hello");
+const sig = elips.sign(sk, msg);
+
+elips.verify(pk, msg, sig);              // returns undefined, or throws
+```
+
+One 68 KB file with the WebAssembly embedded, so there is no `.wasm` path to
+configure and it works the same from a `<script type="module">` tag, a bundler
+and node.
+
+Full reference: [`bindings/js/README.md`](bindings/js/README.md).
+
+## What this is, and what it is not
+
+**It is** an implementation of `draft-irtf-cfrg-bls-signature` on BLS12-381,
+proof-of-possession scheme, minimal-pubkey-size — the variant Ethereum uses.
+Every operation is checked against
+[py_ecc](https://github.com/ethereum/py_ecc), an independent implementation, on
+every build, in both directions, because an implementation can be
+self-consistently wrong and pass a one-way check. The field arithmetic,
+hash-to-curve and pairing underneath are pinned against RFC 9380's published
+vectors and against a Python oracle written from the defining equations.
+
+The parts that handle a secret key are constant time, and that is tested rather
+than asserted: `dudect` runs on every build with negative controls that must
+leak, so a harness that has stopped detecting anything fails instead of passing
+quietly.
+
+**It is not audited.** Implementing the draft and agreeing with another
+implementation is a different claim from having been reviewed by a
+cryptographer. There are also two known open issues worth reading before
+trusting it with anything: [#30](https://github.com/eNipu/elips_bn_bls/issues/30),
+an unexplained timing signal in the GLV scalar multiplication under clang, and
+the fact that no formal review has happened at all.
+
+## How fast
+
+Measured on an Intel Xeon, same machine. The pairing figure is the one
+recorded in [`bench/baseline.json`](bench/baseline.json); the sign and verify
+figures were taken in one run against each other. `bench/compare.py` alternates
+two builds rather than comparing separate runs, because on this machine the
+absolute numbers wander by about 20% between runs while the ratios between
+operations do not.
+
+| | native | WebAssembly | |
+|---|---|---|---|
+| sign | 1.77 ms | 7.41 ms | 4.2x |
+| verify | 3.43 ms | 18.56 ms | 5.4x |
+| pairing | 1.39 ms | | |
+
+The browser is slower for a structural reason rather than a missing
+optimisation: `wasm32` has no 64×64 → 128 bit multiply, so every field
+multiplication goes through a software helper and a pairing is tens of
+thousands of them. Native x86-64 and AArch64 do it in one instruction. The
+number is published rather than omitted because omitting an unflattering
+measurement is the one thing this repository has consistently refused to do.
+
+---
+
+# Using the C library
+
+The layer the bindings are built on. Two headers matter:
+`include/elips/bls.h` for signatures, and `include/elips/pairing.h` with its
+neighbours for the pairing itself.
 
 ## Requirements
 
 - CMake 3.16 or newer
 - A C11 compiler
 
-That is all. **The library itself has no runtime dependencies**: nothing under
-`src/` includes a third-party header, and the installed library links against
-nothing but libc.
+That is all. **The library has no runtime dependencies**: nothing under `src/`
+includes a third-party header, and the installed library links nothing but
+libc.
 
 To build and run the **test suite** you also need
 [GMP](https://gmplib.org/) (`libgmp-dev` on Debian/Ubuntu, `brew install gmp`
@@ -36,12 +162,39 @@ without it.
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
+ctest --test-dir build --output-on-failure
 ```
 
-### Choosing a curve
+## Signatures, in C
 
-The modern arithmetic is compiled for one curve: the field width has to be a
-compile-time constant for the loops to unroll. Pick it with `ELIPS_CURVE`:
+```c
+#include "elips/bls.h"
+
+uint8_t sk[ELIPS_BLS_SK_BYTES], pk[ELIPS_BLS_PK_BYTES];
+uint8_t sig[ELIPS_BLS_SIG_BYTES];
+
+elips_bls_keygen_random(sk);
+elips_bls_sk_to_pk(pk, sk);
+elips_bls_sign(sig, sk, msg, msg_len);
+
+if (elips_bls_verify(pk, msg, msg_len, sig) == ELIPS_BLS_OK) {
+    /* good */
+}
+```
+
+Nothing returns a boolean; every function returns `ELIPS_BLS_OK`, which is
+zero, or a negative code. `if (elips_bls_verify(...))` is therefore true on
+*failure*, which is the safe way round. Link against `ELiPS::bls`.
+
+`elips_bls` is a separate CMake target that consumes only the public headers of
+the core, so a project that wants the pairing and not the protocol can ignore
+it entirely.
+
+## Choosing a curve
+
+The arithmetic is compiled for one curve: the field width has to be a
+compile-time constant for the loops to unroll and for the assembly to target a
+known width.
 
 ```bash
 cmake -B build -DELIPS_CURVE=BLS12_381    # default, and the only standardised one
@@ -49,102 +202,28 @@ cmake -B build -DELIPS_CURVE=BLS12_461
 cmake -B build -DELIPS_CURVE=BN_462
 ```
 
-That choice decides which library is installed and what
-`find_package(ELiPS)` hands back as `ELiPS::arith`; `ELiPS_CURVE` is set in the
-package config so a consumer can read it back. The test suite always builds all
-three regardless, because the vectors have to cover all three.
-
 **Use BLS12-381 unless you have a reason not to.** It is the curve with a
 specification, so it is the one whose generators, encodings and hash-to-curve
-outputs match other implementations byte for byte.
+outputs match other implementations byte for byte. The signature layer is
+BLS12-381 only, because the other two have no registered ciphersuite and an
+"IETF BLS signature on BN-462" would interoperate with nothing.
 
-## Test
+The test suite always builds all three, because the vectors have to cover all
+three.
 
-```bash
-ctest --test-dir build --output-on-failure
-```
-
-The suite runs known-answer vectors for BN-462, BLS12-461 and BLS12-381
-(field, curve, pairing and RFC 9380 hash-to-curve), property tests including
-subgroup order checks, edge cases and aliasing contracts, timing-leakage tests
-with a negative control, the three examples, and negative controls that confirm
-the vector runners actually detect corrupted input.
-
-`-DELIPS_WERROR=ON` turns warnings into errors. CI sets it, so a warning cannot
-reach the branch; it is off by default so a contributor is not blocked by
-whatever their compiler happens to emit.
-
-## Install
+## Install and consume
 
 ```bash
 cmake --install build --prefix /usr/local
 ```
 
-Then from a downstream project:
-
 ```cmake
 find_package(ELiPS REQUIRED)
-target_link_libraries(your_target PRIVATE ELiPS::arith)   # the modern layer
+target_link_libraries(app PRIVATE ELiPS::arith)   # or ELiPS::bls
 ```
 
-```c
-#include "elips/hash_to_curve.h"
-#include "elips/serialize.h"
-#include "elips/pairing.h"
-
-static const char DST[] = "MY-PROTOCOL-V01-CS01-" ELIPS_H2C_SUITE_G1;
-
-ep_t P;  ep2_t Q;  fp12_t z;
-elips_hash_to_g1(&P, msg, msg_len, (const uint8_t *)DST, sizeof DST - 1);
-ep2_generator(&Q);
-if (!elips_pairing(z, &P, &Q)) { /* a point failed validation */ }
-
-uint8_t enc[EP_SER_COMPRESSED_BYTES];
-ep_write_compressed(enc, &P);
-```
-
-A verification equation should be one call, not several pairings compared
-afterwards. `elips_pairing_multi` shares one Miller loop and one final
-exponentiation across every term, which is 1.45x for the two-term case on
-BLS12-381 and 2.24x at sixteen terms:
-
-```c
-/* e(-sigma, G2) * e(H(m), pk) == 1 */
-ep_t  Ps[2];  ep2_t Qs[2];
-ep_neg(&Ps[0], &sig);   ep2_generator(&Qs[0]);
-ep_copy(&Ps[1], &h);    ep2_copy(&Qs[1], &pk);
-
-fp12_t prod, one;
-fp12_set_one(one);
-int ok = elips_pairing_multi(prod, Ps, Qs, 2) && fp12_eq(prod, one);
-```
-
-When the G2 arguments are reused, which in a verification they are, precompute
-the line functions once and replay them. That removes the G2 point arithmetic
-from the loop entirely:
-
-```c
-ep2_prec_t pc[2];                 /* built once, per fixed Q */
-if (!ep2_precompute(&pc[0], &G2)) { /* Q is not in G2 */ }
-if (!ep2_precompute(&pc[1], &pk)) { /* ... */ }
-
-/* then, for each verification */
-int ok = elips_pairing_multi_prec(prod, Ps, pc, 2) && fp12_eq(prod, one);
-```
-
-`ep2_precompute` checks the subgroup itself, because a table has no point left
-to check afterwards. A table costs about two Miller loops to build and 20 KB
-(BLS12-381) to hold, so it pays from the second use onward.
-
-| | BLS12-381 | BN-462 |
-|---|---|---|
-| Miller loop, precomputed vs direct | 1.58x | 1.48x |
-| one pairing | 1.33x | 1.55x |
-| 2-term product vs 2 separate pairings | 2.02x | 2.52x |
-| 8-term product vs 8 separate pairings | 3.85x | 4.58x |
-
-`ELiPS::elips` is kept as an alias of the same library, so a build file written
-against the old name still configures.
+`ELiPS_CURVE` is set in the package config so a consumer can read back which
+curve was installed. No dependency is imposed on the consumer.
 
 ## Examples
 
@@ -155,14 +234,24 @@ by CTest so they cannot rot:
 ./build/examples/elips_example_pairing   # bilinearity, validation, timing
 ./build/examples/elips_example_hash      # hash-to-curve, encodings, what the
                                          # deserializer refuses and why
-./build/examples/elips_example_bls       # a BLS signature end to end, with
-                                         # aggregation and its rogue-key caveat
+./build/examples/elips_example_bls       # the pairing identity behind BLS,
+                                         # built from the low-level API
 ```
 
-The BLS one is a demonstration of this API, not a signature implementation to
-deploy: it uses its own domain separation tag rather than the IETF ciphersuite,
-and it has no proof of possession, which aggregation needs. The file says so at
-the top and explains what a real one would add.
+The BLS example predates `elips/bls.h` and builds a signature scheme out of the
+primitives by hand. It is useful for seeing what the pairing is doing and is
+explicitly not a scheme to deploy: it uses its own domain separation tag rather
+than the IETF ciphersuite and has no proof of possession. **Use
+`elips/bls.h`**, which has both.
+
+---
+
+# Contributing
+
+**Status: under active modernization.** See
+[`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md) for the roadmap,
+[`PROGRESS.md`](PROGRESS.md) for what has landed and why, and
+[`PRD-developer-api.md`](PRD-developer-api.md) for the bindings and demo.
 
 ## Sanitizer builds
 
@@ -172,7 +261,7 @@ cmake -B build-ubsan -DCMAKE_BUILD_TYPE=Ubsan   # undefined only
 ```
 
 MemorySanitizer is not wired up: it needs every dependency instrumented, and
-GMP is not, so it would report noise rather than findings.
+the GMP the tests link is not, so it would report noise rather than findings.
 
 ## Test oracle
 

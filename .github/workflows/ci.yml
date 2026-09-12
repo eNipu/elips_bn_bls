@@ -150,6 +150,42 @@ jobs:
         working-directory: bindings/python
         run: /tmp/gate/bin/python -m pytest tests -q
 
+  # The README's own quickstart, run as written.
+  #
+  # The gate for issue #29 is behavioural, not editorial: a developer who has
+  # not seen this repository reaches a verified signature by following only the
+  # front page. So the snippet is EXTRACTED from README.md rather than copied
+  # here, and the steps are the ones the page lists. A README that drifts from
+  # what it claims fails this job instead of disappointing someone.
+  readme-quickstart:
+    name: the README quickstart, as written
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+
+      # Deliberately no GMP installed anywhere in this job.
+      - name: Follow the README
+        run: |
+          python -m venv /tmp/v
+          /tmp/v/bin/pip install ./bindings/python
+          python - <<'EOF' > /tmp/snippet.py
+          import re
+          r = open("README.md").read()
+          print(re.findall(r"```python\n(.*?)```", r, re.S)[0])
+          EOF
+          cat /tmp/snippet.py
+          /tmp/v/bin/python /tmp/snippet.py
+          echo "the quickstart works as written"
+
+      - name: The wheel really does not need GMP
+        run: |
+          if ldd /tmp/v/lib/python3*/site-packages/elips/_elips*.so | grep -qi gmp; then
+            echo "::error::the README says no system dependencies, and there is one"
+            exit 1
+          fi
+
   # The WebAssembly build and the JavaScript package.
   #
   # The cross-check here is the SAME script that checks the C library, pointed
