@@ -62,22 +62,79 @@ jobs:
       - name: Build the WebAssembly demo
         run: |
           bindings/js/build.sh
-          mkdir -p doxygen-out/html/demo
-          cp bindings/js/demo/index.html doxygen-out/html/demo/
-          cp bindings/js/elips.mjs       doxygen-out/html/demo/
           mkdir -p doxygen-out/html/demo/dist
+          cp bindings/js/demo/index.html     doxygen-out/html/demo/
+          cp bindings/js/demo/style.css      doxygen-out/html/demo/
+          cp bindings/js/demo/app.js         doxygen-out/html/demo/
+          cp bindings/js/elips.mjs           doxygen-out/html/demo/
           cp bindings/js/dist/elips_wasm.mjs doxygen-out/html/demo/dist/
+
+          # In the repository the demo sits one level below elips.mjs; here it
+          # sits beside it, so the import has to be rewritten. The check below
+          # is what found this: the copy list alone was not enough to make the
+          # published page work.
+          sed -i 's|"\.\./elips\.mjs"|"./elips.mjs"|' doxygen-out/html/demo/app.js
+          grep -q '"\./elips\.mjs"' doxygen-out/html/demo/app.js \
+            || { echo "::error::the elips.mjs import rewrite did not apply"; exit 1; }
 
       # A demo that 404s is worse than none, and the copy above is exactly the
       # kind of step that rots silently when a path changes.
+      #
+      # This used to name the files it expected and grep index.html for the
+      # string 'elips.mjs'. Both rotted the moment the page was split into
+      # index.html + style.css + app.js: the copy list went stale and the grep
+      # failed on a page that was perfectly fine, because app.js imports the
+      # module now and the page no longer names it. That is issue #33, and it
+      # held up every Pages deploy -- documentation included -- for four runs.
+      #
+      # So derive the list instead of naming it. Read every local href/src out
+      # of the page, follow the import graph of the modules, and assert each
+      # target exists and is non-empty. Add a file to the demo and this picks
+      # it up with no edit here; forget to copy one and it fails naming it.
       - name: Refuse to deploy a broken demo
         run: |
-          for f in index.html elips.mjs dist/elips_wasm.mjs; do
-            test -s "doxygen-out/html/demo/$f" \
-              || { echo "::error::demo/$f is missing or empty"; exit 1; }
-          done
-          grep -q 'elips.mjs' doxygen-out/html/demo/index.html \
-            || { echo "::error::the demo page does not reference the module"; exit 1; }
+          python3 - <<'EOF'
+          import re, sys
+          from pathlib import Path
+          root = Path("doxygen-out/html/demo").resolve()
+          page = root / "index.html"
+          if not page.is_file() or page.stat().st_size == 0:
+              sys.exit("::error::demo/index.html is missing or empty")
+
+          seen, todo, missing = set(), [page], []
+          while todo:
+              f = todo.pop()
+              if f in seen:
+                  continue
+              seen.add(f)
+              text = f.read_text(errors="replace")
+              if f.suffix in (".html",):
+                  refs = re.findall(r'(?:href|src)="([^"]+)"', text)
+              else:
+                  refs = re.findall(r'(?:from|import)\s*\(?\s*["\']([^"\']+)["\']', text)
+              for r in refs:
+                  if r.startswith(("http:", "https:", "data:", "#", "//")):
+                      continue
+                  # In a module, only ./ and ../ name files. A bare specifier
+                  # is a package or a builtin and resolves nowhere in this
+                  # tree -- elips.mjs shows "@elips/bls" in a doc comment and
+                  # the emscripten glue imports "node:module" on the node
+                  # path. Neither is a missing file.
+                  if f.suffix != ".html" and not r.startswith(("./", "../")):
+                      continue
+                  t = (f.parent / r).resolve()
+                  if not t.is_file() or t.stat().st_size == 0:
+                      here = f.relative_to(root) if f.is_relative_to(root) else f
+                      missing.append(f"{here} -> {r}")
+                  elif t.suffix in (".html", ".js", ".mjs"):
+                      todo.append(t)
+
+          if missing:
+              for m in missing:
+                  print(f"::error::demo is missing {m}")
+              sys.exit(1)
+          print(f"demo is self-contained: {len(seen)} files reachable from index.html")
+          EOF
 
       - uses: actions/upload-pages-artifact@v3
         with:
