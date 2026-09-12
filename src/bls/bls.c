@@ -216,30 +216,26 @@ static int core_sign(uint8_t sig[ELIPS_BLS_SIG_BYTES],
 
 /* e(-G1, sig) * prod_i e(pk_i, H(m_i)) == 1.
  *
- * Written as one multi-pairing rather than two separate pairings so it costs
- * one final exponentiation instead of n+1. Negating the generator rather than
- * the signature keeps the caller's bytes untouched.
+ * Written as one multi-pairing rather than n+1 separate ones so it costs one
+ * final exponentiation instead of n+1.
+ *
+ * THE CALLER OWNS THE ARRAYS and leaves slot 0 empty; this fills it with the
+ * negated generator. An earlier version took the caller's arrays and copied
+ * them into its own, which was a second full set of points on the stack. At
+ * the aggregate width that is about 55 KB, and WebAssembly's default stack is
+ * 64 KB: the copy turned a working function into "memory access out of
+ * bounds" in the browser while being invisible on a host with an 8 MB stack.
+ * Negating the generator rather than the signature also leaves the caller's
+ * bytes untouched.
  *
  * The final exponentiation returns e^3 on BLS12 (see pairing.h). That does not
  * affect this: the group has prime order r with gcd(3, r) = 1, so a cube is 1
  * exactly when the value is. */
-static int pairing_check(const ep_t *pks, const ep2_t *hs, size_t n,
-                         const ep2_t *sig)
+static int pairing_check(ep_t *P, ep2_t *Q, size_t n)
 {
-    enum { MAXN = 64 };
-    if (n == 0 || n > MAXN - 1) return ELIPS_BLS_ERR_INVALID;
-
-    ep_t  P[MAXN];
-    ep2_t Q[MAXN];
-
     ep_t G1;
     ep_generator(&G1);
     ep_neg(&P[0], &G1);
-    ep2_copy(&Q[0], sig);
-    for (size_t i = 0; i < n; i++) {
-        ep_copy(&P[i + 1], &pks[i]);
-        ep2_copy(&Q[i + 1], &hs[i]);
-    }
 
     fp12_t f;
     if (!elips_pairing_multi(f, P, Q, n + 1)) return ELIPS_BLS_ERR_VERIFY;
@@ -272,11 +268,14 @@ static int core_verify(const uint8_t pk[ELIPS_BLS_PK_BYTES],
     rc = read_sig(&S, sig);
     if (rc != ELIPS_BLS_OK) return rc;
 
-    ep2_t H;
-    if (elips_hash_to_g2(&H, msg, msg_len, (const uint8_t *)dst, dst_len) != 0)
+    ep_t  Pv[2];
+    ep2_t Qv[2];
+    ep_copy(&Pv[1], &P);
+    ep2_copy(&Qv[0], &S);
+    if (elips_hash_to_g2(&Qv[1], msg, msg_len, (const uint8_t *)dst, dst_len) != 0)
         return ELIPS_BLS_ERR_INVALID;
 
-    return pairing_check(&P, &H, 1, &S);
+    return pairing_check(Pv, Qv, 1);
 }
 
 int elips_bls_verify(const uint8_t pk[ELIPS_BLS_PK_BYTES],
@@ -310,7 +309,7 @@ int elips_bls_aggregate_verify(const uint8_t *pks, size_t n,
                                const uint8_t *const *msgs, const size_t *msg_lens,
                                const uint8_t sig[ELIPS_BLS_SIG_BYTES])
 {
-    enum { MAXN = 63 };
+    enum { MAXN = 63 };          /* bounds the stack arrays below */
     if (pks == NULL || msgs == NULL || msg_lens == NULL || sig == NULL)
         return ELIPS_BLS_ERR_INVALID;
     if (n == 0 || n > MAXN) return ELIPS_BLS_ERR_INVALID;
@@ -324,21 +323,22 @@ int elips_bls_aggregate_verify(const uint8_t *pks, size_t n,
                 memcmp(msgs[i], msgs[j], msg_lens[i]) == 0)
                 return ELIPS_BLS_ERR_DUP_MESSAGE;
 
-    ep_t  P[MAXN];
-    ep2_t H[MAXN];
+    /* Slot 0 is the generator's, filled by pairing_check. One set of arrays,
+     * not two: see the note there about WebAssembly's 64 KB stack. */
+    ep_t  P[MAXN + 1];
+    ep2_t Q[MAXN + 1];
+    int rc = read_sig(&Q[0], sig);
+    if (rc != ELIPS_BLS_OK) return rc;
+
     for (size_t i = 0; i < n; i++) {
-        int rc = read_pk(&P[i], pks + i * ELIPS_BLS_PK_BYTES);
+        rc = read_pk(&P[i + 1], pks + i * ELIPS_BLS_PK_BYTES);
         if (rc != ELIPS_BLS_OK) return rc;
-        if (elips_hash_to_g2(&H[i], msgs[i], msg_lens[i],
+        if (elips_hash_to_g2(&Q[i + 1], msgs[i], msg_lens[i],
                              (const uint8_t *)DST_SIG, DST_SIG_LEN) != 0)
             return ELIPS_BLS_ERR_INVALID;
     }
 
-    ep2_t S;
-    int rc = read_sig(&S, sig);
-    if (rc != ELIPS_BLS_OK) return rc;
-
-    return pairing_check(P, H, n, &S);
+    return pairing_check(P, Q, n);
 }
 
 int elips_bls_fast_aggregate_verify(const uint8_t *pks,
@@ -351,27 +351,29 @@ int elips_bls_fast_aggregate_verify(const uint8_t *pks,
 
     /* The proofs are checked FIRST and unconditionally. Without them, summing
      * public keys over a shared message is forgeable; see the header. */
-    ep_t acc, P;
+    /* Slot 1 accumulates the sum of the keys directly, so there is no separate
+     * accumulator to copy out of afterwards. */
+    ep_t  P[2];
+    ep2_t Q[2];
+    ep_t  one_pk;
     for (size_t i = 0; i < n; i++) {
         const uint8_t *pk = pks + i * ELIPS_BLS_PK_BYTES;
-        int rc = elips_bls_pop_verify(pk, pops + i * ELIPS_BLS_POP_BYTES);
-        if (rc != ELIPS_BLS_OK) return rc;
+        int prc = elips_bls_pop_verify(pk, pops + i * ELIPS_BLS_POP_BYTES);
+        if (prc != ELIPS_BLS_OK) return prc;
 
-        rc = read_pk(&P, pk);
-        if (rc != ELIPS_BLS_OK) return rc;
-        if (i == 0) ep_copy(&acc, &P);
-        else        ep_add(&acc, &acc, &P);
+        prc = read_pk(&one_pk, pk);
+        if (prc != ELIPS_BLS_OK) return prc;
+        if (i == 0) ep_copy(&P[1], &one_pk);
+        else        ep_add(&P[1], &P[1], &one_pk);
     }
-    if (ep_is_infinity(&acc)) return ELIPS_BLS_ERR_BAD_KEY;
-
-    ep2_t S, H;
-    int rc = read_sig(&S, sig);
+    if (ep_is_infinity(&P[1])) return ELIPS_BLS_ERR_BAD_KEY;
+    int rc = read_sig(&Q[0], sig);
     if (rc != ELIPS_BLS_OK) return rc;
-    if (elips_hash_to_g2(&H, msg, msg_len,
+    if (elips_hash_to_g2(&Q[1], msg, msg_len,
                          (const uint8_t *)DST_SIG, DST_SIG_LEN) != 0)
         return ELIPS_BLS_ERR_INVALID;
 
-    return pairing_check(&acc, &H, 1, &S);
+    return pairing_check(P, Q, 1);
 }
 
 /* ------------------------------------------------ proof of possession ---- */

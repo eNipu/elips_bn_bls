@@ -1,0 +1,4 @@
+# Built by build.sh from ../../src. Generated, not authored: tracking it would
+# mean a second copy of the library that could disagree with the first.
+dist/
+node_modules/
