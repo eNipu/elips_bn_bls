@@ -4,7 +4,7 @@
   "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
   "cflags": "-O2 (CMAKE_BUILD_TYPE=Release)",
   "gmp": "2:6.3.0+dfsg-2ubuntu6.1",
-  "commit": "f2babc4",
+  "commit": "cc2f21b",
   "date": "2026-09-12",
   "harness": {
     "reps": 15,
