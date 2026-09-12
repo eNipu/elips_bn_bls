@@ -226,6 +226,11 @@ than the IETF ciphersuite and has no proof of possession. **Use
 
 ---
 
+## How it fits together
+
+Module layout, the layering and why the boundaries are where they are:
+[ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Contributing
 
 Build and test instructions, the sanitizer builds, the constant-time checks and
