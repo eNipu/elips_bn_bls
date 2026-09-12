@@ -54,6 +54,46 @@ jobs:
           ELIPS_NO_ASM: "1"
         run: ctest --test-dir build --output-on-failure --timeout 900
 
+  # What the assembly is worth on AArch64, on real AArch64.
+  #
+  # The x86-64 numbers in issue #7 were measured on the machine the work was
+  # done on. The AArch64 ones cannot be: qemu translates instructions, it does
+  # not model a pipeline, so anything timed under emulation is noise. A GitHub
+  # macOS runner is arm64 and is the only arm64 hardware this repository can
+  # reach, which makes this job the evidence for half the exit gate.
+  #
+  # Manual only. It is a measurement, not a gate that should fail a pull
+  # request on a noisy runner, and it adds two minutes to a build that does not
+  # need them. Run it from the Actions tab when the assembly changes.
+  aarch64-benchmark:
+    name: aarch64 assembly vs portable C
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Install GMP
+        run: brew list gmp >/dev/null 2>&1 || brew install gmp
+      - name: Build
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+      - name: Which backend
+        run: ./build/fp_difftest_BLS12_381 200 | tail -1
+      # A/B alternated: one run of each, then the other order, so a frequency
+      # change or a noisy neighbour lands on both. See the header of
+      # bench/bench.c for why a single sample of each would not be evidence.
+      - name: Measure
+        run: |
+          for cv in BLS12_381 BN_462; do
+            printf '#!/bin/sh\nELIPS_NO_ASM=1 exec %s/build/bench_%s "$@"\n' "$PWD" "$cv" > /tmp/portable_$cv
+            printf '#!/bin/sh\nexec %s/build/bench_%s "$@"\n' "$PWD" "$cv" > /tmp/asm_$cv
+            chmod +x /tmp/portable_$cv /tmp/asm_$cv
+            echo "=== $cv: portable C (old) vs aarch64 assembly (new) ==="
+            python3 bench/compare.py --ab --rounds 5 /tmp/portable_$cv /tmp/asm_$cv
+          done
+
   # The reference implementation is the oracle; if it stops self-checking, the
   # vectors it produced mean nothing. Also verifies the committed vectors are
   # exactly what the generator produces, so they cannot drift unnoticed.

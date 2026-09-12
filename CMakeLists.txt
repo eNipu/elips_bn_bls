@@ -96,7 +96,9 @@ set(ELIPS_ARITH_SOURCES
 #
 # Whether this earns its place was measured before it was written. See the
 # backend-selection comment in src/arith/fp.c, and issue #7.
-list(APPEND ELIPS_ARITH_SOURCES src/arith/fp_mul_x86_64.S)
+list(APPEND ELIPS_ARITH_SOURCES
+  src/arith/fp_mul_x86_64.S
+  src/arith/fp_mul_aarch64.S)
 
 foreach(_cv IN LISTS ELIPS_CURVES)
   add_library(elips_arith_${_cv} STATIC ${ELIPS_ARITH_SOURCES})

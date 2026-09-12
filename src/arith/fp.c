@@ -149,19 +149,25 @@ void fp_mul_portable(fp_t r, const fp_t a, const fp_t b)
  * through the carry flag and adox through the overflow flag, so the low and
  * high halves of the partial products accumulate at the same time. A C
  * compiler has no way to say that. Fixing the width and unrolling by hand, the
- * best plain C managed, was 1.19x; the assembly is 1.9x to 2.1x.
+ * best plain C managed, was 1.19x; the assembly is 1.9x to 2.1x. AArch64 has
+ * no second carry chain, so it wins differently: mul and umulh leave the flags
+ * alone, so the multiplies for the next limbs issue inside the carry chain
+ * that consumes the previous ones.
  *
  * The choice is made once, from CPUID, and stored. It depends on the machine
  * and never on an operand, so the branch it costs is outside the constant-time
  * argument. Setting ELIPS_NO_ASM in the environment forces the portable path,
  * which is how CI runs the entire suite both ways.
  */
-#if defined(__x86_64__) && !defined(__ILP32__) && (FP_LIMBS == 6 || FP_LIMBS == 8)
-#  define ELIPS_FP_MUL_ASM 1
+#if FP_LIMBS == 6 || FP_LIMBS == 8
+#  if defined(__x86_64__) && !defined(__ILP32__)
+#    define ELIPS_FP_MUL_ASM   ELIPS_FP_MUL_X86_64
+#  elif defined(__aarch64__) || defined(__arm64__)
+#    define ELIPS_FP_MUL_ASM   ELIPS_FP_MUL_AARCH64
+#  endif
 #endif
 
 #if defined(ELIPS_FP_MUL_ASM)
-#include <cpuid.h>
 #include <stdlib.h>
 
 /* The assembly keeps FP_LIMBS+1 words and never propagates a carry past the
@@ -170,15 +176,42 @@ void fp_mul_portable(fp_t r, const fp_t a, const fp_t b)
 _Static_assert(FP_BITS < 64 * FP_LIMBS - 1,
                "the fp_mul assembly needs a sparse modulus, p < 2^(64n-1)");
 
-void elips_fp_mul_6_x86_64(limb_t *r, const limb_t *a, const limb_t *b,
-                           const limb_t *p, limb_t n0);
-void elips_fp_mul_8_x86_64(limb_t *r, const limb_t *a, const limb_t *b,
-                           const limb_t *p, limb_t n0);
+#define ELIPS_FP_MUL_DECL(fn) \
+    void fn(limb_t *r, const limb_t *a, const limb_t *b, \
+            const limb_t *p, limb_t n0)
 
-#if FP_LIMBS == 6
-#  define ELIPS_FP_MUL_ASM_FN elips_fp_mul_6_x86_64
+#if ELIPS_FP_MUL_ASM == ELIPS_FP_MUL_X86_64
+#include <cpuid.h>
+ELIPS_FP_MUL_DECL(elips_fp_mul_6_x86_64);
+ELIPS_FP_MUL_DECL(elips_fp_mul_8_x86_64);
+#  if FP_LIMBS == 6
+#    define ELIPS_FP_MUL_ASM_FN elips_fp_mul_6_x86_64
+#  else
+#    define ELIPS_FP_MUL_ASM_FN elips_fp_mul_8_x86_64
+#  endif
+
+/* mulx needs BMI2 and adcx/adox need ADX, and neither is baseline, so the
+ * backend has to be chosen from CPUID. */
+static int asm_available(void)
+{
+    unsigned int eax, ebx, ecx, edx;
+    if (__get_cpuid_max(0, NULL) < 7) return 0;
+    if (!__get_cpuid_count(7, 0, &eax, &ebx, &ecx, &edx)) return 0;
+    /* Leaf 7 subleaf 0: EBX bit 8 is BMI2, bit 19 is ADX. Both are needed;
+     * a machine with one and not the other would fault on the other. */
+    return (ebx & (1u << 8)) && (ebx & (1u << 19));
+}
 #else
-#  define ELIPS_FP_MUL_ASM_FN elips_fp_mul_8_x86_64
+ELIPS_FP_MUL_DECL(elips_fp_mul_6_aarch64);
+ELIPS_FP_MUL_DECL(elips_fp_mul_8_aarch64);
+#  if FP_LIMBS == 6
+#    define ELIPS_FP_MUL_ASM_FN elips_fp_mul_6_aarch64
+#  else
+#    define ELIPS_FP_MUL_ASM_FN elips_fp_mul_8_aarch64
+#  endif
+
+/* mul, umulh, adcs and csel are all baseline ARMv8-A. Nothing to detect. */
+static int asm_available(void) { return 1; }
 #endif
 
 static int fp_mul_use_asm;
@@ -186,13 +219,7 @@ static int fp_mul_use_asm;
 __attribute__((constructor)) static void fp_mul_select_backend(void)
 {
     if (getenv("ELIPS_NO_ASM") != NULL) return;
-
-    /* CPUID leaf 7 subleaf 0: EBX bit 8 is BMI2, bit 19 is ADX. Both are
-     * needed; a machine with one and not the other would fault on the other. */
-    unsigned int eax, ebx, ecx, edx;
-    if (__get_cpuid_max(0, NULL) < 7) return;
-    if (!__get_cpuid_count(7, 0, &eax, &ebx, &ecx, &edx)) return;
-    if ((ebx & (1u << 8)) && (ebx & (1u << 19))) fp_mul_use_asm = 1;
+    fp_mul_use_asm = asm_available();
 }
 
 void fp_mul(fp_t r, const fp_t a, const fp_t b)
@@ -204,7 +231,10 @@ void fp_mul(fp_t r, const fp_t a, const fp_t b)
     fp_mul_portable(r, a, b);
 }
 
-int fp_mul_backend(void) { return fp_mul_use_asm ? ELIPS_FP_MUL_X86_64 : ELIPS_FP_MUL_PORTABLE; }
+int fp_mul_backend(void)
+{
+    return fp_mul_use_asm ? ELIPS_FP_MUL_ASM : ELIPS_FP_MUL_PORTABLE;
+}
 
 #else /* no assembly for this target */
 
