@@ -75,17 +75,28 @@ static void normalized8(fp12_t f, const fp2_t B, const fp2_t C)
 
 /* Ordinary 10M2 normalized kernel, for a stronger control than the
  * repository's 15M2 general sparse kernel. Computes the EXACT product. */
-static void normalized10(fp12_t f, const fp2_t B, const fp2_t C)
+/* Takes its two fp6 halves separately rather than an fp12_t.
+ *
+ * Not cosmetic. With an fp12_t parameter, GCC narrows what it believes f[1] to
+ * be as soon as the body indexes f[1][1], then reports every later whole-fp6
+ * access as a -Wstringop-overflow: "accessing 288 bytes in a region of size
+ * 96". The object really is 288 bytes and the code was correct, but the repo
+ * builds with -Werror on gcc, so this file did not compile there at all and
+ * the experiment could not be reproduced off macOS.
+ *
+ * The library hit exactly this in fp12_mul_sparse035 and took the same way
+ * out; see the note in PROGRESS.md. No runtime cost. */
+static void normalized10(fp6_t f0, fp6_t f1, const fp2_t B, const fp2_t C)
 {
     fp6_t t1,s,u;
     fp2_t b1,c2,x,y,z,q0,q1,q2,p;
-    fp2_mul(b1,f[1][1],B); fp2_mul(c2,f[1][2],C);
-    fp2_add(x,f[1][1],f[1][2]); fp2_add(y,B,C);
+    fp2_mul(b1,f1[1],B); fp2_mul(c2,f1[2],C);
+    fp2_add(x,f1[1],f1[2]); fp2_add(y,B,C);
     fp2_mul(x,x,y); fp2_sub(x,x,b1); fp2_sub(x,x,c2);
     fp2_mul_xi(t1[0],x);
-    fp2_mul(x,f[1][0],B); fp2_mul_xi(y,c2); fp2_add(t1[1],x,y);
-    fp2_mul(x,f[1][0],C); fp2_add(t1[2],x,b1);
-    fp6_add(s,f[0],f[1]);
+    fp2_mul(x,f1[0],B); fp2_mul_xi(y,c2); fp2_add(t1[1],x,y);
+    fp2_mul(x,f1[0],C); fp2_add(t1[2],x,b1);
+    fp6_add(s,f0,f1);
     fp2_mul(b1,s[1],B); fp2_mul(c2,s[2],C);
     fp2_add(x,s[1],s[2]); fp2_add(y,B,C);
     fp2_mul(x,x,y); fp2_sub(x,x,b1); fp2_sub(x,x,c2);
@@ -96,8 +107,8 @@ static void normalized10(fp12_t f, const fp2_t B, const fp2_t C)
     fp2_add(x,s[0],s[2]); fp2_add(y,p,C); fp2_mul(x,x,y);
     fp2_sub(x,x,s[0]); fp2_sub(x,x,c2); fp2_add(q2,x,b1);
     fp2_copy(s[0],q0); fp2_copy(s[1],q1); fp2_copy(s[2],q2);
-    fp6_sub(s,s,f[0]); fp6_sub(s,s,t1);
-    fp6_mul_v(u,t1); fp6_add(f[0],f[0],u); fp6_copy(f[1],s);
+    fp6_sub(s,s,f0); fp6_sub(s,s,t1);
+    fp6_mul_v(u,t1); fp6_add(f0,f0,u); fp6_copy(f1,s);
 }
 
 static void normalize(norm_table *nt, const ep2_prec_t *pc)
@@ -123,7 +134,7 @@ static void norm_apply(fp12_t f, const norm_line *l, const fp_t yi,
 {
     fp2_t B,C;
     fp2_mul_fp(B,l->B,yi); fp2_mul_fp(C,l->C,xy);
-    if (mode==8) normalized8(f,B,C); else normalized10(f,B,C);
+    if (mode==8) normalized8(f,B,C); else normalized10(f[0],f[1],B,C);
 }
 static void norm_miller(fp12_t f, const norm_table *pc,
                         const fp_t *px, const fp_t *py, int n, int mode)
@@ -221,7 +232,7 @@ int main(int argc,char **argv)
         if (i%7==0) fp2_set_zero(C);
         fp12_set_one(L); fp2_copy(L[1][1],B); fp2_copy(L[1][2],C);
         fp12_mul(t,f,L);
-        fp12_copy(a,f); normalized10(a,B,C); CHECK(fp12_eq(a,t));
+        fp12_copy(a,f); normalized10(a[0],a[1],B,C); CHECK(fp12_eq(a,t));
         fp12_copy(a,f); normalized8(a,B,C);
         fp12_add(t,t,t); CHECK(fp12_eq(a,t));
     }
