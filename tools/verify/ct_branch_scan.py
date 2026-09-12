@@ -64,6 +64,35 @@ SETCC = re.compile(r"^set([a-z]+)\s+%([a-z0-9]+)$")
 TESTB = re.compile(r"^test\s+\$0x1,%([a-z0-9]+)$")
 COND_JUMP = re.compile(r"^j(e|ne|b|ae|be|a|s|ns)\b")
 
+# THE SECOND SHAPE, and the reason there is a second one.
+#
+#     sub  %rbx,%r10          subtract, on 64-bit registers
+#     js   ...                branch on the sign of the result
+#
+# No setcc in sight, so the pattern above walks straight past it. This is what
+# clang emitted for redc_lin's conditional subtraction (issue #32): the mask
+# was `0 - ((tmp[hi] >> 63) == 0)` and clang read the select as "take tmp or
+# take acc" and branched on the borrow. Four of them, one per unrolled round,
+# inside fp_inv. dudect had been reading 3 to 24 on fp_inv for weeks and it
+# was very nearly written off as hardware operand latency.
+#
+# TWO RESTRICTIONS, both of which earn their keep. Without them this shape
+# fires on six sites that are all fine:
+#
+#   64-bit registers only. Secrets here are limb_t, which is 64-bit. Lengths,
+#   indices and trip counts are int, and clang does that arithmetic in %eXX --
+#   which is exactly what elips_mod_wide's `sub %eax,%esi ; js` is, a check on
+#   two public limb counts.
+#
+#   no immediates. Comparing against a constant is comparing against a public
+#   value. fp12_exp_param's `cmp $0xe,%ebp ; js` walks a fixed, published
+#   addition chain.
+#
+# Same rule as above: match narrowly, or it becomes a check somebody turns off.
+R64 = r"%r(?:[abcd]x|si|di|bp|sp|8|9|1[0-5])"
+SUBCMP = re.compile(rf"^(sub|sbb|cmp)\s+{R64},{R64}$")
+SIGN_JUMP = re.compile(r"^j(s|ns)\b")
+
 
 def scan(obj):
     out = subprocess.run(["objdump", "-d", obj], capture_output=True, text=True)
@@ -89,6 +118,13 @@ def scan(obj):
             ma, mb = SETCC.match(a), TESTB.match(b)
             if ma and mb and ma.group(2) == mb.group(1) and COND_JUMP.match(c):
                 hits.append((fn, f"{a} ; {b} ; {c}"))
+        # The second shape spans two instructions, not three, and clang puts
+        # unrelated work between them, so look back over the whole window.
+        if window and SIGN_JUMP.match(window[-1]):
+            for prev in reversed(window[:-1]):
+                if SUBCMP.match(prev):
+                    hits.append((fn, f"{prev} ; ... ; {window[-1]}"))
+                    break
     return hits
 
 

@@ -12,6 +12,7 @@
  * shape Phase 6 replaces with hand-written assembly.
  */
 #include "elips/fp.h"
+#include "ct.h"
 #include <stdint.h>
 
 typedef unsigned __int128 dlimb_t;
@@ -508,7 +509,16 @@ static void redc_lin(fp_t out, int64_t u, const fp_t d, int64_t v, const fp_t e)
             borrow = b1 | (s0 < borrow);
         }
         tmp[FP_LIMBS] = acc[FP_LIMBS] - borrow;
-        limb_t keep = (limb_t)0 - (limb_t)((tmp[FP_LIMBS] >> 63) == 0);
+        /* ct_mask, and this one is issue #32. Without it clang proves keep is
+         * 0 or ~0, reads the select below as "take tmp or take acc", and emits
+         * `sub` then `js` -- a branch on the borrow out of a subtraction of the
+         * secret. Four of them, one per unrolled k. gcc emits cmov and does
+         * not, which is why this only ever showed under clang.
+         *
+         * Same defect as #30, different instructions, and that is exactly why
+         * the scan built for #30 did not see it. tools/verify/ct_branch_scan.py
+         * now looks for this shape too. */
+        limb_t keep = ct_mask((limb_t)0 - (limb_t)((tmp[FP_LIMBS] >> 63) == 0));
         for (int i = 0; i <= FP_LIMBS; i++)
             acc[i] = (tmp[i] & keep) | (acc[i] & ~keep);
     }
