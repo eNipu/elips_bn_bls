@@ -9,18 +9,17 @@
 #define ELIPS_FP_PARAMS_H
 
 #include <stdint.h>
-#include <gmp.h>
 
-/* Alias GMP's limb type rather than uint64_t. They are both 64 bits wide on the
- * platforms we target, but they are distinct C types (unsigned long vs unsigned
- * long long on LP64), and passing one where the other is expected is a
- * constraint violation that happens to work. The mpn_* calls in fp.c need the
- * real thing. */
-typedef mp_limb_t limb_t;
+/* This was an alias for GMP's mp_limb_t while the library called mpn_*
+ * directly and needed the exact type. It no longer does: GMP is a test
+ * dependency now, not a library one, and nothing under src/ includes gmp.h.
+ * uint64_t is the honest spelling and it is what lets this header be included
+ * by a build that has no GMP at all, which is what a WebAssembly build, a
+ * Python wheel and an npm package each need. */
+typedef uint64_t limb_t;
 
-#if GMP_LIMB_BITS != 64
-#  error "These parameters are generated for 64-bit GMP limbs."
-#endif
+/* Every constant below is emitted as 64-bit limbs. */
+_Static_assert(sizeof(limb_t) == 8, "these parameters are generated for 64-bit limbs");
 
 #if defined(ELIPS_CURVE_BLS12_381)
   #define ELIPS_CURVE_NAME   "BLS12-381"

@@ -12,7 +12,6 @@
  * shape Phase 6 replaces with hand-written assembly.
  */
 #include "elips/fp.h"
-#include <gmp.h>
 #include <stdint.h>
 
 typedef unsigned __int128 dlimb_t;
@@ -370,7 +369,7 @@ int fp_eq(const fp_t a, const fp_t b)
  *
  * The whole algorithm was modelled at limb level in Python and checked against
  * exact inverses before any of this was written. test/edge_test.c checks it
- * against fp_inv_sec, the implementation it replaced, which is kept. */
+ * against GMP in test/edge_test.c, where GMP is still a dependency. */
 
 #define INV_K       62
 #define INV_ITERS   (3 * FP_BITS)
@@ -516,28 +515,6 @@ static void redc_lin(fp_t out, int64_t u, const fp_t d, int64_t v, const fp_t e)
     for (int i = 0; i < FP_LIMBS; i++) out[i] = acc[i];
 }
 
-/* The previous implementation, kept as the reference the new one is checked
- * against, and as the fallback if this ever has to be backed out. */
-void fp_inv_sec(fp_t r, const fp_t a)
-{
-    mp_limb_t scratch[64];                            /* itch is 4n; 64 covers n<=16 */
-    fp_t t, out, zero;
-
-    fp_copy(t, a);                                    /* mpn_sec_invert clobbers its input */
-    (void)mpn_sec_invert(out, t, FP_MODULUS, FP_LIMBS,
-                         2 * FP_LIMBS * GMP_NUMB_BITS, scratch);
-    fp_mul(out, out, FP_R2);
-    fp_mul(out, out, FP_R2);
-
-    /* Zero has no inverse, and fp_inv(0) is defined to be 0. The obvious way to
-     * write that is an early return, which is a branch on the operand: the one
-     * thing this routine is not allowed to do. mpn_sec_invert runs on zero
-     * without complaint -- it just reports failure and leaves a meaningless
-     * result -- so run it unconditionally and select. */
-    fp_set_zero(zero);
-    fp_cselect(r, zero, out, (limb_t)0 - (limb_t)fp_is_zero(a));
-}
-
 void fp_inv(fp_t r, const fp_t a)
 {
     limb_t F[INV_N], G[INV_N];
@@ -577,26 +554,105 @@ void fp_inv(fp_t r, const fp_t a)
     fp_mul(out, d, FP_INV_FIX);
 
     /* Zero has no inverse and fp_inv(0) is defined to be 0, selected rather
-     * than branched for the same reason as in fp_inv_sec. */
+     * than branched for the same reason fp_mul has no early return. */
     fp_set_zero(zero);
     fp_cselect(r, zero, out, (limb_t)0 - (limb_t)fp_is_zero(a));
 }
 
 /* Variable-time inversion, for values that are already public: a point being
- * deserialised, a verification-only path, or a benchmark. Roughly 19x faster
- * than fp_inv. Never call this on a secret. */
+ * deserialised, a verification-only path, or a benchmark. Never call this on a
+ * secret.
+ *
+ * Binary extended Euclid, after Knuth 4.5.2 exercise 39. It branches on the
+ * operand at every step and that is the POINT: test/dudect_test.c uses this as
+ * its negative control, the routine that proves the timing harness can detect
+ * a leak at all. A "faster, constant-time" rewrite here would silently turn
+ * that control into one that always passes, which is worse than having none.
+ *
+ * It replaced a call to GMP's mpz_invert when GMP became a test-only
+ * dependency. test/edge_test.c checks it against GMP, where GMP still lives.
+ */
+
+/* x <- x/2 mod p, for x < p. p is odd, so an odd x is made even by adding p
+ * first; that sum can exceed FP_LIMBS limbs, hence the carry. */
+static void half_mod_p(fp_t x)
+{
+    limb_t carry = 0;
+    if (x[0] & 1) {
+        for (int i = 0; i < NLIMB; i++) {
+            limb_t s  = x[i] + FP_MODULUS[i];
+            limb_t c1 = (s < x[i]);
+            limb_t s2 = s + carry;
+            limb_t c2 = (s2 < s);
+            x[i] = s2;
+            carry = c1 | c2;
+        }
+    }
+    for (int i = 0; i < NLIMB - 1; i++)
+        x[i] = (x[i] >> 1) | (x[i + 1] << 63);
+    x[NLIMB - 1] = (x[NLIMB - 1] >> 1) | (carry << 63);
+}
+
+static int is_one(const limb_t *x)
+{
+    if (x[0] != 1) return 0;
+    for (int i = 1; i < NLIMB; i++) if (x[i]) return 0;
+    return 1;
+}
+
+/* a >= b, as plain integers. */
+static int geq(const limb_t *a, const limb_t *b)
+{
+    for (int i = NLIMB - 1; i >= 0; i--) {
+        if (a[i] != b[i]) return a[i] > b[i];
+    }
+    return 1;
+}
+
+/* a <- a - b, as plain integers, where a >= b. */
+static void sub_plain(limb_t *a, const limb_t *b)
+{
+    limb_t borrow = 0;
+    for (int i = 0; i < NLIMB; i++) {
+        limb_t ai = a[i], bi = b[i];
+        limb_t d  = ai - bi;
+        limb_t b1 = (ai < bi);
+        limb_t d2 = d - borrow;
+        limb_t b2 = (d < borrow);
+        a[i] = d2;
+        borrow = b1 | b2;
+    }
+}
+
 void fp_inv_vartime(fp_t r, const fp_t a)
 {
     if (fp_is_zero(a)) { fp_set_zero(r); return; }
 
-    mpz_t A, P, R;
-    mpz_inits(A, P, R, NULL);
-    mpz_import(A, FP_LIMBS, -1, sizeof(limb_t), 0, 0, a);
-    mpz_import(P, FP_LIMBS, -1, sizeof(limb_t), 0, 0, FP_MODULUS);
-    mpz_invert(R, A, P);
-    fp_set_zero(r);
-    mpz_export(r, NULL, -1, sizeof(limb_t), 0, 0, R);
-    mpz_clears(A, P, R, NULL);
+    fp_t u, v, x1, x2;
+    fp_copy(u, a);
+    memcpy(v, FP_MODULUS, sizeof(fp_t));
+    fp_set_zero(x1); x1[0] = 1;
+    fp_set_zero(x2);
+
+    while (!is_one(u) && !is_one(v)) {
+        while ((u[0] & 1) == 0) {
+            for (int i = 0; i < NLIMB - 1; i++) u[i] = (u[i] >> 1) | (u[i + 1] << 63);
+            u[NLIMB - 1] >>= 1;
+            half_mod_p(x1);
+        }
+        while ((v[0] & 1) == 0) {
+            for (int i = 0; i < NLIMB - 1; i++) v[i] = (v[i] >> 1) | (v[i + 1] << 63);
+            v[NLIMB - 1] >>= 1;
+            half_mod_p(x2);
+        }
+        if (geq(u, v)) { sub_plain(u, v); fp_sub(x1, x1, x2); }
+        else           { sub_plain(v, u); fp_sub(x2, x2, x1); }
+    }
+
+    /* The inverse here is of a read as a plain integer, so it is
+     * (A*R)^-1 = A^-1 * R^-1. The Montgomery form wanted is A^-1 * R, so two
+     * multiplications by R^2 supply the missing R^2. */
+    fp_copy(r, is_one(u) ? x1 : x2);
     fp_mul(r, r, FP_R2);
     fp_mul(r, r, FP_R2);
 }

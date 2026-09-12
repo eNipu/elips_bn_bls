@@ -22,8 +22,36 @@
 #include "elips/sha256.h"
 #include "elips/random.h"
 
+/* GMP is a TEST dependency, not a library one: fp_inv and fp_inv_vartime
+ * are checked against it below, which is the whole reason it is still here.
+ * Nothing under src/ includes this header. */
+#include <gmp.h>
+
 static int fails;
 static int checks;
+
+/* The inverse of a Montgomery-form value, computed by GMP.
+ *
+ * This used to be fp_inv_sec, an mpn_sec_invert wrapper the library shipped
+ * purely so this test could check fp_inv against something. Once GMP became a
+ * test-only dependency, keeping that wrapper inside the library was no longer
+ * possible and no longer useful: checking fp_inv against GMP directly is a
+ * stronger statement than checking it against another routine of ours. */
+static void fp_inv_gmp(fp_t r, const fp_t a)
+{
+    if (fp_is_zero(a)) { fp_set_zero(r); return; }
+    mpz_t A, P, R;
+    mpz_inits(A, P, R, NULL);
+    mpz_import(A, FP_LIMBS, -1, sizeof(limb_t), 0, 0, a);
+    mpz_import(P, FP_LIMBS, -1, sizeof(limb_t), 0, 0, FP_MODULUS);
+    mpz_invert(R, A, P);
+    fp_set_zero(r);
+    mpz_export(r, NULL, -1, sizeof(limb_t), 0, 0, R);
+    mpz_clears(A, P, R, NULL);
+    /* (A*R)^-1 = A^-1 * R^-1; the Montgomery form wanted is A^-1 * R. */
+    fp_mul(r, r, FP_R2);
+    fp_mul(r, r, FP_R2);
+}
 
 static void ok(int c, const char *what)
 {
@@ -191,10 +219,9 @@ static void test_aliasing(void)
     }
 
     {
-        /* Constant-time inversion: the batched-divstep fp_inv against the
-         * mpn_sec_invert fp_inv_sec it replaced, which is kept for exactly
-         * this. Both must agree on every value, and both must satisfy the
-         * defining property. Edge cases first, because that is where a
+        /* Inversion: the batched-divstep fp_inv and the variable-time
+         * fp_inv_vartime, both against GMP, and both against the defining
+         * property a * a^-1 == 1. Edge cases first, because that is where a
          * divstep bound or a sign select goes wrong. */
         fp_t a, x, y, one, chk, zero;
         fp_set_one(one);
@@ -206,8 +233,10 @@ static void test_aliasing(void)
             memset(l, 0, sizeof l);
             l[0] = small[k];
             fp_from_limbs(a, l);
-            fp_inv(x, a); fp_inv_sec(y, a);
-            ok(fp_eq(x, y), "fp_inv == fp_inv_sec on a small value");
+            fp_inv(x, a); fp_inv_gmp(y, a);
+            ok(fp_eq(x, y), "fp_inv == GMP on a small value");
+            fp_inv_vartime(y, a);
+            ok(fp_eq(x, y), "fp_inv_vartime == fp_inv on a small value");
             fp_mul(chk, a, x);
             ok(fp_eq(chk, one), "a * fp_inv(a) == 1 on a small value");
         }
@@ -218,29 +247,34 @@ static void test_aliasing(void)
             for (int i = 0; i < FP_LIMBS; i++) l[i] = FP_MODULUS[i];
             l[0] -= (limb_t)k;
             fp_from_limbs(a, l);
-            fp_inv(x, a); fp_inv_sec(y, a);
-            ok(fp_eq(x, y), "fp_inv == fp_inv_sec near the modulus");
+            fp_inv(x, a); fp_inv_gmp(y, a);
+            ok(fp_eq(x, y), "fp_inv == GMP near the modulus");
+            fp_inv_vartime(y, a);
+            ok(fp_eq(x, y), "fp_inv_vartime == fp_inv near the modulus");
             fp_mul(chk, a, x);
             ok(fp_eq(chk, one), "a * fp_inv(a) == 1 near the modulus");
         }
 
-        int disagree = 0, notone = 0;
+        int disagree = 0, notone = 0, vtbad = 0;
         for (int i = 0; i < 400; i++) {
             fp_rand(a);
-            fp_inv(x, a); fp_inv_sec(y, a);
+            fp_inv(x, a); fp_inv_gmp(y, a);
             if (!fp_eq(x, y)) disagree++;
+            fp_inv_vartime(y, a);
+            if (!fp_eq(x, y)) vtbad++;
             fp_mul(chk, a, x);
             if (!fp_eq(chk, one)) notone++;
         }
-        ok(disagree == 0, "fp_inv == fp_inv_sec on 400 random values");
+        ok(disagree == 0, "fp_inv == GMP on 400 random values");
+        ok(vtbad == 0,    "fp_inv_vartime == fp_inv on 400 random values");
         ok(notone == 0,   "a * fp_inv(a) == 1 on 400 random values");
 
         /* Zero has no inverse and the contract says the answer is zero, with
          * no branch taken to get there. */
         fp_inv(x, zero);
         ok(fp_is_zero(x), "fp_inv(0) == 0");
-        fp_inv_sec(y, zero);
-        ok(fp_is_zero(y), "fp_inv_sec(0) == 0");
+        fp_inv_vartime(y, zero);
+        ok(fp_is_zero(y), "fp_inv_vartime(0) == 0");
 
         /* Output aliasing input, which fp2_inv does. */
         fp_rand(a); fp_copy(x, a); fp_inv(y, a); fp_inv(x, x);

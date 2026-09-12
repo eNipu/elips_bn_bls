@@ -11,7 +11,7 @@
 #include "elips/pairing.h"
 #include "elips/sha256.h"
 
-#include <gmp.h>
+#include "arith/wide.h"
 #include <string.h>
 
 /* ------------------------------------------------ RFC 9380 5.3.1, expand_xmd */
@@ -94,15 +94,15 @@ int elips_expand_message_xmd(uint8_t *out, size_t len,
 
 /* An ELIPS_H2C_L-byte big-endian value reduced modulo p.
  *
- * mpn_sec_div_r rather than a plain division: the message can be a secret, and
- * the whole point of hashing it to a curve is usually to hide it. The operand
- * sizes are compile-time constants, so only they affect the running time. */
+ * A constant-time reduction rather than a plain division: the message can be a
+ * secret, and the whole point of hashing it to a curve is usually to hide it.
+ * elips_mod_wide's running time is set by the operand sizes, which are
+ * compile-time constants here, and never by the value. */
 #define WIDE_LIMBS ((ELIPS_H2C_L + 7) / 8)
 
 static void reduce_to_fp(fp_t r, const uint8_t *be)
 {
     limb_t wide[WIDE_LIMBS];
-    mp_limb_t scratch[512];
 
     memset(wide, 0, sizeof wide);
     for (int i = 0; i < ELIPS_H2C_L; i++) {
@@ -110,12 +110,7 @@ static void reduce_to_fp(fp_t r, const uint8_t *be)
         wide[weight / 8] |= (limb_t)be[i] << (8 * (weight % 8));
     }
 
-    mp_size_t itch = mpn_sec_div_r_itch(WIDE_LIMBS, FP_LIMBS);
-    if (itch > (mp_size_t)(sizeof scratch / sizeof scratch[0])) {
-        fp_set_zero(r);                             /* unreachable at these sizes */
-        return;
-    }
-    mpn_sec_div_r(wide, WIDE_LIMBS, FP_MODULUS, FP_LIMBS, scratch);
+    elips_mod_wide(wide, WIDE_LIMBS, FP_MODULUS, FP_LIMBS);
     fp_from_limbs(r, wide);
 }
 

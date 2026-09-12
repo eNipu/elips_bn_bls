@@ -56,6 +56,10 @@
 #include "elips/random.h"
 #include "elips/hash_to_curve.h"
 
+/* Internal, not public API: the reduction that replaced GMP's mpn_sec_div_r.
+ * It is reachable because src/ is on the include path for this target. */
+#include "arith/wide.h"
+
 /* ---------------------------------------------------------------- timing --- */
 
 static inline uint64_t cycles(void)
@@ -172,6 +176,7 @@ typedef struct {
     ep_t    P;
     ep2_t   Q;
     uint8_t msg[H2C_MSG_LEN];
+    limb_t  wide[2 * FP_LIMBS + 2];
 } input_t;
 
 static ep_t  g1;
@@ -199,6 +204,42 @@ static void run_fp_inv(const input_t *in)     { fp_inv(sink_fp, in->a); }
 static void run_fp_inv_vt(const input_t *in)  { fp_inv_vartime(sink_fp, in->a); }
 static void run_fp_cselect(const input_t *in)
 { fp_cselect(sink_fp, in->a, in->b, (limb_t)0 - (in->a[0] & 1)); }
+
+/* elips_mod_wide, at the width hash_to_field calls it with.
+ *
+ * This is the routine that replaced GMP's mpn_sec_div_r, and it is the one
+ * place in the library where a secret is reduced modulo a public modulus:
+ * hash_to_curve runs it on a value derived from the message, which is usually
+ * the thing the caller is hiding. If its running time depended on that value,
+ * every hash-to-curve in the library would leak.
+ *
+ * The fixed class is a pinned pseudorandom value, not zero and not one. A
+ * degenerate fixed class measures the hardware multiplier rather than the
+ * control flow; PROGRESS.md records what that cost to learn. */
+#define MODWIDE_NN ((int)((ELIPS_H2C_L + 7) / 8))
+
+static void prep_wide(input_t *in, int c)
+{
+    if (c) {
+        elips_random_bytes(in->wide, (size_t)MODWIDE_NN * sizeof(limb_t));
+    } else {
+        uint64_t z = 0;
+        for (int i = 0; i < MODWIDE_NN; i++) {
+            uint64_t x = (z += 0x9e3779b97f4a7c15ULL);
+            x = (x ^ (x >> 30)) * 0xbf58476d1ce4e5b9ULL;
+            x = (x ^ (x >> 27)) * 0x94d049bb133111ebULL;
+            in->wide[i] = (limb_t)(x ^ (x >> 31));
+        }
+    }
+}
+
+static limb_t sink_wide[2 * FP_LIMBS + 2];
+
+static void run_mod_wide(const input_t *in)
+{
+    memcpy(sink_wide, in->wide, (size_t)MODWIDE_NN * sizeof(limb_t));
+    elips_mod_wide(sink_wide, MODWIDE_NN, FP_MODULUS, (int)FP_LIMBS);
+}
 
 /* The fixed class must be a REPRESENTATIVE secret, not a degenerate one.
  *
@@ -347,6 +388,7 @@ static const target_t TARGETS[] = {
     { "fp_add",      prep_fp_pair, run_fp_add,     200, 20000, 0 },
     { "fp_cselect",  prep_fp_pair, run_fp_cselect, 200, 20000, 0 },
     { "fp_inv",      prep_fp_pair, run_fp_inv,       1, 20000, 0 },
+    { "mod_wide",    prep_wide,    run_mod_wide,    20, 20000, 0 },
     { "ep_mul",      prep_scalar,  run_ep_mul,       1,  3000, 0 },
     { "ep2_mul",     prep_scalar,  run_ep2_mul,      1,  2000, 0 },
     { "ep2_mul_glv", prep_scalar,  run_ep2_glv,      1,  2000, 0 },

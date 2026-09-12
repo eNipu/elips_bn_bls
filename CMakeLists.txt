@@ -69,7 +69,23 @@ foreach(_t ASAN UBSAN MSAN)
 endforeach()
 mark_as_advanced(CMAKE_C_FLAGS_ASAN CMAKE_C_FLAGS_UBSAN CMAKE_C_FLAGS_MSAN)
 
-find_package(GMP REQUIRED)
+# GMP is a TEST dependency, not a library one.
+#
+# The shipped library has no runtime dependencies at all: nothing under src/
+# includes gmp.h. GMP stays because the test suite uses it as an INDEPENDENT
+# ORACLE -- fp_difftest compares the whole Montgomery layer against mpz,
+# wide_test compares the wide reduction against mpn_sec_div_r, and edge_test
+# checks both inversions against mpz_invert. Agreement with a separate
+# implementation is evidence; agreement with ourselves is not.
+#
+# That is also why it is only REQUIRED when the tests are being built. A
+# consumer of the installed library needs no GMP, which is what makes a
+# WebAssembly build, a Python wheel and an npm package possible.
+if(ELIPS_BUILD_TESTS)
+  find_package(GMP REQUIRED)
+else()
+  find_package(GMP QUIET)
+endif()
 
 # ------------------------------------------------------------------- library
 # One library, built once per curve (issue #17 retired the second one).
@@ -82,6 +98,7 @@ set(ELIPS_ARITH_SOURCES
   src/arith/fpx.c
   src/arith/ec.c
   src/arith/serialize.c
+  src/arith/wide.c
   src/pairing/miller.c
   src/hash/sha256.c
   src/hash/hash_to_curve.c
@@ -107,7 +124,6 @@ foreach(_cv IN LISTS ELIPS_CURVES)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include>)
   target_compile_definitions(elips_arith_${_cv} PUBLIC ELIPS_CURVE_${_cv})
-  target_link_libraries(elips_arith_${_cv} PUBLIC GMP::GMP)
   target_compile_options(elips_arith_${_cv} PRIVATE -Wall -Wextra)
   if(ELIPS_WERROR)
     target_compile_options(elips_arith_${_cv} PRIVATE -Werror)
@@ -150,6 +166,17 @@ if(ELIPS_BUILD_TESTS)
     elips_test_warnings(fp_difftest_${_cv})
     add_test(NAME fp.diff.${_cv} COMMAND fp_difftest_${_cv} 20000)
     set_tests_properties(fp.diff.${_cv} PROPERTIES TIMEOUT 900)
+  endforeach()
+
+  # The wide reduction that replaced GMP's mpn_sec_div_r, against GMP. This is
+  # the test that makes GMP's remaining presence worth its place: a
+  # constant-time reduction checked only against itself is not checked.
+  foreach(_cv IN LISTS ELIPS_CURVES)
+    add_executable(wide_test_${_cv} test/wide_test.c)
+    target_link_libraries(wide_test_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    elips_test_warnings(wide_test_${_cv})
+    add_test(NAME wide.${_cv} COMMAND wide_test_${_cv} 4000)
+    set_tests_properties(wide.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
 
   # The Phase 0 field and curve vectors, from the independent Python oracle.
@@ -268,7 +295,7 @@ if(ELIPS_BUILD_TESTS)
     #                    small one. It is also what keeps the decision threshold
     #                    honest: raise the threshold past a one-multiply leak and
     #                    this test starts failing.
-    foreach(_t fp_mul fp_add fp_cselect fp_inv ep_mul ep2_mul ep2_mul_glv
+    foreach(_t fp_mul fp_add fp_cselect fp_inv mod_wide ep_mul ep2_mul ep2_mul_glv
                ep_mul_glv fp12_exp_gt hash_to_g1 hash_to_g2
                sensitivity control_vartime)
       add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})
@@ -407,9 +434,7 @@ write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/ELiPSConfigVersion.cmake"
   VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion)
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/ELiPSConfig.cmake"
-"include(CMakeFindDependencyMacro)
-list(APPEND CMAKE_MODULE_PATH \"\${CMAKE_CURRENT_LIST_DIR}\")
-find_dependency(GMP)
+"# ELiPS has no runtime dependencies. GMP is used by its test suite only.
 include(\"\${CMAKE_CURRENT_LIST_DIR}/ELiPSTargets.cmake\")
 
 # The library is built per curve, so its exported name carries one.
@@ -429,7 +454,6 @@ endif()
 install(FILES
   "${CMAKE_CURRENT_BINARY_DIR}/ELiPSConfig.cmake"
   "${CMAKE_CURRENT_BINARY_DIR}/ELiPSConfigVersion.cmake"
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindGMP.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ELiPS)
 
 message(STATUS "ELiPS ${PROJECT_VERSION}  build=${CMAKE_BUILD_TYPE}  GMP=${GMP_VERSION}")

@@ -8,27 +8,15 @@
 #include "elips/random.h"
 
 #include <string.h>
-#include <gmp.h>
 
-/* Reduce a wide random value modulo a public modulus, in constant time.
- *
- * mpn_sec_div_r is GMP's side-channel-silent remainder: its running time
- * depends on the operand sizes, which are compile-time constants here, and not
- * on the values. mpn_tdiv_qr would be faster and would leak.
- *
- * Returns 0 on success. The scratch bound is checked rather than assumed: an
- * itch larger than the buffer is a wrong answer waiting to happen, and this
- * codebase has already paid for one fixed-size buffer that was not checked
- * (defect M7).
+#include "arith/wide.h"
+
+/* The reduction is elips_mod_wide: constant time in the values, with the
+ * running time set by the operand sizes, which are compile-time constants at
+ * both call sites below. It replaced GMP's mpn_sec_div_r, which had the same
+ * contract; test/wide_test.c checks the replacement against GMP, which is
+ * still linked into the tests for exactly this reason.
  */
-static int reduce_wide(limb_t *wide, int nn, const limb_t *mod, int dn)
-{
-    mp_limb_t scratch[512];
-    mp_size_t itch = mpn_sec_div_r_itch(nn, dn);
-    if (itch > (mp_size_t)(sizeof scratch / sizeof scratch[0])) return -1;
-    mpn_sec_div_r(wide, nn, mod, dn, scratch);
-    return 0;
-}
 
 /* The extra 128 bits that make the modular reduction statistically uniform. */
 #define RAND_EXTRA_LIMBS 2
@@ -39,8 +27,7 @@ int fp_rand(fp_t r)
 
     fp_set_zero(r);
     if (elips_random_bytes(wide, sizeof wide) != 0) return -1;
-    if (reduce_wide(wide, FP_LIMBS + RAND_EXTRA_LIMBS, FP_MODULUS, FP_LIMBS) != 0)
-        return -1;
+    elips_mod_wide(wide, FP_LIMBS + RAND_EXTRA_LIMBS, FP_MODULUS, FP_LIMBS);
 
     fp_from_limbs(r, wide);          /* low FP_LIMBS limbs hold the remainder */
     return 0;
@@ -52,9 +39,8 @@ int elips_random_scalar(limb_t *k)
 
     memset(k, 0, ELIPS_ORDER_LIMBS * sizeof(limb_t));
     if (elips_random_bytes(wide, sizeof wide) != 0) return -1;
-    if (reduce_wide(wide, ELIPS_ORDER_LIMBS + RAND_EXTRA_LIMBS,
-                    ELIPS_ORDER, ELIPS_ORDER_LIMBS) != 0)
-        return -1;
+    elips_mod_wide(wide, ELIPS_ORDER_LIMBS + RAND_EXTRA_LIMBS,
+                   ELIPS_ORDER, ELIPS_ORDER_LIMBS);
 
     memcpy(k, wide, ELIPS_ORDER_LIMBS * sizeof(limb_t));
     return 0;

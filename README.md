@@ -1,6 +1,6 @@
 # ELiPS — Efficient Library for Pairing-based Systems
 
-Pairing-based cryptography over BN and BLS12 curves, built on GMP.
+Pairing-based cryptography over BN and BLS12 curves.
 
 > **Status: under active modernization.** See [`MODERNIZATION_PLAN.md`](MODERNIZATION_PLAN.md)
 > for the roadmap and [`PROGRESS.md`](PROGRESS.md) for what has landed.
@@ -18,7 +18,18 @@ Pairing-based cryptography over BN and BLS12 curves, built on GMP.
 
 - CMake 3.16 or newer
 - A C11 compiler
-- [GMP](https://gmplib.org/) (`libgmp-dev` on Debian/Ubuntu, `brew install gmp` on macOS)
+
+That is all. **The library itself has no runtime dependencies**: nothing under
+`src/` includes a third-party header, and the installed library links against
+nothing but libc.
+
+To build and run the **test suite** you also need
+[GMP](https://gmplib.org/) (`libgmp-dev` on Debian/Ubuntu, `brew install gmp`
+on macOS). GMP is kept deliberately, as an independent oracle: the tests check
+the Montgomery layer, the wide reduction and both inversions against it, and
+agreement with a separate implementation is evidence in a way that agreement
+with ourselves is not. Configure with `-DELIPS_BUILD_TESTS=OFF` to build
+without it.
 
 ## Build
 
