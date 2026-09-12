@@ -4,92 +4,109 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BLS aggregate signatures</title>
-<!-- Inline, so the page really does make no requests of its own. A missing
-     favicon.ico is a 404 in the network panel, and this page invites the
-     reader to open that panel and check. -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>&#x1F517;</text></svg>">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="wrap">
 
-<h1>BLS aggregate signatures</h1>
-<p class="lede">
-  Many people sign the same statement. Their signatures collapse into
-  <strong>one signature of 96 bytes</strong> &mdash; the same size whether two
-  people signed or two hundred &mdash; and it still proves every one of them
-  signed. Running entirely in this tab.
-</p>
+<a class="skip" href="#statement">Skip to the demo</a>
 
-<div id="boot" class="card">Loading the WebAssembly module&hellip;</div>
+<header>
+  <p class="crumb">ELiPS · WebAssembly demo</p>
+  <h1>
+    BLS aggregate signatures
+    <span class="tag">and why the signature does not get bigger</span>
+  </h1>
+  <p class="sub">
+    Many people sign the same statement. Their signatures collapse into
+    <strong>one signature of 96 bytes</strong> &mdash; the same size whether two
+    people signed or two hundred &mdash; and it still proves every one of them
+    signed.
+  </p>
+  <p class="status loading" id="status">loading the WebAssembly module</p>
+</header>
 
-<div id="app" hidden>
+<main id="app" hidden>
 
-  <h2>The statement</h2>
-  <div class="card">
-    <label for="stmt">Everyone signs this text</label>
+  <section data-step="01" id="statement">
+    <h2>The statement</h2>
+    <p class="muted">Everyone signs this exact text. Change it and the signatures no longer cover it.</p>
+    <label class="field" for="stmt">Text to sign</label>
     <input id="stmt" type="text" value="We agree to ship on Friday.">
-    <div class="row" style="margin-top:12px">
-      <button id="add" class="primary">Add a signer</button>
-      <button id="add10">Add 10</button>
+    <div class="row">
+      <button id="add">Add a signer</button>
+      <button id="add10">Add ten</button>
       <button id="reset">Reset</button>
     </div>
-    <div id="signers" class="signers"></div>
-  </div>
+    <p class="signers" id="signers"></p>
+  </section>
 
-  <h2>What aggregation buys</h2>
-  <div class="stats">
-    <div class="stat"><div class="k">Signers</div><div class="v" id="n">0</div></div>
-    <div class="stat"><div class="k">Sent separately</div>
-      <div class="v" id="sep">0 <small>bytes</small></div></div>
-    <div class="stat hl"><div class="k">Aggregated</div>
-      <div class="v" id="agg">&mdash;</div></div>
-    <div class="stat"><div class="k">Saved</div><div class="v" id="saved">&mdash;</div></div>
-  </div>
-  <div class="sig" id="sighex"></div>
+  <section data-step="02">
+    <h2>What aggregation buys</h2>
+    <dl class="kv">
+      <dt>Signers</dt>
+      <dd><span class="value" id="n">0</span></dd>
 
-  <h2>Check it</h2>
-  <div class="card">
+      <dt>Sent separately</dt>
+      <dd><span class="value" id="sep">0 <span class="unit">bytes</span></span></dd>
+
+      <dt>Aggregated</dt>
+      <dd><span class="value held" id="agg">&mdash;</span></dd>
+
+      <dt>Saved</dt>
+      <dd><span class="value" id="saved">&mdash;</span></dd>
+
+      <dt>The aggregate</dt>
+      <dd><code id="sighex">&mdash;</code></dd>
+    </dl>
+  </section>
+
+  <section data-step="03">
+    <h2>Check it</h2>
+    <p class="muted">
+      Verification runs one multi-pairing over all the public keys at once, not
+      one per signer.
+    </p>
     <div class="row">
-      <button id="verify" class="primary">Verify the aggregate</button>
+      <button id="verify">Verify the aggregate</button>
       <button id="tamperMsg">Change the statement after signing</button>
       <button id="tamperSig">Corrupt one signature</button>
     </div>
-    <div id="result" class="result"></div>
-  </div>
+    <div class="verdict" id="result"></div>
+  </section>
 
-  <footer>
-    <p>
-      <strong>Nothing leaves this tab.</strong> The keys, the signatures and the
-      pairing check are all computed here, in WebAssembly. There are no network
-      requests after the page loads &mdash; the module is embedded in it. Open
-      your browser's network panel and watch.
-    </p>
-    <p>
-      <strong>This is slower than the native library, by a lot.</strong>
-      <code>wasm32</code> has no 64&times;64&nbsp;&rarr;&nbsp;128 bit multiply,
-      so every field multiplication goes through a software helper, and one
-      pairing is tens of thousands of them. Measured on the same machine:
-    </p>
-    <table>
-      <tr><th></th><th>native</th><th>wasm</th></tr>
-      <tr><td>sign</td><td>1.77 ms</td><td>7.41 ms</td></tr>
-      <tr><td>verify</td><td>3.43 ms</td><td>18.56 ms</td></tr>
-    </table>
-    <p>
-      <strong>Not audited.</strong> This implements
-      <code>draft-irtf-cfrg-bls-signature</code> on BLS12-381 and agrees with
-      an independent implementation on every build. That is not the same thing
-      as having been reviewed by a cryptographer, and it should not be used to
-      protect anything that matters yet.
-    </p>
-    <p>
-      Source and the library it is built on:
-      <a href="https://github.com/eNipu/elips_bn_bls">eNipu/elips_bn_bls</a>.
-    </p>
-  </footer>
-</div>
-</div>
+</main>
+
+<footer>
+  <p>
+    <strong>Nothing leaves this tab.</strong> The keys, the signatures and the
+    pairing check are all computed here, in WebAssembly. There are no network
+    requests after the page loads &mdash; the module is embedded in it. Open
+    your browser's network panel and watch.
+  </p>
+  <p>
+    <strong>This is slower than the native library, by a lot.</strong>
+    <code>wasm32</code> has no 64&times;64&nbsp;&rarr;&nbsp;128 bit multiply, so
+    every field multiplication goes through a software helper, and one pairing
+    is tens of thousands of them. Measured on the same machine:
+  </p>
+  <table>
+    <tr><th></th><th>native</th><th>wasm</th></tr>
+    <tr><td>sign</td><td>1.77 ms</td><td>7.41 ms</td></tr>
+    <tr><td>verify</td><td>3.43 ms</td><td>18.56 ms</td></tr>
+  </table>
+  <p>
+    <strong>Not audited.</strong> This implements
+    <code>draft-irtf-cfrg-bls-signature</code> on BLS12-381 and agrees with an
+    independent implementation on every build. That is not the same thing as
+    having been reviewed by a cryptographer, and it should not be used to
+    protect anything that matters yet.
+  </p>
+  <p>
+    Source and the library it is built on:
+    <a href="https://github.com/eNipu/elips_bn_bls">eNipu/elips_bn_bls</a>.
+  </p>
+</footer>
 
 <script type="module" src="app.js"></script>
 </body>

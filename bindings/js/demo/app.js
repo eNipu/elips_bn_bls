@@ -8,36 +8,43 @@ const hex = (b) => [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
 
 let elips, signers = [], signedText = null, agg = null;
 
-function shortKey(pk) { return hex(pk).slice(0, 6) + "…" + hex(pk).slice(-4); }
+const shortKey = (pk) => hex(pk).slice(0, 8) + "…" + hex(pk).slice(-4);
 
 function render() {
   const n = signers.length;
   $("n").textContent = n;
-  $("sep").innerHTML = (n * 96).toLocaleString() + " <small>bytes</small>";
-  $("agg").innerHTML = n ? '96 <small>bytes</small>' : "&mdash;";
+  $("sep").innerHTML = (n * 96).toLocaleString() + ' <span class="unit">bytes</span>';
+  $("agg").innerHTML = n ? '96 <span class="unit">bytes</span>' : "&mdash;";
   $("saved").innerHTML = n > 1
-    ? (100 - 100 / n).toFixed(n > 20 ? 1 : 0) + "<small>%</small>"
+    ? (100 - 100 / n).toFixed(n > 20 ? 1 : 0) + ' <span class="unit">%</span>'
     : "&mdash;";
   $("signers").innerHTML = signers
-    .map((s, i) => `<span class="signer">#${i + 1} ${shortKey(s.pk)}</span>`)
+    .map((s, i) => `<span>${String(i + 1).padStart(2, "0")} ${shortKey(s.pk)}</span>`)
     .join("");
-  $("sighex").textContent = agg ? "aggregate: " + hex(agg) : "";
-  $("verify").disabled = !n;
-  $("tamperSig").disabled = !n;
-  $("tamperMsg").disabled = !n;
+  $("sighex").textContent = agg ? hex(agg) : "—";
+
+  // The input carries a mark once the text in it is the text that was signed,
+  // so "I edited this and did not re-sign" is visible before you press verify.
+  const stmt = $("stmt");
+  if (signedText !== null && stmt.value === signedText) stmt.setAttribute("data-signed", "");
+  else stmt.removeAttribute("data-signed");
+
+  for (const id of ["verify", "tamperSig", "tamperMsg"]) $(id).disabled = !n;
 }
 
 function show(ok, title, detail) {
-  const r = $("result");
-  r.className = "result show " + (ok ? "ok" : "bad");
-  r.innerHTML = `<div class="title">${title}</div><div class="detail">${detail}</div>`;
+  $("result").innerHTML =
+    `<span class="badge ${ok ? "ok" : "fail"}">${ok ? "✓" : "✗"} ${title}</span>` +
+    `<p class="detail">${detail}</p>`;
 }
+
+function clearVerdict() { $("result").innerHTML = ""; }
 
 function signAll(count) {
   const text = $("stmt").value;
   // Everyone must have signed the SAME bytes for the aggregate to mean
-  // anything, so adding a signer re-signs from scratch if the text changed.
-  if (signedText !== null && signedText !== text) { signers = []; }
+  // anything, so adding a signer starts over if the text changed.
+  if (signedText !== null && signedText !== text) signers = [];
   signedText = text;
   const msg = enc.encode(text);
   for (let i = 0; i < count; i++) {
@@ -46,7 +53,7 @@ function signAll(count) {
                    sig: elips.sign(sk, msg) });
   }
   agg = elips.aggregate(signers.map((s) => s.sig));
-  $("result").className = "result";
+  clearVerdict();
   render();
 }
 
@@ -60,7 +67,7 @@ function verify() {
     elips.fastAggregateVerify(signers.map((s) => s.pk),
                               signers.map((s) => s.pop), msg, agg);
     const ms = (performance.now() - t0).toFixed(0);
-    show(true, `Valid — all ${signers.length} signers signed this exact text`,
+    show(true, `valid — all ${signers.length} signed this exact text`,
          `Checked in ${ms} ms, from 96 bytes, against ${signers.length} public ` +
          `key${signers.length > 1 ? "s" : ""} at once.`);
   } catch (err) {
@@ -68,17 +75,18 @@ function verify() {
     const why = err instanceof ElipsError
       ? "The aggregate does not match these keys and this text."
       : err.message;
-    show(false, "Rejected", `${why} (${ms} ms)`);
+    show(false, "rejected", `${why} (${ms} ms)`);
   }
+  render();
 }
 
 /* Any uncaught throw in a handler leaves the page looking like the button did
- * nothing, which on this page would be indistinguishable from a check that
- * passed. Every handler reports instead. */
+ * nothing, which on this page is indistinguishable from a check that passed.
+ * Every handler reports instead. */
 function guarded(fn) {
   return () => {
     try { fn(); }
-    catch (err) { show(false, "Something went wrong", err.message); }
+    catch (err) { show(false, "something went wrong", err.message); }
   };
 }
 
@@ -86,15 +94,17 @@ $("add").onclick = guarded(() => signAll(1));
 $("add10").onclick = guarded(() => signAll(10));
 $("reset").onclick = guarded(() => {
   signers = []; agg = null; signedText = null;
-  $("result").className = "result"; render();
+  clearVerdict(); render();
 });
 $("verify").onclick = guarded(verify);
+$("stmt").oninput = render;
 
 $("tamperMsg").onclick = guarded(() => {
   // Change the text WITHOUT re-signing: the signatures now cover something
   // else. This is the case a demo where everything always works would hide.
-  $("stmt").value = $("stmt").value.replace(/Friday/, "Monday");
-  if ($("stmt").value === signedText) $("stmt").value += " (edited)";
+  const stmt = $("stmt");
+  stmt.value = stmt.value.replace(/Friday/, "Monday");
+  if (stmt.value === signedText) stmt.value += " (edited)";
   verify();
 });
 
@@ -104,17 +114,16 @@ $("tamperSig").onclick = guarded(() => {
   bad[95] ^= 1;                                   // one bit
   try {
     agg = elips.aggregate(signers.map((s, j) => (j === i ? bad : s.sig)));
-  } catch (err) {
+  } catch {
     // Most single-bit changes stop the 96 bytes being a point on the curve at
     // all, so aggregation refuses them before any pairing runs. That is a real
     // and useful outcome, not an error to swallow: showing nothing here would
-    // be a demo whose failure case is invisible, which is the one thing this
-    // page must not be.
+    // be a demo whose failure case is invisible.
     render();
-    show(false, "Rejected before verifying",
-         `One bit was flipped in signer #${i + 1}'s signature. Those 96 bytes ` +
-         `are no longer a point on the curve, so the signatures cannot even be ` +
-         `combined. Nothing reached the pairing check.`);
+    show(false, "rejected before verifying",
+         `One bit was flipped in signer ${String(i + 1).padStart(2, "0")}'s ` +
+         `signature. Those 96 bytes are no longer a point on the curve, so the ` +
+         `signatures cannot even be combined. Nothing reached the pairing check.`);
     return;
   }
   render();
@@ -123,9 +132,11 @@ $("tamperSig").onclick = guarded(() => {
 
 load().then((api) => {
   elips = api;
-  $("boot").hidden = true;
+  const status = $("status");
+  status.className = "status ready";
+  status.textContent = "ready — running in this tab, no backend";
   $("app").hidden = false;
   signAll(3);
 }).catch((err) => {
-  $("boot").textContent = "Failed to load the WebAssembly module: " + err.message;
+  $("status").textContent = "failed to load the WebAssembly module: " + err.message;
 });

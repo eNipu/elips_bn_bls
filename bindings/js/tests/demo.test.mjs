@@ -81,6 +81,7 @@ const text = (s) => page.textContent(s).then((t) => t.trim());
 
 maybe("it loads and signs without being asked twice", async () => {
   assert.equal(await text("#n"), "3");
+  assert.match(await text("#status"), /ready/i);
 });
 
 maybe("the aggregate stays 96 bytes as signers are added", async () => {
@@ -93,16 +94,16 @@ maybe("the aggregate stays 96 bytes as signers are added", async () => {
 
 maybe("a genuine aggregate verifies", async () => {
   await page.click("#verify");
-  await page.waitForSelector("#result.show");
-  assert.ok(await page.locator("#result.ok").count(), "result should be marked ok");
-  assert.match(await text("#result .title"), /Valid/);
+  await page.waitForSelector("#result .badge");
+  assert.ok(await page.locator("#result .badge.ok").count(),
+            "the verdict should be marked ok");
+  assert.match(await text("#result .badge"), /valid/i);
 });
 
 maybe("changing the statement after signing visibly fails", async () => {
   await page.click("#tamperMsg");
-  await page.waitForFunction(() =>
-    document.querySelector("#result").classList.contains("bad"));
-  assert.match(await text("#result .title"), /Rejected/);
+  await page.waitForSelector("#result .badge.fail");
+  assert.match(await text("#result .badge"), /rejected/i);
 });
 
 maybe("corrupting one signature visibly fails", async () => {
@@ -113,9 +114,10 @@ maybe("corrupting one signature visibly fails", async () => {
   await page.waitForFunction(() => document.getElementById("n").textContent === "10",
                              null, { timeout: 60000 });
   await page.click("#tamperSig");
-  await page.waitForSelector("#result.show", { timeout: 60000 });
-  assert.ok(await page.locator("#result.bad").count(), "result should be marked bad");
-  assert.match(await text("#result .title"), /Rejected/);
+  await page.waitForSelector("#result .badge", { timeout: 60000 });
+  assert.ok(await page.locator("#result .badge.fail").count(),
+            "the verdict should be marked failed");
+  assert.match(await text("#result .badge"), /rejected/i);
 });
 
 maybe("no network requests are made after load", async () => {
@@ -126,9 +128,12 @@ maybe("no network requests are made after load", async () => {
 maybe("the stylesheet actually applied", async () => {
   // Cheap, and it is the difference between "styled" and "the browser fetched
   // the CSS and declined to use it", which look identical to a 200 check.
-  const bg = await page.evaluate(() =>
-    getComputedStyle(document.querySelector(".card")).borderRadius);
-  assert.notEqual(bg, "0px", "the .card rule did not take effect");
+  // A rule that only the stylesheet supplies. Unstyled, a <section> has no
+  // border at all, so this separates "styled" from "the browser fetched the
+  // CSS and declined to use it" -- which look identical to a 200 check.
+  const border = await page.evaluate(() =>
+    getComputedStyle(document.querySelector("section")).borderTopWidth);
+  assert.equal(border, "1px", "the section rule did not take effect");
 });
 
 maybe("no horizontal overflow at phone width", async () => {
