@@ -3040,11 +3040,14 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 - ~~No assembly (issue #7).~~ Done on x86-64 and AArch64, both limb
   widths. AVX-512 IFMA (plan §10.10) is still open and is the larger win
   on x86-64.
-- No signature layer. §10.8 explains why that line is where it is.
-- BN-462 has no fast G2 cofactor chain. (GLV on both its groups is done.)
-- `gh-pages` is vestigial. Pages deploys from `.github/workflows/docs.yml` as
-  of #22 with `build_type: workflow`, so nothing writes to that branch any
-  more and it can be deleted.
+- ~~No signature layer.~~ Done, issue #25, and §10.8's reasoning held rather
+  than being overturned. It said signing and aggregation "can be built on top
+  without touching this library", and `elips_bls` is exactly that: a separate
+  CMake target over the public headers, so a project that wants the pairing
+  and not the protocol still ignores it. `include/elips/bls.h`.
+- ~~`gh-pages` is vestigial.~~ Deleted. Pages deploys from
+  `.github/workflows/docs.yml` as of #22 with `build_type: workflow`, so
+  nothing wrote to that branch any more.
 - The IACR survey behind §10 was done through search abstracts: the egress
   policy blocks `eprint.iacr.org`, so no full text was read. Citations are
   pointers, not sources of copied formulas.

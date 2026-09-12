@@ -1247,7 +1247,7 @@ part (the 2019/266 bound of about `2.88*bits`) is recalled rather than read.
 `27,17,33` and `13,87,14`. Most runs now clear it, which is what the §10.5
 analysis said would change the answer. Re-run `karabina_ref.py` to re-decide.
 
-### 10.8 A BLS signature layer — STILL OUT OF SCOPE
+### 10.8 A BLS signature layer — BUILT ON TOP, issue #25
 
 §8 said "a protocol layer is a different project" and that stands, but the line
 has moved: hash-to-curve is a *curve* operation with a *curve* specification, so
@@ -1256,6 +1256,13 @@ ciphersuite registry of `draft-irtf-cfrg-bls-signature` do not. With
 hash-to-curve, serialization and the pairing in place, that layer is thin and
 can be built on top without touching this library — and §10.6 is the one thing
 it will want that is missing.
+
+**That is what was built, and the constraint above is what made it cheap.**
+`elips_bls` (issue #25) is a separate CMake target that includes only the
+public headers of the core: signing, verification, aggregation, proof of
+possession and the BLS12-381 ciphersuite, and not one line of it reaches into
+`src/`. So the heading changed and the argument did not. A consumer that wants
+the pairing and not the protocol links `ELiPS::arith` and never sees it.
 
 ### 10.9 Retiring the legacy layer — DONE, issue #17
 
