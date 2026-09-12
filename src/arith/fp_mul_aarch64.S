@@ -41,13 +41,26 @@
 
 #if defined(__aarch64__) || defined(__arm64__)
 
-/* Apple's assembler wants a leading underscore and has no .type/.size. */
+/* Symbol decoration, one directive per SOURCE line.
+ *
+ * It has to be one per line. A cpp macro cannot contain a newline, so the
+ * obvious thing is to separate the directives with semicolons -- and that
+ * silently produces an object file with no symbols in it on arm64 Darwin,
+ * where ";" begins a comment. The .globl survives, everything after it on the
+ * line does not, and the link fails with the function "referenced from" its
+ * only caller and never defined. It assembles without a word of complaint.
+ * So: each macro expands to at most one directive, and the call sites stack
+ * them. */
 #if defined(__APPLE__)
-#  define FUNC_BEGIN(x) .globl _##x; .p2align 4; _##x:
-#  define FUNC_END(x)
+#  define SYM(x)         _##x
+#  define FUNC_HIDDEN(x)
+#  define FUNC_TYPE(x)
+#  define FUNC_SIZE(x)
 #else
-#  define FUNC_BEGIN(x) .globl x; .hidden x; .type x,@function; .p2align 4; x:
-#  define FUNC_END(x) .size x, .-x
+#  define SYM(x)         x
+#  define FUNC_HIDDEN(x) .hidden x
+#  define FUNC_TYPE(x)   .type x,@function
+#  define FUNC_SIZE(x)   .size x, .-x
 #endif
 
 /* x18 is the platform register on Apple and Windows and is never touched. */
@@ -124,7 +137,11 @@
     adcs    \t6, \t6, x15
 .endm
 
-FUNC_BEGIN(elips_fp_mul_6_aarch64)
+    .globl SYM(elips_fp_mul_6_aarch64)
+    FUNC_HIDDEN(elips_fp_mul_6_aarch64)
+    FUNC_TYPE(elips_fp_mul_6_aarch64)
+    .p2align 4
+SYM(elips_fp_mul_6_aarch64):
     stp     x19, x20, [sp, #-80]!
     stp     x21, x22, [sp, #16]
     stp     x23, x24, [sp, #32]
@@ -181,7 +198,7 @@ FUNC_BEGIN(elips_fp_mul_6_aarch64)
     ldp     x27, x28, [sp, #64]
     ldp     x19, x20, [sp], #80
     ret
-FUNC_END(elips_fp_mul_6_aarch64)
+    FUNC_SIZE(elips_fp_mul_6_aarch64)
 
 /* ----------------------------------------------------------- 8 limbs ----
  *
@@ -277,7 +294,11 @@ FUNC_END(elips_fp_mul_6_aarch64)
     adcs    \t8, \t8, x16
 .endm
 
-FUNC_BEGIN(elips_fp_mul_8_aarch64)
+    .globl SYM(elips_fp_mul_8_aarch64)
+    FUNC_HIDDEN(elips_fp_mul_8_aarch64)
+    FUNC_TYPE(elips_fp_mul_8_aarch64)
+    .p2align 4
+SYM(elips_fp_mul_8_aarch64):
     stp     x19, x20, [sp, #-80]!
     stp     x21, x22, [sp, #16]
     stp     x23, x24, [sp, #32]
@@ -346,7 +367,7 @@ FUNC_BEGIN(elips_fp_mul_8_aarch64)
     ldp     x27, x28, [sp, #64]
     ldp     x19, x20, [sp], #80
     ret
-FUNC_END(elips_fp_mul_8_aarch64)
+    FUNC_SIZE(elips_fp_mul_8_aarch64)
 
 #if defined(__linux__)
 .section .note.GNU-stack,"",%progbits
