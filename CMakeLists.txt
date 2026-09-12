@@ -415,6 +415,14 @@ if(ELIPS_BUILD_TESTS)
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(bench_${_cv} bench/bench.c)
     target_link_libraries(bench_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
+    # The signature layer is BLS12-381 only, so only that benchmark carries
+    # the bls_sign and bls_verify rows. They are the two numbers the README
+    # quotes, so they are measured by the same interleaved harness as the
+    # primitives rather than by hand on the side.
+    if(_cv STREQUAL "BLS12_381")
+      target_link_libraries(bench_${_cv} PRIVATE elips_bls)
+      target_compile_definitions(bench_${_cv} PRIVATE ELIPS_BENCH_HAS_BLS)
+    endif()
     elips_test_warnings(bench_${_cv})
   endforeach()
 

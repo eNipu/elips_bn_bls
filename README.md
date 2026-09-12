@@ -110,21 +110,29 @@ anything that matters yet.
 
 ## Performance
 
-Measured on an Intel Xeon, same machine. The pairing figure is the one recorded
-in [`bench/baseline.json`](bench/baseline.json); sign and verify were taken in
-one run against each other, because on this machine the absolute numbers wander
-by about 20% between runs while the ratios do not.
+Intel Xeon at 2.10 GHz, both columns on that one machine, medians over 21
+interleaved reps. Reproduce with `bench_BLS12_381` and `bindings/js/bench.mjs`,
+which measure the same two operations the same way; the full record is in
+[`bench/baseline.json`](bench/baseline.json).
 
 | | native | WebAssembly | |
 |---|---|---|---|
-| sign | 1.77 ms | 7.41 ms | 4.2x |
-| verify | 3.43 ms | 18.56 ms | 5.4x |
-| pairing | 1.39 ms | | |
+| sign | 1.51 ms | 11.99 ms | 7.9x |
+| verify | 3.19 ms | 24.22 ms | 7.6x |
+| pairing | 1.23 ms | | |
+
+Read the medians, not the spreads. Individual rows swing 10% to 40% on this
+machine, but the medians agree across independent runs to within 1%, which is
+the check that matters.
 
 The browser is slower for a structural reason rather than a missing
 optimisation: `wasm32` has no 64×64 → 128 bit multiply, so every field
 multiplication goes through a software helper and a pairing is tens of
 thousands of them. Native x86-64 and AArch64 do it in one instruction.
+
+The gap widened from roughly 5x to roughly 8x when `fp_add` and `fp_sub` got
+x86-64 assembly. That speeds up the native column by 1.58x and does nothing for
+WebAssembly, which cannot use it.
 
 ---
 

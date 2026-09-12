@@ -1,10 +1,10 @@
 {
-  "_comment": "Recorded by bench/bench.c, interleaved, 15 reps. Read the ratios, not the absolute numbers: on this machine every operation moved 19-23% between three consecutive runs of the same binary, while ratios between operations moved 0.9-3.1%. To check a change for regressions use bench/compare.py --ab old_binary new_binary, which alternates the two and compares pairwise; comparing two recorded files is weaker and missed a planted 12% slowdown entirely.",
-  "machine": "Intel(R) Xeon(R) Processor @ 2.10GHz",
+  "_comment": "Recorded by bench/bench.c, interleaved, 21 reps. Read the ratios, not the absolute numbers: spreads on this machine reach 10-40% on individual rows, while the MEDIANS agree across independent runs to within 1% -- which is the check that matters, and the reason the median is the headline. To test a change for regressions use bench/compare.py --ab old_binary new_binary, which alternates the two and compares pairwise; comparing two recorded files is weaker and missed a planted 12% slowdown entirely.",
+  "machine": "Intel(R) Xeon(R) Processor @ 2.80GHz",
   "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
   "cflags": "-O2 (CMAKE_BUILD_TYPE=Release)",
   "gmp": "2:6.3.0+dfsg-2ubuntu6.1",
-  "commit": "cc2f21b",
+  "commit": "2693c53",
   "date": "2026-09-12",
   "harness": {
     "reps": 15,
@@ -98,5 +98,100 @@
       }
     }
   },
-  "fp_mul_backend": "x86-64 mulx/adcx/adox, chosen at runtime from CPUID (issue #7). Set ELIPS_NO_ASM=1 before the process starts to record the portable C instead."
+  "fp_mul_backend": "x86-64 mulx/adcx/adox, chosen at runtime from CPUID (issue #7). Set ELIPS_NO_ASM=1 before the process starts to record the portable C instead.",
+  "fp_addsub_backend": "x86-64 adc/sbb/cmov (issue #37). Baseline x86-64, so it needs no CPUID check and is always on. ELIPS_NO_ASM_ADDSUB=1 records the portable C for this pair alone, which is how its 1.58x was measured without moving fp_mul at the same time.",
+  "results": {
+    "ep_mul": {
+      "median": 170.527,
+      "min": 168.593,
+      "max": 202.341,
+      "spread_pct": 19.79
+    },
+    "ep_mul_glv": {
+      "median": 120.63,
+      "min": 119.645,
+      "max": 129.7,
+      "spread_pct": 8.34
+    },
+    "ep2_mul": {
+      "median": 548.629,
+      "min": 544.367,
+      "max": 565.727,
+      "spread_pct": 3.89
+    },
+    "ep2_mul_glv": {
+      "median": 284.88,
+      "min": 282.992,
+      "max": 418.286,
+      "spread_pct": 47.49
+    },
+    "gt_exp": {
+      "median": 957.024,
+      "min": 948.387,
+      "max": 981.745,
+      "spread_pct": 3.49
+    },
+    "gt_exp_ct": {
+      "median": 363.971,
+      "min": 362.371,
+      "max": 376.31,
+      "spread_pct": 3.83
+    },
+    "miller": {
+      "median": 457.089,
+      "min": 452.942,
+      "max": 476.525,
+      "spread_pct": 5.16
+    },
+    "final_exp": {
+      "median": 493.557,
+      "min": 487.52,
+      "max": 824.544,
+      "spread_pct": 68.28
+    },
+    "pairing": {
+      "median": 1225.839,
+      "min": 1210.345,
+      "max": 1651.571,
+      "spread_pct": 35.99
+    },
+    "ep_in_subgroup": {
+      "median": 96.853,
+      "min": 95.985,
+      "max": 123.925,
+      "spread_pct": 28.85
+    },
+    "ep2_in_subgroup": {
+      "median": 153.26,
+      "min": 152.378,
+      "max": 172.944,
+      "spread_pct": 13.42
+    },
+    "hash_to_g1": {
+      "median": 203.357,
+      "min": 202.331,
+      "max": 212.071,
+      "spread_pct": 4.79
+    },
+    "hash_to_g2": {
+      "median": 962.097,
+      "min": 953.381,
+      "max": 985.318,
+      "spread_pct": 3.32
+    },
+    "bls_sign": {
+      "median": 1510.27,
+      "min": 1497.486,
+      "max": 1739.313,
+      "spread_pct": 16.01
+    },
+    "bls_verify": {
+      "median": 3192.102,
+      "min": 3165.014,
+      "max": 3408.575,
+      "spread_pct": 7.63
+    }
+  },
+  "reps": 21,
+  "inner": 60
 }

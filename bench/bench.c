@@ -56,6 +56,13 @@
 #include "elips/random.h"
 #include "elips/hash_to_curve.h"
 
+/* The protocol layer, where it exists. elips_bls is BLS12-381 only, so the
+ * two rows the README quotes as "sign" and "verify" can only be measured on
+ * that curve and the target is linked accordingly. */
+#ifdef ELIPS_BENCH_HAS_BLS
+#include "elips/bls.h"
+#endif
+
 #ifndef BENCH_REPS
 #define BENCH_REPS 9        /* odd, so the median is an observed sample */
 #endif
@@ -91,6 +98,22 @@ static const limb_t *next_scalar(void)
     scalar_idx = (scalar_idx + 1) % BENCH_MAX_REPS;
     return k;
 }
+
+#ifdef ELIPS_BENCH_HAS_BLS
+/* Signing and verification as a caller sees them: bytes in, bytes out, every
+ * deserialization and subgroup check included. That is the number the front
+ * page quotes, and it is deliberately not the sum of the primitives below --
+ * verify also validates the public key and hashes the message to G2. */
+static uint8_t bls_sk[ELIPS_BLS_SK_BYTES], bls_pk[ELIPS_BLS_PK_BYTES];
+static uint8_t bls_sig[ELIPS_BLS_SIG_BYTES], bls_msg[32];
+static uint8_t bls_sink[ELIPS_BLS_SIG_BYTES];
+static int     bls_rc;
+
+static void b_bls_sign(void)
+{ bls_rc |= elips_bls_sign(bls_sink, bls_sk, bls_msg, sizeof bls_msg); }
+static void b_bls_verify(void)
+{ bls_rc |= elips_bls_verify(bls_pk, bls_msg, sizeof bls_msg, bls_sig); }
+#endif
 
 static void b_ep_mul(void)      { ep_mul(&sink_ep, &g1, next_scalar(), ELIPS_ORDER_BITS); }
 static void b_ep_mul_glv(void)  { ep_mul_glv(&sink_ep, &g1, next_scalar(), ELIPS_ORDER_BITS); }
@@ -129,6 +152,13 @@ static const bench_t BENCHES[] = {
     { "ep2_in_subgroup", b_ep2_in_sub,  BENCH_INNER },
     { "hash_to_g1",      b_hash_g1,     BENCH_INNER },
     { "hash_to_g2",      b_hash_g2,     BENCH_INNER },
+#ifdef ELIPS_BENCH_HAS_BLS
+    /* A smaller inner count: one verify is two pairings and a hash-to-curve,
+     * so sixty of them per timed run would make a single rep take longer than
+     * the whole rest of the table. */
+    { "bls_sign",        b_bls_sign,    8 },
+    { "bls_verify",      b_bls_verify,  8 },
+#endif
 };
 #define N_BENCH ((int)(sizeof BENCHES / sizeof BENCHES[0]))
 
@@ -151,6 +181,16 @@ int main(int argc, char **argv)
 
     ep_generator(&g1);
     ep2_generator(&g2);
+#ifdef ELIPS_BENCH_HAS_BLS
+    memset(bls_msg, 0x5a, sizeof bls_msg);
+    if (elips_bls_keygen_random(bls_sk) != ELIPS_BLS_OK ||
+        elips_bls_sk_to_pk(bls_pk, bls_sk) != ELIPS_BLS_OK ||
+        elips_bls_sign(bls_sig, bls_sk, bls_msg, sizeof bls_msg) != ELIPS_BLS_OK ||
+        elips_bls_verify(bls_pk, bls_msg, sizeof bls_msg, bls_sig) != ELIPS_BLS_OK) {
+        fprintf(stderr, "bench: BLS setup failed\n");
+        return 1;
+    }
+#endif
     for (int i = 0; i < BENCH_MAX_REPS; i++) elips_random_scalar(scalars[i]);
     memset(h2c_msg, 0xa5, sizeof h2c_msg);
     /* elips_pairing returns 0 on FAILURE, not on success. */
