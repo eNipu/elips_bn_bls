@@ -66,7 +66,7 @@ static inline limb_t add_carry(limb_t *r, const limb_t *a, const limb_t *b)
     return carry;
 }
 
-void fp_add(fp_t r, const fp_t a, const fp_t b)
+void fp_add_portable(fp_t r, const fp_t a, const fp_t b)
 {
     fp_t t;
     limb_t carry  = add_carry(t, a, b);
@@ -78,13 +78,88 @@ void fp_add(fp_t r, const fp_t a, const fp_t b)
     fp_cselect(r, red, t, take);
 }
 
-void fp_sub(fp_t r, const fp_t a, const fp_t b)
+void fp_sub_portable(fp_t r, const fp_t a, const fp_t b)
 {
     fp_t t;
     limb_t borrow = sub_borrow(t, a, b);
     fp_t   fixed;
     add_carry(fixed, t, FP_MODULUS);
     fp_cselect(r, fixed, t, (limb_t)0 - borrow);
+}
+
+/* Modular add and subtract, x86-64 assembly where there is any.
+ *
+ * SEPARATE FROM THE fp_mul DISPATCH ABOVE, and the difference is the point.
+ * fp_mul needs mulx, adcx and adox, none of which is baseline, so it asks
+ * CPUID. These need only adc, sbb and cmov, which every x86-64 has. Gating
+ * them behind the same BMI2+ADX test would disable them on exactly the older
+ * machines that also lose the fast multiply.
+ *
+ * Why they were worth writing: the portable versions above make three passes
+ * over the limbs and build the carry chain out of comparisons, because C has
+ * no adc. That is 24.18 cycles for a 384-bit modular add against 70.21 for a
+ * whole Montgomery multiply, and a pairing spends more time adding than
+ * multiplying. Issue #36 has the profile, #37 the change. */
+#if defined(__x86_64__) && !defined(__ILP32__) && !defined(ELIPS_NO_ASM_BUILD)
+#include <stdlib.h>
+
+#define ELIPS_FP_ADDSUB_DECL(fn) \
+    void fn(limb_t *r, const limb_t *a, const limb_t *b, const limb_t *p)
+
+ELIPS_FP_ADDSUB_DECL(elips_fp_add_6_x86_64);
+ELIPS_FP_ADDSUB_DECL(elips_fp_sub_6_x86_64);
+ELIPS_FP_ADDSUB_DECL(elips_fp_add_8_x86_64);
+ELIPS_FP_ADDSUB_DECL(elips_fp_sub_8_x86_64);
+
+#if FP_LIMBS == 6
+#  define ELIPS_FP_ADD_ASM_FN elips_fp_add_6_x86_64
+#  define ELIPS_FP_SUB_ASM_FN elips_fp_sub_6_x86_64
+#else
+#  define ELIPS_FP_ADD_ASM_FN elips_fp_add_8_x86_64
+#  define ELIPS_FP_SUB_ASM_FN elips_fp_sub_8_x86_64
+#endif
+
+static int fp_addsub_use_asm = 1;
+
+__attribute__((constructor)) static void fp_addsub_select_backend(void)
+{
+    /* ELIPS_NO_ASM turns off every assembly path, as it does for fp_mul, so
+     * CI can run a portable build end to end.
+     *
+     * ELIPS_NO_ASM_ADDSUB turns off only this pair, which is what makes the
+     * §6 gate measurable. That gate is per routine -- anything that does not
+     * reach 1.2x is deleted rather than carried -- and with only the blanket
+     * switch, a comparison would move fp_mul and these two at the same time
+     * and could not say which paid. */
+    if (getenv("ELIPS_NO_ASM") != NULL ||
+        getenv("ELIPS_NO_ASM_ADDSUB") != NULL) fp_addsub_use_asm = 0;
+}
+
+void fp_add(fp_t r, const fp_t a, const fp_t b)
+{
+    if (fp_addsub_use_asm) { ELIPS_FP_ADD_ASM_FN(r, a, b, FP_MODULUS); return; }
+    fp_add_portable(r, a, b);
+}
+
+void fp_sub(fp_t r, const fp_t a, const fp_t b)
+{
+    if (fp_addsub_use_asm) { ELIPS_FP_SUB_ASM_FN(r, a, b, FP_MODULUS); return; }
+    fp_sub_portable(r, a, b);
+}
+
+int fp_addsub_backend(void) { return fp_addsub_use_asm ? 1 : 0; }
+
+#else
+
+void fp_add(fp_t r, const fp_t a, const fp_t b) { fp_add_portable(r, a, b); }
+void fp_sub(fp_t r, const fp_t a, const fp_t b) { fp_sub_portable(r, a, b); }
+int  fp_addsub_backend(void) { return 0; }
+
+#endif
+
+const char *fp_addsub_backend_name(void)
+{
+    return fp_addsub_backend() ? "x86-64 adc/sbb/cmov" : "portable C";
 }
 
 void fp_neg(fp_t r, const fp_t a)

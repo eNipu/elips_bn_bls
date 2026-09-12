@@ -204,6 +204,7 @@ static void prep_fp_pair(input_t *in, int c)
 }
 static void run_fp_mul(const input_t *in)     { fp_mul(sink_fp, in->a, in->b); }
 static void run_fp_add(const input_t *in)     { fp_add(sink_fp, in->a, in->b); }
+static void run_fp_sub(const input_t *in)     { fp_sub(sink_fp, in->a, in->b); }
 static void run_fp_inv(const input_t *in)     { fp_inv(sink_fp, in->a); }
 /* The negative control. fp_inv_vartime is documented as variable time and is
  * only ever called on public values; here it is called on secrets on purpose,
@@ -418,6 +419,10 @@ typedef struct {
 static const target_t TARGETS[] = {
     { "fp_mul",      prep_fp_pair, run_fp_mul,     200, 20000, 0 },
     { "fp_add",      prep_fp_pair, run_fp_add,     200, 20000, 0 },
+    /* fp_sub has its own assembly as of #37, and it reduces by adding a
+     * masked p rather than by cmov, so it is a different shape from fp_add
+     * and is timed separately rather than assumed to follow it. */
+    { "fp_sub",      prep_fp_pair, run_fp_sub,     200, 20000, 0 },
     { "fp_cselect",  prep_fp_pair, run_fp_cselect, 200, 20000, 0 },
     { "fp_inv",      prep_fp_pair, run_fp_inv,       1, 20000, 0 },
     { "mod_wide",    prep_wide,    run_mod_wide,    20, 20000, 0 },

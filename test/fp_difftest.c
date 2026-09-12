@@ -182,8 +182,89 @@ int main(int argc, char **argv)
         if (!fp_eq(u, want)) { failures++; fprintf(stderr, "MISMATCH alias r==a==b\n"); }
     }
 
+    /* fp_add and fp_sub got assembly in #37, so they get the same treatment:
+     * the two backends must agree bit for bit, and they must agree when the
+     * output aliases an input. The assembly reads every limb of a and b before
+     * it writes any limb of r, and uses r as scratch at eight limbs -- which
+     * is correct only because of that ordering, and is exactly the kind of
+     * thing a test on distinct buffers would never exercise. */
+    for (long k = 0; k < iters; k++) {
+        mpz_urandomm(a, st, P);
+        mpz_urandomm(b, st, P);
+        limbs_of(la, a); limbs_of(lb, b);
+        fp_from_limbs(fa, la); fp_from_limbs(fb, lb);
+
+        fp_t want, u, v;
+
+        fp_add_portable(want, fa, fb);
+        fp_add(fr, fa, fb);
+        checks++;
+        if (!fp_eq(fr, want)) { failures++; fprintf(stderr, "MISMATCH fp_add backends\n"); }
+        fp_copy(u, fa); fp_add(u, u, fb);
+        checks++;
+        if (!fp_eq(u, want)) { failures++; fprintf(stderr, "MISMATCH fp_add alias r==a\n"); }
+        fp_copy(v, fb); fp_add(v, fa, v);
+        checks++;
+        if (!fp_eq(v, want)) { failures++; fprintf(stderr, "MISMATCH fp_add alias r==b\n"); }
+        fp_add_portable(want, fa, fa);
+        fp_copy(u, fa); fp_add(u, u, u);
+        checks++;
+        if (!fp_eq(u, want)) { failures++; fprintf(stderr, "MISMATCH fp_add alias r==a==b\n"); }
+
+        fp_sub_portable(want, fa, fb);
+        fp_sub(fr, fa, fb);
+        checks++;
+        if (!fp_eq(fr, want)) { failures++; fprintf(stderr, "MISMATCH fp_sub backends\n"); }
+        fp_copy(u, fa); fp_sub(u, u, fb);
+        checks++;
+        if (!fp_eq(u, want)) { failures++; fprintf(stderr, "MISMATCH fp_sub alias r==a\n"); }
+        fp_copy(v, fb); fp_sub(v, fa, v);
+        checks++;
+        if (!fp_eq(v, want)) { failures++; fprintf(stderr, "MISMATCH fp_sub alias r==b\n"); }
+        fp_copy(u, fa); fp_sub(u, u, u);
+        checks++;
+        if (!fp_is_zero(u)) { failures++; fprintf(stderr, "MISMATCH fp_sub alias r==a==b not zero\n"); }
+
+        /* Against GMP too, not only against the other backend. Both backends
+         * agreeing proves nothing if the shared understanding of the modulus
+         * is wrong. */
+        mpz_add(w, a, b); mpz_mod(w, w, P);
+        fp_add(fr, fa, fb); check("add vs gmp", w, fr);
+        mpz_sub(w, a, b); mpz_mod(w, w, P);
+        fp_sub(fr, fa, fb); check("sub vs gmp", w, fr);
+    }
+
+    /* The boundaries the conditional reduction turns on. Uniform random values
+     * essentially never land here: a + b needing exactly one subtraction of p,
+     * or a - b borrowing by one. */
+    {
+        static const struct { int ka, kb; } edge[] = {
+            {0, 0}, {1, 0}, {0, 1}, {1, 1}, {2, 1}, {1, 2}, {2, 2}, {3, 1}
+        };
+        for (size_t e = 0; e < sizeof edge / sizeof edge[0]; e++) {
+            /* ka/kb pick p-1, 1, 0 and p/2 style operands. */
+            switch (edge[e].ka) {
+            case 0: mpz_set_ui(a, 0); break;
+            case 1: mpz_sub_ui(a, P, 1); break;
+            case 2: mpz_tdiv_q_ui(a, P, 2); break;
+            default: mpz_tdiv_q_ui(a, P, 2); mpz_add_ui(a, a, 1); break;
+            }
+            switch (edge[e].kb) {
+            case 0: mpz_set_ui(b, 0); break;
+            case 1: mpz_sub_ui(b, P, 1); break;
+            default: mpz_tdiv_q_ui(b, P, 2); break;
+            }
+            limbs_of(la, a); limbs_of(lb, b);
+            fp_from_limbs(fa, la); fp_from_limbs(fb, lb);
+            mpz_add(w, a, b); mpz_mod(w, w, P);
+            fp_add(fr, fa, fb); check("add edge", w, fr);
+            mpz_sub(w, a, b); mpz_mod(w, w, P);
+            fp_sub(fr, fa, fb); check("sub edge", w, fr);
+        }
+    }
+
     mpz_clears(a, b, w, NULL); gmp_randclear(st); mpz_clear(P);
-    printf("  %ld checks, %ld failures, fp_mul backend: %s\n",
-           checks, failures, fp_mul_backend_name());
+    printf("  %ld checks, %ld failures, fp_mul backend: %s, fp_add/fp_sub backend: %s\n",
+           checks, failures, fp_mul_backend_name(), fp_addsub_backend_name());
     return failures ? 1 : 0;
 }

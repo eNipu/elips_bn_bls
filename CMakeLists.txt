@@ -115,6 +115,7 @@ set(ELIPS_ARITH_SOURCES
 # backend-selection comment in src/arith/fp.c, and issue #7.
 list(APPEND ELIPS_ARITH_SOURCES
   src/arith/fp_mul_x86_64.S
+  src/arith/fp_addsub_x86_64.S
   src/arith/fp_mul_aarch64.S)
 
 foreach(_cv IN LISTS ELIPS_CURVES)
@@ -329,7 +330,7 @@ if(ELIPS_BUILD_TESTS)
     #                    small one. It is also what keeps the decision threshold
     #                    honest: raise the threshold past a one-multiply leak and
     #                    this test starts failing.
-    foreach(_t fp_mul fp_add fp_cselect fp_inv mod_wide ep_mul ep2_mul ep2_mul_glv
+    foreach(_t fp_mul fp_add fp_sub fp_cselect fp_inv mod_wide ep_mul ep2_mul ep2_mul_glv
                ep_mul_glv fp12_exp_gt hash_to_g1 hash_to_g2 bls_sign
                sensitivity control_vartime)
       add_test(NAME dudect.${_t} COMMAND dudect_test ${_t})

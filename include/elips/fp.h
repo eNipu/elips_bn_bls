@@ -63,6 +63,11 @@ void fp_mul_portable(fp_t r, const fp_t a, const fp_t b);
 #define ELIPS_FP_MUL_PORTABLE 0
 #define ELIPS_FP_MUL_X86_64   1
 #define ELIPS_FP_MUL_AARCH64  2
+void fp_add_portable(fp_t r, const fp_t a, const fp_t b);
+void fp_sub_portable(fp_t r, const fp_t a, const fp_t b);
+int fp_addsub_backend(void);
+const char *fp_addsub_backend_name(void);
+
 int fp_mul_backend(void);
 const char *fp_mul_backend_name(void);
 void fp_sqr(fp_t r, const fp_t a);
