@@ -34,3 +34,11 @@ Doxyfile.ci
 # Editor and IDE settings are personal, not repository content.
 .vscode/
 .idea/
+
+# Agent skill packs, installed per-checkout by `npx skills add`. They are
+# third-party prose about design and writing, fetched from other repositories
+# and pinned by hash in skills-lock.json; none of it describes this library.
+# .claude/skills/ is symlinks into .agents/skills/, so both go.
+.agents/
+.claude/
+skills-lock.json
