@@ -44,6 +44,16 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure --timeout 900
 
+      # fp_mul dispatches to assembly when the CPU has the instructions, so the
+      # run above exercises only one of the two implementations. The other one
+      # is what a machine without those instructions gets, and it has to give
+      # the same answers on the same vectors or the fallback is decoration.
+      # Same suite, same vectors, assembly switched off.
+      - name: Test with the portable fp_mul
+        env:
+          ELIPS_NO_ASM: "1"
+        run: ctest --test-dir build --output-on-failure --timeout 900
+
   # The reference implementation is the oracle; if it stops self-checking, the
   # vectors it produced mean nothing. Also verifies the committed vectors are
   # exactly what the generator produces, so they cannot drift unnoticed.

@@ -95,8 +95,13 @@ void fp_neg(fp_t r, const fp_t a)
     fp_sub(r, z, a);
 }
 
-/* Montgomery product: r = a*b*R^-1 mod p. */
-void fp_mul(fp_t r, const fp_t a, const fp_t b)
+/* Montgomery product: r = a*b*R^-1 mod p.
+ *
+ * The portable one. It is not a fallback in the sense of being second best
+ * and untested: it is the definition of what fp_mul means, every assembly
+ * backend is checked against it, and test/fp_difftest.c runs both through
+ * GMP on every build. */
+void fp_mul_portable(fp_t r, const fp_t a, const fp_t b)
 {
     limb_t t[FP_LIMBS + 2];
     memset(t, 0, sizeof t);
@@ -132,6 +137,90 @@ void fp_mul(fp_t r, const fp_t a, const fp_t b)
     limb_t borrow = sub_borrow(red, t, FP_MODULUS);
     limb_t take   = (limb_t)0 - (t[NLIMB] | (borrow ^ 1));
     fp_cselect(r, red, (const limb_t *)t, take);
+}
+
+/* ------------------------------------------------- backend selection ----
+ *
+ * fp_mul is half the time in a BLS12-381 pairing and two thirds of one on
+ * BN-462, measured by running a pairing with fp_mul doing its work twice and
+ * subtracting. That is what justifies assembly here and nowhere else yet.
+ *
+ * What the assembly has that C does not is two carry chains. adcx carries
+ * through the carry flag and adox through the overflow flag, so the low and
+ * high halves of the partial products accumulate at the same time. A C
+ * compiler has no way to say that. Fixing the width and unrolling by hand, the
+ * best plain C managed, was 1.19x; the assembly is 1.9x to 2.1x.
+ *
+ * The choice is made once, from CPUID, and stored. It depends on the machine
+ * and never on an operand, so the branch it costs is outside the constant-time
+ * argument. Setting ELIPS_NO_ASM in the environment forces the portable path,
+ * which is how CI runs the entire suite both ways.
+ */
+#if defined(__x86_64__) && !defined(__ILP32__) && (FP_LIMBS == 6 || FP_LIMBS == 8)
+#  define ELIPS_FP_MUL_ASM 1
+#endif
+
+#if defined(ELIPS_FP_MUL_ASM)
+#include <cpuid.h>
+#include <stdlib.h>
+
+/* The assembly keeps FP_LIMBS+1 words and never propagates a carry past the
+ * top one. That holds exactly when the modulus is sparse. All three curves
+ * are, with room to spare, but a future curve might not be. */
+_Static_assert(FP_BITS < 64 * FP_LIMBS - 1,
+               "the fp_mul assembly needs a sparse modulus, p < 2^(64n-1)");
+
+void elips_fp_mul_6_x86_64(limb_t *r, const limb_t *a, const limb_t *b,
+                           const limb_t *p, limb_t n0);
+void elips_fp_mul_8_x86_64(limb_t *r, const limb_t *a, const limb_t *b,
+                           const limb_t *p, limb_t n0);
+
+#if FP_LIMBS == 6
+#  define ELIPS_FP_MUL_ASM_FN elips_fp_mul_6_x86_64
+#else
+#  define ELIPS_FP_MUL_ASM_FN elips_fp_mul_8_x86_64
+#endif
+
+static int fp_mul_use_asm;
+
+__attribute__((constructor)) static void fp_mul_select_backend(void)
+{
+    if (getenv("ELIPS_NO_ASM") != NULL) return;
+
+    /* CPUID leaf 7 subleaf 0: EBX bit 8 is BMI2, bit 19 is ADX. Both are
+     * needed; a machine with one and not the other would fault on the other. */
+    unsigned int eax, ebx, ecx, edx;
+    if (__get_cpuid_max(0, NULL) < 7) return;
+    if (!__get_cpuid_count(7, 0, &eax, &ebx, &ecx, &edx)) return;
+    if ((ebx & (1u << 8)) && (ebx & (1u << 19))) fp_mul_use_asm = 1;
+}
+
+void fp_mul(fp_t r, const fp_t a, const fp_t b)
+{
+    if (fp_mul_use_asm) {
+        ELIPS_FP_MUL_ASM_FN(r, a, b, FP_MODULUS, FP_MONT_N0);
+        return;
+    }
+    fp_mul_portable(r, a, b);
+}
+
+int fp_mul_backend(void) { return fp_mul_use_asm ? ELIPS_FP_MUL_X86_64 : ELIPS_FP_MUL_PORTABLE; }
+
+#else /* no assembly for this target */
+
+void fp_mul(fp_t r, const fp_t a, const fp_t b) { fp_mul_portable(r, a, b); }
+
+int fp_mul_backend(void) { return ELIPS_FP_MUL_PORTABLE; }
+
+#endif
+
+const char *fp_mul_backend_name(void)
+{
+    switch (fp_mul_backend()) {
+    case ELIPS_FP_MUL_X86_64:  return "x86-64 mulx/adcx/adox";
+    case ELIPS_FP_MUL_AARCH64: return "aarch64 mul/umulh";
+    default:                   return "portable C";
+    }
 }
 
 void fp_sqr(fp_t r, const fp_t a)

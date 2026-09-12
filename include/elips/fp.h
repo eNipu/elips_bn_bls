@@ -49,6 +49,22 @@ void fp_add(fp_t r, const fp_t a, const fp_t b);
 void fp_sub(fp_t r, const fp_t a, const fp_t b);
 void fp_neg(fp_t r, const fp_t a);
 void fp_mul(fp_t r, const fp_t a, const fp_t b);   /* Montgomery product */
+
+/* The same product, always the portable C, whatever the machine supports.
+ * fp_mul dispatches to an assembly backend when the CPU has one; this is what
+ * that backend is defined to agree with, and what the difference test runs
+ * against GMP alongside it. Ordinary callers want fp_mul. */
+void fp_mul_portable(fp_t r, const fp_t a, const fp_t b);
+
+/* Which backend fp_mul is using in this process. Reported by the tests so a
+ * green run says which path it actually exercised, rather than leaving that to
+ * be assumed from the build flags. Set ELIPS_NO_ASM in the environment before
+ * the process starts to force the portable one. */
+#define ELIPS_FP_MUL_PORTABLE 0
+#define ELIPS_FP_MUL_X86_64   1
+#define ELIPS_FP_MUL_AARCH64  2
+int fp_mul_backend(void);
+const char *fp_mul_backend_name(void);
 void fp_sqr(fp_t r, const fp_t a);
 void fp_inv(fp_t r, const fp_t a);         /* constant time; 0 maps to 0 */
 /* Variable time. Only for values that are already public -- never a secret. */

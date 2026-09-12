@@ -7,6 +7,12 @@
  *
  * Deliberately includes the boundary values that a Montgomery implementation
  * gets wrong: 0, 1, p-1, and values that force the conditional subtraction.
+ *
+ * Since Phase 6 there can be two fp_mul implementations in the binary, the
+ * portable C and an assembly backend the CPU may or may not have. Both are run
+ * against GMP here, side by side, on every check. Which one fp_mul itself
+ * dispatched to is printed at the end, so a green run states the path it
+ * exercised instead of leaving it to be inferred from the build flags.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,6 +94,8 @@ int main(int argc, char **argv)
             mpz_add(w, a, b);  fp_add(fr, fa, fb); check("edge add", w, fr);
             mpz_sub(w, a, b);  fp_sub(fr, fa, fb); check("edge sub", w, fr);
             mpz_mul(w, a, b);  fp_mul(fr, fa, fb); check("edge mul", w, fr);
+            mpz_mul(w, a, b);  fp_mul_portable(fr, fa, fb);
+                                                  check("edge mul portable", w, fr);
             mpz_mul(w, a, a);  fp_sqr(fr, fa);     check("edge sqr", w, fr);
             mpz_neg(w, a);     fp_neg(fr, fa);     check("edge neg", w, fr);
         }
@@ -102,6 +110,7 @@ int main(int argc, char **argv)
         mpz_add(w, a, b); fp_add(fr, fa, fb); check("add", w, fr);
         mpz_sub(w, a, b); fp_sub(fr, fa, fb); check("sub", w, fr);
         mpz_mul(w, a, b); fp_mul(fr, fa, fb); check("mul", w, fr);
+        mpz_mul(w, a, b); fp_mul_portable(fr, fa, fb); check("mul portable", w, fr);
         mpz_mul(w, a, a); fp_sqr(fr, fa);     check("sqr", w, fr);
         mpz_neg(w, a);    fp_neg(fr, fa);     check("neg", w, fr);
 
@@ -142,7 +151,39 @@ int main(int argc, char **argv)
         if (!fp_is_zero(iz)) { failures++; fprintf(stderr, "MISMATCH fp_inv(0) != 0\n"); }
     }
 
+    /* The two backends must agree bit for bit, including when the result
+     * aliases an input. Vectors never alias, and the assembly writes its
+     * output only after its last read of a and b, which is a property no
+     * value-based test would catch if it were broken. */
+    for (long k = 0; k < iters; k++) {
+        mpz_urandomm(a, st, P);
+        mpz_urandomm(b, st, P);
+        limbs_of(la, a); limbs_of(lb, b);
+        fp_from_limbs(fa, la); fp_from_limbs(fb, lb);
+
+        fp_t want, u, v;
+        fp_mul_portable(want, fa, fb);
+
+        fp_mul(fr, fa, fb);
+        checks++;
+        if (!fp_eq(fr, want)) { failures++; fprintf(stderr, "MISMATCH backends disagree\n"); }
+
+        fp_copy(u, fa); fp_mul(u, u, fb);
+        checks++;
+        if (!fp_eq(u, want)) { failures++; fprintf(stderr, "MISMATCH alias r==a\n"); }
+
+        fp_copy(v, fb); fp_mul(v, fa, v);
+        checks++;
+        if (!fp_eq(v, want)) { failures++; fprintf(stderr, "MISMATCH alias r==b\n"); }
+
+        fp_mul_portable(want, fa, fa);
+        fp_copy(u, fa); fp_mul(u, u, u);
+        checks++;
+        if (!fp_eq(u, want)) { failures++; fprintf(stderr, "MISMATCH alias r==a==b\n"); }
+    }
+
     mpz_clears(a, b, w, NULL); gmp_randclear(st); mpz_clear(P);
-    printf("  %ld checks, %ld failures\n", checks, failures);
+    printf("  %ld checks, %ld failures, fp_mul backend: %s\n",
+           checks, failures, fp_mul_backend_name());
     return failures ? 1 : 0;
 }

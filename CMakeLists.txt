@@ -19,7 +19,7 @@ cmake_minimum_required(VERSION 3.16)
 project(elips
   VERSION 1.0.1
   DESCRIPTION "Efficient Library for Pairing-based Systems (BN, BLS12)"
-  LANGUAGES C)
+  LANGUAGES C ASM)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -87,6 +87,16 @@ set(ELIPS_ARITH_SOURCES
   src/hash/hash_to_curve.c
   src/util/random.c
   src/util/sysrand.c)
+
+# Assembly. The .S files are guarded internally by #if on the target
+# architecture, so listing one on a machine it does not target compiles to an
+# empty object rather than a build failure, and CMake needs no host test. The
+# C in src/arith/fp.c decides at runtime whether to call in, and the portable
+# implementation is compiled and tested either way.
+#
+# Whether this earns its place was measured before it was written. See the
+# backend-selection comment in src/arith/fp.c, and issue #7.
+list(APPEND ELIPS_ARITH_SOURCES src/arith/fp_mul_x86_64.S)
 
 foreach(_cv IN LISTS ELIPS_CURVES)
   add_library(elips_arith_${_cv} STATIC ${ELIPS_ARITH_SOURCES})
