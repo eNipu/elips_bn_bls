@@ -2473,7 +2473,49 @@ the output did not move.
 
 ---
 
-## An unresolved dudect reading on the macOS runner (BN only)
+## A dudect reading blamed on the platform that was the compiler (issue #30)
+
+> **CORRECTED. Read this box before the section below it.**
+>
+> The section that follows was written when this looked like an Apple-silicon
+> effect that could not be reproduced anywhere else. Two of its central claims
+> are now known to be wrong, and they are the two that matter:
+>
+> - **"It does not reproduce on x86-64, at any sample size" is false.** It
+>   reproduces on x86-64 Linux under **clang**, and not under gcc, on the same
+>   machine and the same source. macOS CI builds with clang. The variable was
+>   the compiler, not the platform.
+> - **"BN only" is false.** BLS12-381's `ep_mul_glv` leaks too, 17.79 -> 52.48.
+>
+> Measured, clang 18 against gcc 13, n=18000 escalating to 72000, threshold 25:
+>
+>     ep_mul         clang  0.94           gcc 1.10
+>     ep_mul_glv     clang 32.97 -> 69.36  gcc 1.55
+>     ep2_mul        clang  1.40           gcc 0.70
+>     ep2_mul_glv    clang  7.39           gcc 1.61
+>
+> The plain ladders are clean under both. Only the GLV decomposition paths are
+> affected, which points at the decomposition rather than the ladder or the
+> field arithmetic. Not caused by the GMP removal: the pre-#24 tree built with
+> clang reads 129 -> 230.
+>
+> One mechanism is ruled out. While writing `src/arith/wide.c` for #24, clang
+> was caught compiling a branch-free masked select into a real branch, because
+> `0 - borrow` is provably 0 or ~0. There is no such `neg`-then-branch and no
+> sign-shift-then-branch in clang's `ec.c`, `fpx.c` or `fp.c`. The open lead is
+> that gcc emits 13 `cmov` in `ep_mul_glv` where clang emits 2.
+>
+> **The experiment the section below proposes is no longer needed.** Nobody has
+> to find an Apple-silicon machine. `CC=clang cmake -B build
+> -DCMAKE_BUILD_TYPE=Release && ./build/dudect_test ep_mul_glv 18000`
+> reproduces it on an ordinary Linux box. Issue #30 carries the detail.
+>
+> The original account is kept below, unedited, because how the wrong
+> conclusion was reached is the useful part: every individual measurement in it
+> was correct, and the error was reasoning about a platform when only one
+> toolchain had been varied.
+
+### The original account, as written, now known to be wrong about the cause
 
 Recorded because it is NOT explained, and a future session should not have to
 rediscover it.
@@ -2697,6 +2739,104 @@ cross-assembles for Darwin targets and `llvm-nm` reads Mach-O.
 
     clang -target arm64-apple-macos11 -c src/arith/fp_mul_aarch64.S -o /tmp/a.o
     llvm-nm /tmp/a.o        # U before the fix, T after
+
+## GMP became a test dependency (issue #24)
+
+Milestone 1 of the developer-API epic, #23. The shipped library now has no
+runtime dependencies at all.
+
+Proven, not asserted: a program exercising hash-to-curve, random scalars, the
+pairing and both inversions links and runs against the static library with **no
+`-lgmp`**. The same link against the previous build fails with 11 undefined GMP
+references. `nm -u` on the archive reports zero GMP symbols.
+
+That one line in the README was what stood between this library and a browser
+build, a Python wheel and an npm package.
+
+### It was three operations, not a library
+
+| Was | Now |
+|---|---|
+| `mpn_sec_div_r`, two call sites | `elips_mod_wide`, `src/arith/wide.c` |
+| `mpz_invert` in `fp_inv_vartime` | in-tree binary extended Euclid |
+| `mpn_sec_invert` in `fp_inv_sec` | deleted; the check moved into the test |
+
+The primary `fp_inv` already needed nothing: it has been in-tree
+Bernstein-Yang divsteps since §10.7.
+
+### What the reduction costs, stated rather than buried
+
+    elips_mod_wide     2607 ns
+    GMP mpn_sec_div_r     85 ns     thirty times faster
+
+Thirty times slower is a real cost. End to end it is small, because neither
+caller is a hot loop: about 3% of a `hash_to_g1`, about 1% of a `hash_to_g2`,
+and nothing anywhere else. The pairing, the ladders and the final exponentiation
+do not call it at all.
+
+Two things were measured before settling on the shape. Specialising the widths
+as compile-time literals so the compiler could unroll gained 3%, which says the
+cost is the algorithm and not the code generation. Seeding the accumulator with
+the top `dn-1` limbs instead of shifting them in one bit at a time gained 2.6x,
+6673 ns -> 2607 ns, and is kept.
+
+**A near-miss worth recording.** The seeding change was nearly reverted as a
+regression, on the strength of two numbers taken in separate runs (2771 vs
+2997). Timing both in one binary showed the opposite, and by a wide margin.
+That is the third time in this repository that a cross-run comparison has
+pointed the wrong way. `bench/compare.py` exists because of the first two. The
+rule that keeps being relearned: **if two numbers are going to be divided, they
+have to be measured in the same process.**
+
+### fp_inv_vartime had to stay variable time
+
+The obvious simplification was to route it to the constant-time `fp_inv` and
+delete it. That would have been wrong: it is the **negative control** in
+`test/dudect_test.c`, the routine that proves the timing harness can detect a
+leak at all. Pointing it at a constant-time implementation would have silently
+turned the control into one that always passes, which is worse than having
+none. It is now an in-tree binary extended Euclid that still branches on its
+operand at every step, and still reads `max|t| = 857`.
+
+### fp_inv_sec is gone, and the test got stronger
+
+It was an `mpn_sec_invert` wrapper the library shipped for one reason: so
+`edge_test` could check `fp_inv` against something. With GMP out of the
+library that was no longer possible, and it turned out not to be wanted either.
+The check now runs against GMP **directly**, in the test. Checking our routine
+against a third party is a stronger statement than checking it against another
+of our routines.
+
+That is the general shape of why GMP is still here at all: `fp_difftest`
+compares the whole Montgomery layer against `mpz`, the new `wide_test` compares
+the reduction against `mpn_sec_div_r` on 18324 values per curve, and
+`edge_test` checks both inversions against `mpz_invert`. Agreement with an
+independent implementation is evidence; agreement with ourselves is not.
+
+### The timing tests caught a bug, which is why they exist
+
+The masked select in the new reduction is written branch-free. clang at `-O2`
+compiled it into a branch anyway:
+
+    neg  %r11        ; r11 is the 0-or-1 borrow, so CF = (borrow != 0)
+    jae  ...         ; branch on the mask, into one of two copy loops
+
+It could do that because `0 - borrow` is provably `0` or `~0`, which makes the
+two arms of the select provably "take this one" or "take that one". dudect read
+`max|t| = 0.99` under gcc and `113 -> 284`, growing with the sample, under
+clang. Laundering the mask through an empty `asm` with a read-write operand
+fixes it: the branch is gone from the disassembly and clang reads 2.27 at
+twenty times the CI sample.
+
+**Generalise this before writing another masked select.** Any mask the compiler
+can prove is one of two values is a branch waiting to be emitted. The existing
+selects in `fp.c`, `fpx.c` and `ec.c` pass dudect under both compilers today,
+but several of them build their masks the same way and are only safe by
+accident of inlining. `ct_opaque` in `src/arith/wide.c` is the pattern.
+
+Hunting that bug is also what turned up issue #30: the long-unresolved GLV
+timing reading is a clang effect, not an Apple-silicon one, and reproduces on
+x86-64. See the corrected box above.
 
 ---
 
