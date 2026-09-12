@@ -171,6 +171,15 @@ jobs:
         working-directory: bindings/js
         run: ./build.sh
 
+      # playwright drives the demo page in a real browser. The API tests run
+      # without it; the demo tests skip themselves if it is absent, so this
+      # install is what turns them on.
+      - name: Install a browser for the demo test
+        working-directory: bindings/js
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
       - name: Test
         working-directory: bindings/js
         run: node --test tests/*.test.mjs

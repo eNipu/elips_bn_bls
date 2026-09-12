@@ -7,18 +7,34 @@
   "exports": {
     ".": "./elips.mjs"
   },
-  "files": ["elips.mjs", "dist/elips_wasm.mjs", "README.md"],
+  "files": [
+    "elips.mjs",
+    "dist/elips_wasm.mjs",
+    "README.md"
+  ],
   "scripts": {
     "build": "./build.sh",
     "test": "node --test tests/*.test.mjs"
   },
-  "keywords": ["bls", "bls12-381", "signatures", "pairing", "wasm", "crypto"],
+  "keywords": [
+    "bls",
+    "bls12-381",
+    "signatures",
+    "pairing",
+    "wasm",
+    "crypto"
+  ],
   "license": "LGPL-3.0-or-later",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eNipu/elips_bn_bls.git",
     "directory": "bindings/js"
   },
-  "engines": { "node": ">=18" },
-  "sideEffects": false
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
 }

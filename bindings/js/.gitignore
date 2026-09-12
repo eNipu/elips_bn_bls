@@ -2,3 +2,9 @@
 # mean a second copy of the library that could disagree with the first.
 dist/
 node_modules/
+
+# playwright is installed ad-hoc by CI with --no-save, for the demo test only.
+# A lock file here would exist solely to pin a browser driver, and an earlier
+# accidental `npm install` put playwright in "dependencies", which would have
+# made every consumer of this package download one.
+package-lock.json

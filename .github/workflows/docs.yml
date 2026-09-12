@@ -51,6 +51,34 @@ jobs:
           echo "generated $n HTML pages"
           test "$n" -gt 10 || { echo "::error::only $n pages, the generator found nothing"; exit 1; }
 
+      # The demo rides the same deployment rather than getting a second
+      # workflow. Pages allows one source, and two publishers racing for it is
+      # how this repository previously ended up serving a stale site.
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: mymindstorm/setup-emsdk@v14
+        with: { version: 'latest' }
+
+      - name: Build the WebAssembly demo
+        run: |
+          bindings/js/build.sh
+          mkdir -p doxygen-out/html/demo
+          cp bindings/js/demo/index.html doxygen-out/html/demo/
+          cp bindings/js/elips.mjs       doxygen-out/html/demo/
+          mkdir -p doxygen-out/html/demo/dist
+          cp bindings/js/dist/elips_wasm.mjs doxygen-out/html/demo/dist/
+
+      # A demo that 404s is worse than none, and the copy above is exactly the
+      # kind of step that rots silently when a path changes.
+      - name: Refuse to deploy a broken demo
+        run: |
+          for f in index.html elips.mjs dist/elips_wasm.mjs; do
+            test -s "doxygen-out/html/demo/$f" \
+              || { echo "::error::demo/$f is missing or empty"; exit 1; }
+          done
+          grep -q 'elips.mjs' doxygen-out/html/demo/index.html \
+            || { echo "::error::the demo page does not reference the module"; exit 1; }
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: doxygen-out/html
