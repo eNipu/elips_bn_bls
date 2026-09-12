@@ -369,8 +369,21 @@ SYM(elips_fp_mul_8_aarch64):
     ret
     FUNC_SIZE(elips_fp_mul_8_aarch64)
 
+#endif /* __aarch64__ */
+
+/* OUTSIDE the architecture guard, deliberately.
+ *
+ * On the other architecture this file compiles to a completely empty object,
+ * and an ELF object with no .note.GNU-stack tells GNU ld that it needs an
+ * EXECUTABLE STACK. Linking the objects directly, as the Python extension
+ * does, then produced a shared object with RWE stack permissions: W^X
+ * defeated by a file that contains no code at all.
+ *
+ * It hid for a while because a static archive saved it. ld only pulls a member
+ * that defines a symbol it needs, and an empty object defines none, so the
+ * CMake builds never linked it in. Only a build that links every object
+ * directly shows the problem, and then only as a warning.
+ */
 #if defined(__linux__)
 .section .note.GNU-stack,"",%progbits
 #endif
-
-#endif /* __aarch64__ */

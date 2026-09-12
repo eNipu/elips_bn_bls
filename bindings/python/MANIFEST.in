@@ -1,0 +1,5 @@
+# The C the extension is built from. Without these the sdist builds nowhere.
+recursive-include vendor/include *.h
+recursive-include vendor/src *.c *.h *.S
+include build_ffi.py
+include README.md

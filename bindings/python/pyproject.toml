@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=61", "cffi>=1.15", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "elips"
+version = "0.1.0"
+description = "BLS signatures on BLS12-381, from the ELiPS pairing library"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "LGPL-3.0-or-later" }
+keywords = ["bls", "bls12-381", "signatures", "pairing", "cryptography"]
+classifiers = [
+  "Intended Audience :: Developers",
+  "Programming Language :: C",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+]
+dependencies = ["cffi>=1.15"]
+
+[project.urls]
+Homepage = "https://github.com/eNipu/elips_bn_bls"
+Issues = "https://github.com/eNipu/elips_bn_bls/issues"
+
+# src-layout, deliberately. With the package at the top level, pytest imports
+# the SOURCE directory rather than the installed extension, and the compiled
+# module is not there -- so the tests fail with ModuleNotFoundError while the
+# package works fine. Moving it under src/ makes that mistake impossible.
+[tool.setuptools]
+package-dir = { "" = "src" }
+packages = ["elips"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+elips = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

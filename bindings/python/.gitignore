@@ -1,0 +1,6 @@
+# Copied from the repository root by build_ffi.py on every build. Tracking it
+# would mean two copies of the library that could disagree.
+vendor/
+build/
+dist/
+*.egg-info/
