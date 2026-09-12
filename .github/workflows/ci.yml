@@ -150,6 +150,41 @@ jobs:
         working-directory: bindings/python
         run: /tmp/gate/bin/python -m pytest tests -q
 
+  # Masked selects, checked in the object code rather than by timing.
+  #
+  # Issue #30 was a masked select that clang compiled into a branch on a borrow
+  # derived from the secret scalar. dudect caught it, but only statistically
+  # and only on the toolchain that did it -- Linux CI builds with gcc, which
+  # does not, so the failure appeared solely on macOS and was blamed on Apple
+  # silicon for weeks.
+  #
+  # BOTH COMPILERS, on Linux, deterministically. This finds the instruction
+  # sequence itself, so it cannot be flaky and does not need a quiet machine.
+  constant-time-codegen:
+    name: masked selects did not become branches
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v5
+      - run: sudo apt-get update && sudo apt-get install -y libgmp-dev
+      - name: Build
+        env:
+          CC: ${{ matrix.cc }}
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j
+      - name: Scan
+        run: python3 tools/verify/ct_branch_scan.py build
+
+      # The timing tests too, under clang on Linux. The codegen scan above
+      # finds the one defect it knows; dudect is what finds the ones nobody has
+      # named yet, and it was only ever running under gcc here.
+      - name: Timing tests
+        run: ctest --test-dir build --output-on-failure --timeout 900 -R dudect
+
   # The README's own quickstart, run as written.
   #
   # The gate for issue #29 is behavioural, not editorial: a developer who has

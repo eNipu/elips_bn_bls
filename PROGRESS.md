@@ -2473,9 +2473,113 @@ the output did not move.
 
 ---
 
-## A dudect reading blamed on the platform that was the compiler (issue #30)
+## The GLV timing leak: found, fixed, and guarded (issue #30, CLOSED)
 
-> **CORRECTED. Read this box before the section below it.**
+**RESOLVED. It was a real data-dependent branch, not a microarchitectural
+artefact and not a platform effect.**
+
+`glv_divrem` chooses between two values with a masked select:
+
+    mask = 0 - (1 - borrow);                  /* 0 or ~0 */
+    rem[j] = (t[j] & mask) | (rem[j] & ~mask);
+
+clang proves `mask` is one of two values, decides the expression means "one or
+the other", and emits:
+
+    sub    %rax,%r15
+    setb   %sil            ; the borrow, derived from the secret scalar
+    test   $0x1,%sil
+    je     ...             ; a branch on it
+
+gcc emits `cmov` and does not. Three routines went through that divider and all
+three leaked: `ep_mul_glv`, `ep2_mul_glv`, `fp12_exp_gt`.
+
+Laundering the mask through `ct_mask` (`src/arith/ct.h`) fixes it. Measured,
+clang, six runs each:
+
+    ep_mul_glv    5.2 - 84.4  (escalating to 175)  ->  0.92 - 1.73
+    ep2_mul_glv   6.82                             ->  1.23 - 3.06
+    fp12_exp_gt   9.06                             ->  0.57 - 2.34
+
+Costs nothing: A/B alternated over five rounds, nothing regressed.
+
+### How it was narrowed, including the wrong turns
+
+Three hypotheses were tested and refuted before the right one, and each
+refutation is worth as much as the answer:
+
+1. **"It is the same masked-select bug as `wide.c`."** A search for that bug's
+   instructions (`neg` then a jump) in `ec.c`, `fpx.c` and `fp.c` found
+   nothing, and the hypothesis was dropped. It was the right hypothesis and the
+   wrong search: the same defect wears different instructions depending on how
+   the condition was computed, and this one was `setb` then `test $1` then
+   `je`. **A negative result from a pattern search is evidence about the
+   pattern, not about the bug.**
+
+2. **"The fixed class is not representative."** `fixed_scalar` clears
+   everything above bit `ORDER_BITS-1`, so class 0 was always below 2^254 while
+   class 1 was uniform in [0, r). A real flaw, and not this one: making the
+   fixed class full-width made the reading WORSE, not better.
+
+3. **"It is `glv_divrem`" and "it is the ladder".** Timed separately, each is
+   clean. The leak only appeared with both, which was confusing until the
+   probe was made faithful: `ep_mul_glv` does TWO divisions and the first probe
+   did one. With both, the probe read 73 to 848 against gcc's 1.15 to 2.71.
+   **An isolation probe that is not faithful to the caller isolates nothing.**
+
+A fourth wrong turn is recorded because the tooling misled: gcc compiled the
+first probe to `endbr64; ret`, having deleted the work as dead, so the gcc side
+of that comparison was vacuous. The numbers looked like a clean baseline. They
+were nothing at all.
+
+### Why it survived so long
+
+Linux CI builds with gcc, which emits `cmov` here. macOS CI builds with clang,
+which does not. So the failure only ever appeared on macOS, where it was
+attributed to Apple silicon's multiplier and filed as unreproducible. The
+platform was a coincidence; the toolchain was the cause. **Varying one thing
+and attributing the result to another is the error, and it is easy to make when
+the two always change together.**
+
+### What now guards it
+
+`tools/verify/ct_branch_scan.py` looks for the instruction sequence itself:
+
+    set<cc> %r8b ; test $0x1,%r8b ; j<cc>
+
+with the register matching across all three. On the pre-fix build it reports 20
+hits, all in exactly the three affected routines. On the fixed build, under
+both compilers, zero. It is structural rather than statistical, so it cannot be
+flaky and does not need a quiet machine.
+
+A broader pattern was tried first and abandoned: pairing any flag-producing
+instruction with any following conditional jump flags ten sites on both
+compilers, every one of them fine -- the deserializers branching on public
+encoded bytes, and loop-unroll remainder checks on public trip counts. **A
+check with ten false positives is not a gate, it is something that gets
+switched off.**
+
+CI now also runs the timing tests under clang on Linux, because the codegen
+scan only finds the defect it knows about, and the reason this one hid for
+weeks is that dudect was only ever running under gcc there.
+
+### One thing that is NOT fixed, stated rather than glossed
+
+At `clang -O1` the readings are still high -- but so are they for `ep_mul`,
+the plain ladder with no GLV in it, which is clean at `-O2`, `-O3` and Release.
+So `-O1` is not a configuration this library is constant time under, and that
+is a different and broader statement than issue #30 made. Nothing builds it at
+`-O1`; Release is `-O3`. It has not been investigated further and should not be
+assumed benign.
+
+---
+
+## The original account, kept because the reasoning is the lesson
+
+
+
+> **SUPERSEDED by the section above, which resolves this. Kept because the
+> wrong turns are the useful part.**
 >
 > The section that follows was written when this looked like an Apple-silicon
 > effect that could not be reproduced anywhere else. Two of its central claims

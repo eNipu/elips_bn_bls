@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include "elips/fp.h"
+#include "ct.h"
 
 #define GLV_W  ((int)FP_LIMBS)          /* wide enough for r and for k mod r */
 #define GLV_WW (2 * (int)FP_LIMBS)      /* wide enough for k times a basis entry */
@@ -65,7 +66,11 @@ static inline void glv_divrem(limb_t *q, limb_t *rem, const limb_t *k, int kbits
     for (int i = kbits - 1; i >= 0; i--) {
         glv_shl1(rem, (k[i / 64] >> (i % 64)) & 1, n);
         limb_t borrow = glv_sub(t, rem, d, n);
-        limb_t mask   = (limb_t)0 - (1 - borrow);      /* all ones if rem >= d */
+        /* ct_mask, not a bare `0 - (1 - borrow)`. Without it clang proves the
+         * mask is one of two values and emits `setb; test $1; je` -- a branch
+         * on a borrow derived from the secret scalar. See src/arith/ct.h and
+         * issue #30. */
+        limb_t mask   = ct_mask((limb_t)0 - (1 - borrow));  /* ones if rem >= d */
         for (int j = 0; j < n; j++)
             rem[j] = (t[j] & mask) | (rem[j] & ~mask);
         q[i / 64] |= (mask & 1) << (i % 64);
@@ -114,6 +119,11 @@ static inline void glv_cneg(limb_t *r, const limb_t *a, limb_t mask, int n)
     limb_t zero[GLV_WW], t[GLV_WW];
     memset(zero, 0, sizeof(limb_t) * n);
     (void)glv_sub(t, zero, a, n);
+    /* The mask arrives as a parameter, but this is a static inline and every
+     * caller builds it as `0 - (x >> 63)`, so the optimiser can see straight
+     * through to a provable 0 or ~0. Launder it here rather than at each
+     * call. */
+    mask = ct_mask(mask);
     for (int i = 0; i < n; i++)
         r[i] = (t[i] & mask) | (a[i] & ~mask);
 }

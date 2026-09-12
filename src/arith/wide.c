@@ -36,38 +36,9 @@
  */
 #include "elips/fp.h"
 #include "wide.h"
+#include "ct.h"
 
 #include <string.h>
-
-/* Hide from the optimiser that this value is one of exactly two.
- *
- * The masked select at the bottom of the loop is written branch-free, and at
- * -O2 clang compiled it into a branch anyway:
- *
- *     neg  %r11          ; r11 is the 0-or-1 borrow, so CF = (borrow != 0)
- *     jae  ...           ; jump on the mask, into one of two copy loops
- *
- * It could do that because `0 - borrow` is provably 0 or ~0, so the two arms
- * of the select are provably "take one" or "take the other". dudect caught it:
- * the same source read max|t| = 0.99 under gcc and 113 -> 284, growing with
- * the sample, under clang. Growth with n is the signature of a real systematic
- * bias rather than noise.
- *
- * An empty asm with the value as a read-write operand makes the mask opaque:
- * the compiler must assume it could be anything, so the select stays a select.
- * Costs one register move. The fallback path for a compiler without GNU asm is
- * a volatile round trip, which is weaker but still defeats the folding.
- */
-static inline limb_t ct_opaque(limb_t x)
-{
-#if defined(__GNUC__) || defined(__clang__)
-    __asm__ ("" : "+r"(x));
-    return x;
-#else
-    volatile limb_t v = x;
-    return v;
-#endif
-}
 
 #define WIDE_MAX (2 * (int)FP_LIMBS + 2)
 
@@ -115,8 +86,8 @@ void elips_mod_wide(limb_t *w, int nn, const limb_t *m, int dn)
             borrow = b1 | b2;
         }
         /* borrow == 1 means acc < m: keep acc. Masked, never branched --
-         * see ct_opaque above for why the mask has to be laundered. */
-        limb_t keep = ct_opaque((limb_t)0 - borrow);
+         * see src/arith/ct.h for why the mask has to be laundered. */
+        limb_t keep = ct_mask((limb_t)0 - borrow);
         for (int j = 0; j <= dn; j++)
             acc[j] = (acc[j] & keep) | (sub[j] & ~keep);
     }
