@@ -33,8 +33,12 @@ catch { /* not installed */ }
 
 const maybe = chromium ? test : test.skip;
 
+// A wrong content type is not a 404: the browser fetches the file and then
+// refuses to use it. Serving style.css as octet-stream left the page unstyled
+// and the overflow assertion below is what noticed.
 const TYPES = { ".html": "text/html", ".mjs": "text/javascript",
-                ".js": "text/javascript", ".wasm": "application/wasm" };
+                ".js": "text/javascript", ".css": "text/css",
+                ".wasm": "application/wasm" };
 
 let server, browser, page, requestsAfterLoad, pageErrors;
 
@@ -117,6 +121,14 @@ maybe("corrupting one signature visibly fails", async () => {
 maybe("no network requests are made after load", async () => {
   assert.deepEqual(requestsAfterLoad, [],
     "the page tells the reader to check this in devtools");
+});
+
+maybe("the stylesheet actually applied", async () => {
+  // Cheap, and it is the difference between "styled" and "the browser fetched
+  // the CSS and declined to use it", which look identical to a 200 check.
+  const bg = await page.evaluate(() =>
+    getComputedStyle(document.querySelector(".card")).borderRadius);
+  assert.notEqual(bg, "0px", "the .card rule did not take effect");
 });
 
 maybe("no horizontal overflow at phone width", async () => {
