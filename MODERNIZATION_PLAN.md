@@ -1317,7 +1317,7 @@ portable C on Apple Silicon. So the realistic Phase 6 headroom on x86-64 is
 around **3x, not the ~1.3x §6 assumed**, and it comes from vectorising the
 extension-field arithmetic, not only from a faster limb multiply.
 
-**Revised Phase 6 decision:**
+**Revised Phase 6 decision, as written:**
 
 1. Keep the AArch64 scalar path as §6 describes; there is no IFMA equivalent, so
    `MUL`/`UMULH` + `ADCS` remains right there.
@@ -1331,6 +1331,53 @@ extension-field arithmetic, not only from a faster limb multiply.
 4. Take the profile on an x86-64 machine before starting. Every measurement in
    `PROGRESS.md` up to Phase 4 was taken on Apple Silicon, and Phase 5's on a
    slower x86-64 VM; neither is the machine this decision is about.
+
+### 10.10a What happened when that was carried out — issues #36, #37, #40
+
+Point 4 was honoured first, and points 2 and 3 did not survive it. Recorded
+here rather than quietly amended above, because the reasoning above was sound
+and still lost to the measurement, which is the more useful thing to know.
+
+**The profile inverted the target (#36).** On an x86-64 machine, `fp_mul` is
+39% of a pairing and `fp_add` + `fp_sub` together are 50% -- and those two had
+no assembly at all. Amdahl caps an infinitely fast multiply at 1.64x. So the
+first real work was not IFMA:
+
+**#37, landed: scalar assembly for `fp_add`/`fp_sub`, 1.58x on a pairing.**
+`fp_add` 24.32 -> 7.72 cycles, `fp_sub` 25.83 -> 6.78. The portable C made
+three passes over the limbs and built its carry chain out of comparisons,
+because C has no `adc`. No CPUID gate: `adc`, `sbb` and `cmov` are baseline
+x86-64, unlike the `mulx`/`adcx`/`adox` that `fp_mul` needs.
+
+**#40, measured and deleted: IFMA.** A 52-bit IFMA Montgomery multiply, correct
+against GMP over 300,000 inputs, on the same machine at -O3:
+
+    fp_mul, mulx/adcx/adox, what ships         97.6 cycles
+    IFMA drop-in, one multiply + conversion   389.7          4.0x slower
+    reduction loop, 4 in flight                76.2   per multiply
+    COMPLETE multiply, 4 in flight, no conv    82.3   per multiply   1.18x
+
+So point 2 is wrong in both halves: scalar is the goal, not the fallback, and
+IFMA is not the thing to target first. The reduction loop is LATENCY-bound --
+each CIOS step waits on the previous accumulator -- so batching is not an
+optimisation on top of an IFMA backend, it is what makes one possible. And
+even batched it reaches 1.18x, under the §6 bar, in exchange for rewriting the
+extension field into a redundant representation.
+
+Point 3 is the one that held, and it is why there is no IFMA code in the
+library: the gate deleted it rather than carrying it.
+
+**The ~3x estimate above was not measured.** It compared a paper's Ice Lake
+figure against this library's portable C on Apple Silicon -- two machines, two
+toolchains, and a baseline that has since got 1.58x faster. Treat it as the
+reason the question was worth asking, not as a prediction.
+
+**Step 3, if it happens, starts with hardware rather than code.** The machine
+all of the above was measured on does not advertise AVX512_IFMA -- CPUID leaf
+7.0 EBX bit 21 is clear -- yet `vpmadd52luq` executes and returns correct
+results, so a hypervisor is masking it and whether the silicon runs IFMA at
+full speed is unknown. A 1.18x taken there is not a basis for committing to a
+rewrite. `bench/ifma_probe.c` reproduces every number above on demand.
 
 ### 10.11 Why these three curves — recorded, since it was never written down
 

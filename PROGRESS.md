@@ -2987,7 +2987,7 @@ so their vectors pin self-consistency.
 | Work | Worth | Risk |
 |---|---|---|
 | Fast subgroup tests (§10.3) | ~1/3 of the pairing | conditions must be derived and asserted, not recalled |
-| AVX-512 IFMA on x86-64 (§10.10) | ~3x on that architecture | large, and needs the C fallback beside it |
+| ~~AVX-512 IFMA on x86-64 (§10.10)~~ | ~~~3x~~ measured at 1.18x batched, and 4.0x SLOWER as a drop-in (#40) | deleted by the §6 gate; the ~3x compared a paper's machine against ours |
 | Multi-pairing + fixed-argument precomputation (§10.6) | ~40% of a signature verification | low; it is bookkeeping over the existing loop |
 | Karabina compressed squaring (§10.5) | 10–15% of the final exponentiation | low |
 | GLV on G1, and on BN G2 (§10.4) | ~1.4x on those ladders | low; the constant-time decomposition already exists |
@@ -3037,9 +3037,12 @@ Everything in the previous hand-offs still holds. Added by Phase 5b:
 - ~~`hash_to_g2` rebuilds a window table for each of its two short ladders.~~
   Done, though not the way that note suggested: the tables could never be
   shared, the doublings could.
-- ~~No assembly (issue #7).~~ Done on x86-64 and AArch64, both limb
-  widths. AVX-512 IFMA (plan §10.10) is still open and is the larger win
-  on x86-64.
+- ~~No assembly (issue #7).~~ Done on x86-64 and AArch64, both limb widths,
+  and `fp_add`/`fp_sub` too as of #37 -- which turned out to be the larger win
+  on x86-64, not IFMA: 1.58x on a pairing, because the profile found addition
+  and subtraction were half the time and had no assembly at all. AVX-512 IFMA
+  was then measured and NOT shipped (#40): 4.0x slower as a drop-in, 1.18x
+  fully batched, under the §6 bar. See §10.10a.
 - ~~No signature layer.~~ Done, issue #25, and §10.8's reasoning held rather
   than being overturned. It said signing and aggregation "can be built on top
   without touching this library", and `elips_bls` is exactly that: a separate
