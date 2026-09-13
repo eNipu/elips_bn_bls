@@ -4,8 +4,8 @@
   "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
   "cflags": "-O2 (CMAKE_BUILD_TYPE=Release)",
   "gmp": "2:6.3.0+dfsg-2ubuntu6.1",
-  "commit": "2693c53",
-  "date": "2026-09-12",
+  "commit": "b756b71",
+  "date": "2026-09-13",
   "harness": {
     "reps": 15,
     "inner": 60,
@@ -102,96 +102,97 @@
   "fp_addsub_backend": "x86-64 adc/sbb/cmov (issue #37). Baseline x86-64, so it needs no CPUID check and is always on. ELIPS_NO_ASM_ADDSUB=1 records the portable C for this pair alone, which is how its 1.58x was measured without moving fp_mul at the same time.",
   "results": {
     "ep_mul": {
-      "median": 170.527,
-      "min": 168.593,
-      "max": 202.341,
-      "spread_pct": 19.79
+      "median": 184.7,
+      "min": 181.988,
+      "max": 192.89,
+      "spread_pct": 5.9
     },
     "ep_mul_glv": {
-      "median": 120.63,
-      "min": 119.645,
-      "max": 129.7,
-      "spread_pct": 8.34
+      "median": 129.84,
+      "min": 127.712,
+      "max": 156.718,
+      "spread_pct": 22.34
     },
     "ep2_mul": {
-      "median": 548.629,
-      "min": 544.367,
-      "max": 565.727,
-      "spread_pct": 3.89
+      "median": 560.523,
+      "min": 545.205,
+      "max": 580.965,
+      "spread_pct": 6.38
     },
     "ep2_mul_glv": {
-      "median": 284.88,
-      "min": 282.992,
-      "max": 418.286,
-      "spread_pct": 47.49
+      "median": 297.847,
+      "min": 291.503,
+      "max": 307.656,
+      "spread_pct": 5.42
     },
     "gt_exp": {
-      "median": 957.024,
-      "min": 948.387,
-      "max": 981.745,
-      "spread_pct": 3.49
+      "median": 965.557,
+      "min": 934.486,
+      "max": 1007.991,
+      "spread_pct": 7.61
     },
     "gt_exp_ct": {
-      "median": 363.971,
-      "min": 362.371,
-      "max": 376.31,
-      "spread_pct": 3.83
+      "median": 372.065,
+      "min": 357.565,
+      "max": 404.852,
+      "spread_pct": 12.71
     },
     "miller": {
-      "median": 457.089,
-      "min": 452.942,
-      "max": 476.525,
-      "spread_pct": 5.16
+      "median": 471.883,
+      "min": 464.631,
+      "max": 531.756,
+      "spread_pct": 14.22
     },
     "final_exp": {
-      "median": 493.557,
-      "min": 487.52,
-      "max": 824.544,
-      "spread_pct": 68.28
+      "median": 499.145,
+      "min": 479.86,
+      "max": 575.651,
+      "spread_pct": 19.19
     },
     "pairing": {
-      "median": 1225.839,
-      "min": 1210.345,
-      "max": 1651.571,
-      "spread_pct": 35.99
+      "median": 1265.921,
+      "min": 1229.379,
+      "max": 1478.095,
+      "spread_pct": 19.65
     },
     "ep_in_subgroup": {
-      "median": 96.853,
-      "min": 95.985,
-      "max": 123.925,
-      "spread_pct": 28.85
+      "median": 105.383,
+      "min": 102.729,
+      "max": 110.296,
+      "spread_pct": 7.18
     },
     "ep2_in_subgroup": {
-      "median": 153.26,
-      "min": 152.378,
-      "max": 172.944,
-      "spread_pct": 13.42
+      "median": 161.722,
+      "min": 158.477,
+      "max": 166.585,
+      "spread_pct": 5.01
     },
     "hash_to_g1": {
-      "median": 203.357,
-      "min": 202.331,
-      "max": 212.071,
-      "spread_pct": 4.79
+      "median": 228.572,
+      "min": 216.806,
+      "max": 231.745,
+      "spread_pct": 6.54
     },
     "hash_to_g2": {
-      "median": 962.097,
-      "min": 953.381,
-      "max": 985.318,
-      "spread_pct": 3.32
+      "median": 1032.477,
+      "min": 1012.71,
+      "max": 1066.207,
+      "spread_pct": 5.18
     },
     "bls_sign": {
-      "median": 1510.27,
-      "min": 1497.486,
-      "max": 1739.313,
-      "spread_pct": 16.01
+      "median": 1339.274,
+      "min": 1306.073,
+      "max": 1443.074,
+      "spread_pct": 10.23
     },
     "bls_verify": {
-      "median": 3192.102,
-      "min": 3165.014,
-      "max": 3408.575,
-      "spread_pct": 7.63
+      "median": 3346.842,
+      "min": 3249.615,
+      "max": 3569.734,
+      "spread_pct": 9.56
     }
   },
   "reps": 21,
-  "inner": 60
+  "inner": 60,
+  "scalar_multiplication": "Secret scalars go through ep_mul_glv and ep2_mul_glv as of issue #38. They used the plain ladders until #30 and #32 were fixed; see the note at the top of src/bls/bls.c for the structural and statistical evidence that was required before switching."
 }

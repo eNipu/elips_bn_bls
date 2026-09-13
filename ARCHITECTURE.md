@@ -110,13 +110,8 @@ live in caller-provided buffers; nothing below `bls.c` allocates.
 1. `bls.c` deserializes `sk` to a scalar and rejects it if out of range.
 2. `hash_to_curve.c` maps `msg` to a point in G2 — SHA-256 through
    `expand_message_xmd`, then SSWU with the isogeny, then cofactor clearing.
-3. `ec.c` multiplies that point by the scalar with `ep2_mul`, the plain
-   constant-time fixed-window ladder — deliberately **not** `ep2_mul_glv`,
-   which is about 1.5x faster. The note at the top of `bls.c` records why: when
-   it was written the GLV paths read `max|t| = 32.97 -> 69.36` in dudect under
-   clang against 0.94 for the plain ladder, and signing is the one place in
-   this library where a scalar is a long-term secret. That was #30, and it is
-   fixed; see the caveat below.
+3. `ec.c` multiplies that point by the scalar with `ep2_mul_glv`, the
+   GLV-decomposed constant-time ladder.
 4. `serialize.c` compresses the result to 96 bytes.
 
 `elips_bls_verify` validates the public key and then makes one multi-pairing
@@ -126,12 +121,15 @@ final exponentiation covers both sides. It fills slot 0 itself rather than
 copying the caller's arrays, because at aggregate width that copy is about
 55 KB and WebAssembly's default stack is 64 KB.
 
-> **Open, and the code asks for it.** The `bls.c` note ends "when #30 closes,
-> this decision should be revisited with a benchmark, not assumed." #30 and #32
-> are both closed, and the GLV paths now read 1.50 to 2.62 under clang across
-> three runs. Signing therefore pays about 245 µs of 1510 µs for a constraint
-> that no longer holds. Tracked, not silently changed: switching which routine
-> handles a long-term secret key is not a documentation edit.
+Signing did not always use GLV. It used the plain fixed-window ladder until
+#38, because under clang the GLV paths read `max|t| = 32.97 -> 69.36` in dudect
+against 0.94 for the plain ladder — which was #30, a masked select clang
+compiled into a branch inside the GLV divider. Once that and #32 were fixed,
+switching back was worth 16.9% of a signature, but it moves a long-term secret
+onto a different routine, so it took evidence of both kinds: every branch in
+the GLV path shown to be on a public value, and dudect at four times the
+default sample count on both compilers reading the same as the ladders it
+replaced. The note at the top of `bls.c` carries the numbers.
 
 ## The three consumers
 

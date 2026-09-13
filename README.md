@@ -117,9 +117,9 @@ which measure the same two operations the same way; the full record is in
 
 | | native | WebAssembly | |
 |---|---|---|---|
-| sign | 1.51 ms | 11.99 ms | 7.9x |
-| verify | 3.19 ms | 24.22 ms | 7.6x |
-| pairing | 1.23 ms | | |
+| sign | 1.34 ms | 8.91 ms | 6.7x |
+| verify | 3.35 ms | 22.12 ms | 6.6x |
+| pairing | 1.25 ms | | |
 
 Read the medians, not the spreads. Individual rows swing 10% to 40% on this
 machine, but the medians agree across independent runs to within 1%, which is
@@ -130,9 +130,11 @@ optimisation: `wasm32` has no 64×64 → 128 bit multiply, so every field
 multiplication goes through a software helper and a pairing is tens of
 thousands of them. Native x86-64 and AArch64 do it in one instruction.
 
-The gap widened from roughly 5x to roughly 8x when `fp_add` and `fp_sub` got
-x86-64 assembly. That speeds up the native column by 1.58x and does nothing for
-WebAssembly, which cannot use it.
+The gap moves with whichever column a change reaches. x86-64 assembly for
+`fp_add` and `fp_sub` sped up the native column by 1.58x and did nothing for
+WebAssembly, which cannot use it, widening it to roughly 8x. Signing through
+GLV then narrowed it again — that one is portable C, so it took 16.9% off
+native signing and 18.5% off WebAssembly.
 
 ---
 

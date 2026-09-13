@@ -8,13 +8,35 @@
  * was written. What is genuinely new here is KeyGen, the aggregation paths,
  * and the input validation.
  *
- * ON SCALAR MULTIPLICATION. Secrets go through ep_mul and ep2_mul, the plain
- * constant-time fixed-window ladders, NOT through ep_mul_glv / ep2_mul_glv,
- * which are roughly 1.5x faster. That is not caution, it is a measurement:
- * under clang the GLV paths read max|t| = 32.97 -> 69.36 in dudect while the
- * plain ladders read 0.94 and 1.40, and issue #30 is open on why. Signing is
- * the one place in this library where a scalar is a long-term secret. When #30
- * closes, this decision should be revisited with a benchmark, not assumed.
+ * ON SCALAR MULTIPLICATION. Secrets go through ep_mul_glv and ep2_mul_glv.
+ *
+ * They did not always. This file used to call the plain fixed-window ladders
+ * on purpose, because under clang the GLV paths read max|t| = 32.97 -> 69.36
+ * in dudect while the plain ladders read 0.94 and 1.40. That was issue #30: a
+ * masked select clang compiled into a branch on a borrow derived from the
+ * secret scalar, inside the GLV divider. It was fixed in 49087be, and the same
+ * defect in redc_lin -- which the divider also reaches, through fp_inv -- in
+ * 67b0d4d. The note here said the decision should then be revisited with a
+ * benchmark rather than assumed, and issue #38 is that revisit.
+ *
+ * What was measured before switching, on an Intel Xeon at 2.10 GHz:
+ *
+ *   STRUCTURAL. Every conditional branch inside ep_mul_glv and ep2_mul_glv is
+ *   on a public value: the loop index of glv_divrem, whose kbits is public and
+ *   a compile-time constant here; the window-table size; and the stack canary.
+ *   There are FEWER of them than in the plain ladders that were already
+ *   trusted with the same secret -- 3 against 8 under clang. This is the check
+ *   that matters most, because it is the one #30 would have failed.
+ *
+ *   STATISTICAL, at four times the default sample count, three runs each,
+ *   under both compilers: GLV reads 0.99 to 2.25, and the plain ladders read
+ *   0.95 to 2.63 at the same n. The same harness in the same session finds a
+ *   planted one-multiply leak at 70 to 104 and the variable-time control at
+ *   956 to 2382, so it is not merely failing to look.
+ *
+ * Signing is still the one place in this library where a scalar is a long-term
+ * secret, so if either check regresses this decision is the first thing to
+ * reconsider, not the last.
  */
 #include "elips/bls.h"
 
@@ -161,7 +183,7 @@ int elips_bls_sk_to_pk(uint8_t pk[ELIPS_BLS_PK_BYTES],
 
     ep_t G1, P;
     ep_generator(&G1);
-    ep_mul(&P, &G1, k, ELIPS_ORDER_BITS);       /* see the note at the top */
+    ep_mul_glv(&P, &G1, k, ELIPS_ORDER_BITS);   /* see the note at the top */
     memset(k, 0, sizeof k);
 
     if (ep_is_infinity(&P)) return ELIPS_BLS_ERR_BAD_KEY;
@@ -207,7 +229,7 @@ static int core_sign(uint8_t sig[ELIPS_BLS_SIG_BYTES],
         memset(k, 0, sizeof k);
         return ELIPS_BLS_ERR_INVALID;
     }
-    ep2_mul(&S, &H, k, ELIPS_ORDER_BITS);       /* see the note at the top */
+    ep2_mul_glv(&S, &H, k, ELIPS_ORDER_BITS);   /* see the note at the top */
     memset(k, 0, sizeof k);
 
     ep2_write_compressed(sig, &S);
