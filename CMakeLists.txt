@@ -412,6 +412,25 @@ if(ELIPS_BUILD_TESTS)
   #   cmake --build build --target bench_BLS12_381
   #   ./build/bench_BLS12_381 --reps 15
   #   ./build/bench_BLS12_381 --json > before.json
+  # The AVX-512 IFMA probe (issue #40, step 2 of #36). Not a backend and not
+  # linked into anything: it measures why an IFMA multiply loses to the scalar
+  # one, so step 3 starts from a number. Built only where the compiler knows
+  # the instructions; it checks CPUID before using them.
+  include(CheckCSourceCompiles)
+  set(CMAKE_REQUIRED_FLAGS "-mavx512f -mavx512vl -mavx512ifma")
+  check_c_source_compiles("
+    #include <immintrin.h>
+    int main(void){ __m512i z=_mm512_setzero_si512();
+      z=_mm512_madd52lo_epu64(z,z,z); return _mm_cvtsi128_si64(_mm512_castsi512_si128(z))==0; }"
+    ELIPS_HAVE_IFMA_INTRINSICS)
+  unset(CMAKE_REQUIRED_FLAGS)
+  if(ELIPS_HAVE_IFMA_INTRINSICS)
+    add_executable(ifma_probe bench/ifma_probe.c bench/ifma_kernels.c)
+    target_include_directories(ifma_probe PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/bench)
+    target_compile_options(ifma_probe PRIVATE -mavx512f -mavx512vl -mavx512ifma)
+    elips_test_warnings(ifma_probe)
+  endif()
+
   foreach(_cv IN LISTS ELIPS_CURVES)
     add_executable(bench_${_cv} bench/bench.c)
     target_link_libraries(bench_${_cv} PRIVATE elips_arith_${_cv} GMP::GMP)
