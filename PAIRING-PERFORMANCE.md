@@ -1,17 +1,75 @@
 # Why the pairing is slower than blst
 
-Measured, not argued. Everything here was taken on one machine in one sitting:
-an Intel Xeon at 2.80 GHz, blst `de54cd4` built with `-D__ADX__` (its fast
-assembly path), ELiPS at `a206f81`, both `-O3`. Operation counts come from
-callgrind, which counts calls exactly and is independent of which backend runs.
+Measured, not argued.
+
+**The timing table in this document was wrong and has been replaced.** The
+earlier figures (pairing 1060 us against 403, miller 400 against 180) were not
+reproducible. Re-measuring both libraries in one sitting through one harness
+put blst's miller loop at 304 us, not 180, while ELiPS moved only from 400 to
+468. A uniform host change cannot scale one library by 1.67x and the other by
+1.15x, so the two halves of the old table were not taken under the same
+conditions, whatever the document claimed. The ratios below replace them.
+
+What survives unchanged: every operation count. Those come from callgrind,
+which counts calls exactly and does not care which backend runs or how fast
+the host is.
+
+## How the numbers below were taken
+
+Intel Xeon at 2.80 GHz. blst `8921f76` built with `-D__ADX__`, ELiPS at
+`4f52583`, both `-O3`, both linked into one binary (`bench/cross_blst.c`) that
+times every case through the same function-pointer table and the same
+interleaved loop. Medians over 15 to 31 reps.
+
+Three things were checked before any number here was believed:
+
+- **The harness detects a regression.** Five extra `fp2_mul` were planted in
+  `dbl_line`, which is arithmetically +11.2%. Alternating clean and planted
+  binaries three times reported +9.3%, +9.1%, +8.9%. The plant was reverted.
+- **blst is on its fast path.** The `-D__ADX__` build selects the ADX assembly
+  at compile time and would fault on a CPU without it; it ran. `objdump` finds
+  1,017 `mulx`/`adcx`/`adox` sites in the archive.
+- **The ratios are stable.** Three independent runs gave miller 1.518x,
+  1.504x, 1.530x. Medians agree to 2% even where a single descheduled sample
+  pushes the reported spread above 40%.
 
 ## The gap
 
 | | ELiPS | blst | ratio |
 |---|---:|---:|---:|
-| pairing | 1060 µs | 403 | 2.6x |
-| miller loop | 400 | 180 | 2.2x |
-| final exponentiation | 425 | 239 | 1.8x |
+| miller loop | 468 us | 304 | **1.52x** |
+| final exponentiation | 500 | 409 | **1.22x** |
+| pairing, arithmetic only | 963 | 716 | **1.34x** |
+| pairing, validation included | 1248 | 837 | **1.49x** |
+| G1 subgroup check | 98 | 52 | 1.90x |
+| G2 subgroup check | 155 | 62 | **2.49x** |
+
+Two rows, not one, because `elips_pairing` validates both input points and
+`blst_miller_loop` plus `blst_final_exp` do not. Comparing the first against
+the second is comparing an API to an algorithm. Validation is **22.9%** of the
+ELiPS pairing and 14.4% of blst's.
+
+That also answers the question of whether the subgroup checks are merely an
+API difference. They are not. blst performs the same two checks and is 2.49x
+faster at the G2 one, which is the single largest ratio in this table.
+
+## The counts over-predict the gap
+
+This is the most useful thing the re-measurement changed.
+
+The operation counts below say ELiPS performs 1.25x the multiplications,
+2.56x the reductions and 1.6x the additions. The old document reasoned that
+those were "together worth roughly 1.7 to 2x" and that blst's better
+instruction-level parallelism explained the rest of a 2.2x gap.
+
+The measured miller gap is 1.52x, which is **less** than the operation counts
+predict. ELiPS is not losing time per operation; it is losing operations. Its
+per-operation efficiency is at least blst's, which is consistent with the Fp
+multiply being at parity.
+
+That makes the levers below more valuable than they looked, not less. Work
+that removes operations should convert to time roughly one for one, and the
+starting point is 1.52x rather than 2.2x.
 
 ## It is not the base field
 
@@ -142,21 +200,25 @@ verification as this library performs it.
 
 Two ways that could still be made to work, neither yet attempted:
 
-1. The prototype's own header says preparation "deliberately uses slow affine
-   arithmetic for readability; its timing is NOT a model of the C
-   implementation's projective preparation." The 342M2 is an artifact of the
-   Python, not a floor. A projective preparation could be much cheaper, and
-   establishing what it actually costs is the first thing to do.
+1. ~~The 342M2 is an artifact of the Python, not a floor.~~ **Wrong, and the
+   arithmetic says so exactly.** Montgomery batch inversion of 69 values costs
+   3(69-1) = 204 M2, and beta = c/a with gamma = b/a costs 2 per line = 138
+   M2. 204 + 138 = 342. The figure is the cost of normalizing 69 lines and is
+   independent of language and of coordinate system. The prototype's caveat
+   about slow affine arithmetic applies to the point arithmetic that produces
+   the lines, which is separate and genuinely improvable. The two were
+   conflated. Net saving on a single pairing is about 423 Fp multiplications,
+   4.9%, with an Fp2 inversion still owed.
 2. `elips_pairing_prec` already exists for callers who hold a fixed G2 point.
    Where a verifier checks many signatures against one public key, the table
    *is* reusable, and there the 8M2 kernel is close to free.
 
 ## What this does and does not add up to
 
-The three counts — 1.25x multiplications, 2.56x reductions, 1.6x additions —
-are together worth roughly 1.7 to 2x, which with blst's better instruction-level
-parallelism accounts for the measured 2.2x. The map is complete enough to work
-from.
+The three counts, 1.25x multiplications, 2.56x reductions and 1.6x additions,
+over-predict the measured 1.52x rather than under-predicting it. See "The
+counts over-predict the gap" above. The map is complete enough to work from,
+and it is a map of operations to remove rather than of time to claw back.
 
 But neither lever alone closes it:
 
@@ -164,9 +226,9 @@ But neither lever alone closes it:
 - The 8M2 kernel: 17% of miller multiplications, currently offset by a
   normalization cost this library's call pattern cannot amortise.
 
-Both together, if the normalization can be made cheap, land somewhere near
-30–35% off the miller loop. That takes 400 µs to about 270 — still 1.5x behind
-blst's 180.
+Both together land somewhere near 25% off the miller loop, and the
+normalization cannot be made cheap: see the correction below. That takes 468
+us to about 350 against blst's 304, which is 1.15x.
 
 ## The additions, traced
 
@@ -240,17 +302,26 @@ The doubling step is now the first thing to do: it is the largest single
 identified item, the most contained, and the only one that reduces
 multiplications and additions together.
 
-**It still does not close 2.2x.** All three together land somewhere near 30%,
-taking 400 µs to roughly 280 against blst's 180. The remaining 762 Mp of the
-multiplication gap is not yet attributed — `fp12_mul_sparse035` at 9 Fp2
-multiplications per call and `fp6_mul` at 6 are the places left to look.
+**The target is now 1.52x, not 2.2x, and parity is in reach.** The doubling
+formula and lazy reduction together take 468 us to roughly 366, which is 1.20x
+against blst's 304. The final exponentiation is already at 1.22x. Neither
+number was reachable under the old table, and both follow from the same
+levers. The 762 Mp recorded here as unattributed was an artifact:
+`fp12_mul_sparse035` is 15 Fp2 multiplications per call, not the 9 counted.
+The trace followed direct calls and not the six inside `fp6_mul`, which over
+69 lines is 1,242 Fp multiplications.
 
 ## Reproducing any of this
 
 ```bash
-git clone --depth 1 https://github.com/supranational/blst && (cd blst && ./build.sh)
-cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
-./build/bench_BLS12_381 --reps 21          # ELiPS side
+git clone --depth 1 https://github.com/supranational/blst
+(cd blst && CFLAGS="-O3 -fno-builtin -fPIC -D__ADX__" ./build.sh)
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG"
+cmake --build build -j
+gcc -O3 -std=c11 -Iinclude -Iblst/bindings -DELIPS_CURVE_BLS12_381 \
+    bench/cross_blst.c -o cross \
+    build/libelips_arith_BLS12_381.a blst/libblst.a -lm
+./cross --reps 31                          # both libraries, one harness
 ```
 
 Operation counts come from `valgrind --tool=callgrind` on a program that
