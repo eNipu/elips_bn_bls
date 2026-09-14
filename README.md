@@ -117,9 +117,9 @@ which measure the same two operations the same way; the full record is in
 
 | | native | WebAssembly | |
 |---|---|---|---|
-| sign | 1.34 ms | 8.91 ms | 6.7x |
-| verify | 3.35 ms | 22.12 ms | 6.6x |
-| pairing | 1.27 ms | | |
+| sign | 1.30 ms | 8.91 ms | 6.9x |
+| verify | 3.20 ms | 22.12 ms | 6.9x |
+| pairing | 1.23 ms | | |
 
 Read the medians, not the spreads. Individual rows swing 10% to 40% on this
 machine, but the medians agree across independent runs to within 1%, which is

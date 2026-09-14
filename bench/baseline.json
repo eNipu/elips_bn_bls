@@ -2,10 +2,10 @@
   "_comment": "Recorded by bench/bench.c, interleaved, 21 reps. Read the ratios, not the absolute numbers: spreads on this machine reach 10-40% on individual rows, while the MEDIANS agree across independent runs to within 1% -- which is the check that matters, and the reason the median is the headline. To test a change for regressions use bench/compare.py --ab old_binary new_binary, which alternates the two and compares pairwise; comparing two recorded files is weaker and missed a planted 12% slowdown entirely.",
   "machine": "Intel(R) Xeon(R) Processor @ 2.80GHz",
   "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
-  "cflags": "-O2 (CMAKE_BUILD_TYPE=Release)",
+  "cflags": "-O3 -DNDEBUG (CMAKE_BUILD_TYPE=Release; CMake's default, the project does not override it)",
   "gmp": "2:6.3.0+dfsg-2ubuntu6.1",
-  "commit": "b756b71",
-  "date": "2026-09-13",
+  "commit": "2a65425",
+  "date": "2026-09-14",
   "harness": {
     "reps": 15,
     "inner": 60,
@@ -14,87 +14,87 @@
   "units": "microseconds",
   "curves": {
     "BLS12-381": {
-      "ep_mul": 159.425,
-      "ep_mul_glv": 112.356,
-      "ep2_mul": 574.719,
-      "ep2_mul_glv": 302.945,
-      "gt_exp": 1164.862,
-      "miller": 520.68,
-      "final_exp": 571.585,
-      "pairing": 1387.972,
-      "ep_in_subgroup": 95.119,
-      "ep2_in_subgroup": 171.34,
-      "hash_to_g1": 162.336,
-      "hash_to_g2": 954.455,
+      "ep_mul": 169.799,
+      "ep_mul_glv": 122.821,
+      "ep2_mul": 558.866,
+      "ep2_mul_glv": 302.493,
+      "gt_exp": 1005.996,
+      "miller": 434.453,
+      "final_exp": 524.966,
+      "pairing": 1225.826,
+      "ep_in_subgroup": 96.269,
+      "ep2_in_subgroup": 160.982,
+      "hash_to_g1": 203.017,
+      "hash_to_g2": 1009.872,
       "_spread_pct": {
-        "ep_mul": 20.83,
-        "ep_mul_glv": 46.38,
-        "ep2_mul": 36.47,
-        "ep2_mul_glv": 22.93,
-        "gt_exp": 24.45,
-        "miller": 27.73,
-        "final_exp": 23.86,
-        "pairing": 19.46,
-        "ep_in_subgroup": 21.68,
-        "ep2_in_subgroup": 13.75,
-        "hash_to_g1": 14.25,
-        "hash_to_g2": 15.48
+        "ep_mul": 9.38,
+        "ep_mul_glv": 8.56,
+        "ep2_mul": 10.1,
+        "ep2_mul_glv": 6.34,
+        "gt_exp": 9.06,
+        "miller": 3.47,
+        "final_exp": 7.52,
+        "pairing": 9.27,
+        "ep_in_subgroup": 11.24,
+        "ep2_in_subgroup": 9.92,
+        "hash_to_g1": 9.09,
+        "hash_to_g2": 34.93
       }
     },
     "BLS12-461": {
-      "ep_mul": 285.913,
-      "ep_mul_glv": 197.252,
-      "ep2_mul": 968.728,
-      "ep2_mul_glv": 501.22,
-      "gt_exp": 1887.986,
-      "miller": 835.186,
-      "final_exp": 774.395,
-      "pairing": 2074.002,
-      "ep_in_subgroup": 164.716,
-      "ep2_in_subgroup": 282.85,
-      "hash_to_g1": 296.63,
-      "hash_to_g2": 1865.333,
+      "ep_mul": 323.632,
+      "ep_mul_glv": 227.253,
+      "ep2_mul": 1057.358,
+      "ep2_mul_glv": 561.025,
+      "gt_exp": 1960.152,
+      "miller": 808.637,
+      "final_exp": 827.525,
+      "pairing": 2148.495,
+      "ep_in_subgroup": 186.92,
+      "ep2_in_subgroup": 309.277,
+      "hash_to_g1": 370.111,
+      "hash_to_g2": 2152.847,
       "_spread_pct": {
-        "ep_mul": 17.37,
-        "ep_mul_glv": 16.96,
-        "ep2_mul": 16.13,
-        "ep2_mul_glv": 7.75,
-        "gt_exp": 12.66,
-        "miller": 16.87,
-        "final_exp": 15.74,
-        "pairing": 10.22,
-        "ep_in_subgroup": 6.56,
-        "ep2_in_subgroup": 7.76,
-        "hash_to_g1": 5.68,
-        "hash_to_g2": 14.79
+        "ep_mul": 4.36,
+        "ep_mul_glv": 3.65,
+        "ep2_mul": 8.54,
+        "ep2_mul_glv": 40.6,
+        "gt_exp": 31.43,
+        "miller": 3.67,
+        "final_exp": 5.72,
+        "pairing": 33.97,
+        "ep_in_subgroup": 3.81,
+        "ep2_in_subgroup": 7.66,
+        "hash_to_g1": 40.14,
+        "hash_to_g2": 32.27
       }
     },
     "BN-462": {
-      "ep_mul": 454.54,
-      "ep_mul_glv": 361.296,
-      "ep2_mul": 1582.569,
-      "ep2_mul_glv": 990.201,
-      "gt_exp": 3056.455,
-      "miller": 1369.995,
-      "final_exp": 743.355,
-      "pairing": 3046.914,
-      "ep_in_subgroup": 0.436,
-      "ep2_in_subgroup": 776.422,
-      "hash_to_g1": 241.102,
-      "hash_to_g2": 2190.494,
+      "ep_mul": 486.183,
+      "ep_mul_glv": 365.968,
+      "ep2_mul": 1567.138,
+      "ep2_mul_glv": 1051.013,
+      "gt_exp": 2940.291,
+      "miller": 1249.12,
+      "final_exp": 745.853,
+      "pairing": 2813.707,
+      "ep_in_subgroup": 0.502,
+      "ep2_in_subgroup": 806.714,
+      "hash_to_g1": 293.104,
+      "hash_to_g2": 2246.052,
       "_spread_pct": {
-        "ep_mul": 27.97,
-        "ep_mul_glv": 24.72,
-        "ep2_mul": 24.0,
-        "ep2_mul_glv": 26.27,
-        "gt_exp": 26.6,
-        "miller": 25.64,
-        "final_exp": 25.32,
-        "pairing": 21.73,
-        "ep_in_subgroup": 61.91,
-        "ep2_in_subgroup": 22.85,
-        "hash_to_g1": 24.04,
-        "hash_to_g2": 22.38
+        "ep_mul": 60.92,
+        "ep_mul_glv": 78.13,
+        "ep2_mul": 24.64,
+        "ep2_mul_glv": 1.95,
+        "gt_exp": 28.46,
+        "miller": 2.02,
+        "final_exp": 10.68,
+        "pairing": 9.44,
+        "ep_in_subgroup": 61.5,
+        "ep2_in_subgroup": 3.17,
+        "hash_to_g1": 4.81,
+        "hash_to_g2": 30.24
       }
     }
   },
@@ -102,97 +102,97 @@
   "fp_addsub_backend": "x86-64 adc/sbb/cmov (issue #37). Baseline x86-64, so it needs no CPUID check and is always on. ELIPS_NO_ASM_ADDSUB=1 records the portable C for this pair alone, which is how its 1.58x was measured without moving fp_mul at the same time.",
   "results": {
     "ep_mul": {
-      "median": 184.7,
-      "min": 181.988,
-      "max": 192.89,
-      "spread_pct": 5.9
+      "median": 169.799,
+      "min": 166.497,
+      "max": 182.427,
+      "spread_pct": 9.38
     },
     "ep_mul_glv": {
-      "median": 129.84,
-      "min": 127.712,
-      "max": 156.718,
-      "spread_pct": 22.34
+      "median": 122.821,
+      "min": 120.818,
+      "max": 131.329,
+      "spread_pct": 8.56
     },
     "ep2_mul": {
-      "median": 560.523,
-      "min": 545.205,
-      "max": 580.965,
-      "spread_pct": 6.38
+      "median": 558.866,
+      "min": 545.043,
+      "max": 601.501,
+      "spread_pct": 10.1
     },
     "ep2_mul_glv": {
-      "median": 297.847,
-      "min": 291.503,
-      "max": 307.656,
-      "spread_pct": 5.42
+      "median": 302.493,
+      "min": 296.775,
+      "max": 315.965,
+      "spread_pct": 6.34
     },
     "gt_exp": {
-      "median": 965.557,
-      "min": 934.486,
-      "max": 1007.991,
-      "spread_pct": 7.61
+      "median": 1005.996,
+      "min": 984.159,
+      "max": 1075.282,
+      "spread_pct": 9.06
     },
     "gt_exp_ct": {
-      "median": 372.065,
-      "min": 357.565,
-      "max": 404.852,
-      "spread_pct": 12.71
+      "median": 388.136,
+      "min": 382.932,
+      "max": 425.363,
+      "spread_pct": 10.93
     },
     "miller": {
-      "median": 471.883,
-      "min": 464.631,
-      "max": 531.756,
-      "spread_pct": 14.22
+      "median": 434.453,
+      "min": 429.719,
+      "max": 444.796,
+      "spread_pct": 3.47
     },
     "final_exp": {
-      "median": 499.145,
-      "min": 479.86,
-      "max": 575.651,
-      "spread_pct": 19.19
+      "median": 524.966,
+      "min": 517.66,
+      "max": 557.157,
+      "spread_pct": 7.52
     },
     "pairing": {
-      "median": 1265.921,
-      "min": 1229.379,
-      "max": 1478.095,
-      "spread_pct": 19.65
+      "median": 1225.826,
+      "min": 1214.328,
+      "max": 1327.989,
+      "spread_pct": 9.27
     },
     "ep_in_subgroup": {
-      "median": 105.383,
-      "min": 102.729,
-      "max": 110.296,
-      "spread_pct": 7.18
+      "median": 96.269,
+      "min": 95.327,
+      "max": 106.15,
+      "spread_pct": 11.24
     },
     "ep2_in_subgroup": {
-      "median": 161.722,
-      "min": 158.477,
-      "max": 166.585,
-      "spread_pct": 5.01
+      "median": 160.982,
+      "min": 157.402,
+      "max": 173.374,
+      "spread_pct": 9.92
     },
     "hash_to_g1": {
-      "median": 228.572,
-      "min": 216.806,
-      "max": 231.745,
-      "spread_pct": 6.54
+      "median": 203.017,
+      "min": 199.937,
+      "max": 218.393,
+      "spread_pct": 9.09
     },
     "hash_to_g2": {
-      "median": 1032.477,
-      "min": 1012.71,
-      "max": 1066.207,
-      "spread_pct": 5.18
+      "median": 1009.872,
+      "min": 983.885,
+      "max": 1336.611,
+      "spread_pct": 34.93
     },
     "bls_sign": {
-      "median": 1339.274,
-      "min": 1306.073,
-      "max": 1443.074,
-      "spread_pct": 10.23
+      "median": 1303.547,
+      "min": 1288.881,
+      "max": 1363.127,
+      "spread_pct": 5.7
     },
     "bls_verify": {
-      "median": 3346.842,
-      "min": 3249.615,
-      "max": 3569.734,
-      "spread_pct": 9.56
+      "median": 3202.027,
+      "min": 3183.184,
+      "max": 3434.909,
+      "spread_pct": 7.86
     }
   },
-  "reps": 21,
+  "reps": 15,
   "inner": 60,
   "scalar_multiplication": "Secret scalars go through ep_mul_glv and ep2_mul_glv as of issue #38. They used the plain ladders until #30 and #32 were fixed; see the note at the top of src/bls/bls.c for the structural and statistical evidence that was required before switching."
 }

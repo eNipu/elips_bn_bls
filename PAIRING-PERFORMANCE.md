@@ -37,12 +37,15 @@ Three things were checked before any number here was believed:
 
 | | ELiPS | blst | ratio |
 |---|---:|---:|---:|
-| miller loop | 468 us | 304 | **1.52x** |
-| final exponentiation | 500 | 409 | **1.22x** |
-| pairing, arithmetic only | 963 | 716 | **1.34x** |
-| pairing, validation included | 1248 | 837 | **1.49x** |
-| G1 subgroup check | 98 | 52 | 1.90x |
-| G2 subgroup check | 155 | 62 | **2.49x** |
+| miller loop | **433 us** | 310 | **1.40x** |
+| final exponentiation | 522 | 409 | 1.22x |
+| pairing, arithmetic only | 963 | 716 | 1.34x |
+| pairing, validation included | 1232 | 837 | 1.47x |
+| G1 subgroup check | 96 | 52 | 1.85x |
+| G2 subgroup check | 161 | 62 | **2.49x** |
+
+The miller row is after the doubling-step change below. Before it the loop was
+468 us and 1.52x.
 
 Two rows, not one, because `elips_pairing` validates both input points and
 `blst_miller_loop` plus `blst_final_exp` do not. Comparing the first against
@@ -302,6 +305,30 @@ Measured by callgrind over one Miller loop:
 -960 is exactly 15 Fp multiplications times 64 doubling steps, and the
 squaring count rises by exactly 3 per step. The counts are the formula, with
 nothing unaccounted.
+
+Measured by alternating the two binaries, which is the only comparison this
+repository trusts:
+
+| | before | after | |
+|---|---:|---:|---:|
+| BLS12-381 miller | 470.1 us | 431.5 | **-8.5%, 100% confidence** |
+| BLS12-461 miller | 891.9 | 809.4 | **-9.5%** |
+| BLS12-381 pairing | 1266.4 | 1232.2 | -2.7% |
+
+Every other row reports `unchanged`, which matters as much as the miller row:
+`hash_to_g1` moves 201.9 to 201.8 and `final_exp` 522.4 to 522.3, so nothing
+outside the doubling step was disturbed.
+
+**11.2% of the multiplications bought 8.5% of the time.** The shortfall is
+worth naming rather than rounding away: the formula trades multiplications for
+squarings and additions, and the additions are not free. Against blst the
+miller loop goes from 1.52x to **1.40x**.
+
+One warning about method. Comparing the new numbers against the recorded
+`bench/baseline.json` instead would have reported `hash_to_g1` 25% slower and
+the BLS12-461 scalar multiplications 13 to 15% slower, none of which this
+change can touch. That is host drift between two recorded runs, and it is
+exactly why `compare.py --ab` alternates binaries rather than comparing files.
 
 ## Revised ordering
 
