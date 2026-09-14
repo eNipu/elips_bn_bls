@@ -1,5 +1,5 @@
 /*
- * Optimal ate Miller loop over Jacobian coordinates.
+ * Optimal ate Miller loop over homogeneous projective coordinates.
  *
  * Line functions
  * --------------
@@ -21,19 +21,24 @@
  * final exponentiation because (p^2-1) divides (p^12-1)/r, so the pairing value
  * is unchanged. That removes every division from the loop.
  *
- * For a Jacobian T = (X, Y, Z), doubling gives lambda = 3X^2/(2YZ) and
- * x_T = X/Z^2, y_T = Y/Z^3. Scaling by xi*2YZ^3 leaves
+ * T = (X, Y, Z) is homogeneous projective: x_T = X/Z, y_T = Y/Z, and the twist
+ * is Y^2 Z = X^3 + b' Z^3. Doubling gives lambda = 3X^2/(2YZ), so scaling the
+ * line by xi*2YZ^2 clears every denominator and leaves
  *
- *     c0 = xi * yP * (2YZ^3)
- *     c3 = 3X^3 - 2Y^2
- *     c5 = -3X^2 * Z^2 * xP
+ *     c0 = xi * yP * 2YZ^2
+ *     c3 = 3X^3 - 2Y^2 Z
+ *     c5 = -3X^2 * Z * xP
  *
- * and for mixed addition with affine Q, writing H = xQ*Z^2 - X and
- * R = yQ*Z^3 - Y, scaling by xi*H*Z^3 leaves
+ * and for mixed addition with affine Q, writing H = xQ*Z - X and
+ * R = yQ*Z - Y, scaling by xi*H*Z leaves
  *
- *     c0 = xi * yP * (H*Z^3)
+ *     c0 = xi * yP * H * Z
  *     c3 = R*X - Y*H
- *     c5 = -R * Z^2 * xP
+ *     c5 = -R * Z * xP
+ *
+ * dbl_line does not use the doubling form above as written; see the note on
+ * the function, which divides it by one more factor of Z and then spends the
+ * curve equation to remove the cubing.
  */
 #include "elips/pairing.h"
 #include <string.h>
@@ -97,64 +102,101 @@ static void fp12_mul_sparse035(fp6_t f0, fp6_t f1,
 
 /* T <- 2T, and f *= the tangent line at T evaluated at P.
  *
- * In homogeneous coordinates x_T = X/Z and y_T = Y/Z, so the tangent slope is
- * 3X^2/(2YZ). Scaling the line by xi*2YZ^2 clears every denominator and leaves
+ * Two changes from the form derived in the file header, which together take
+ * this from 11 Fp2 multiplications and 3 squarings to 4 and 6.
  *
- *     c0 = xi * yP * (2 Y Z^2)
- *     c3 = 3X^3 - 2 Y^2 Z
- *     c5 = -3 X^2 Z * xP
+ * First, the line is scaled by one more factor of Z, which is legitimate for
+ * the same reason every other scaling here is: Z lies in Fp2 and dies in the
+ * final exponentiation. That turns the header's
  *
- * which is a term simpler than the Jacobian version this replaced. The xi and
- * the common denominator both live in Fp2 and die in the final exponentiation,
- * so the pairing value is unchanged. */
+ *     c0 = xi yP 2YZ^2,  c3 = 3X^3 - 2Y^2 Z,  c5 = -3X^2 Z xP
+ *
+ * into
+ *
+ *     c0 = xi yP (2YZ),  c3 = (3X^3 - 2Y^2 Z)/Z,  c5 = -3X^2 xP
+ *
+ * and c3 is then paid for with the curve equation rather than a cubing.
+ * Y^2 Z = X^3 + b'Z^3 gives X^3 = Y^2 Z - b'Z^3, so
+ *
+ *     (3X^3 - 2Y^2 Z)/Z = (3(Y^2 Z - b'Z^3) - 2Y^2 Z)/Z = Y^2 - 3b'Z^2
+ *
+ * which costs one squaring already needed for the doubling and one
+ * multiplication by the constant 3b'. The X^3 is gone, and with it the only
+ * term that forced a multiplication chain.
+ *
+ * Second, the doubling drops the Renes-Costello-Batina complete formulas for
+ * the dedicated ones for Y^2 Z = X^3 + b'Z^3:
+ *
+ *     X3 = 2XY(Y^2 - 9b'Z^2)
+ *     Y3 = (Y^2 + 9b'Z^2)^2 - 108 b'^2 Z^4
+ *     Z3 = 8 Y^3 Z
+ *
+ * Why that is safe here, and it is worth being precise because a wrong
+ * argument fails silently. The dedicated formulas are undefined only at the
+ * identity (Z = 0) and at 2-torsion (Y = 0). T is always [v]Q for v the value
+ * of the processed prefix of ELIPS_LOOP, and Q has odd prime order r.
+ *
+ *   - T is never 2-torsion. [v]Q has order r/gcd(v,r), which is odd for every
+ *     v, and a point of odd order is 2-torsion only if it is the identity.
+ *   - T is never the identity. ELIPS_LOOP is a NAF: digits in {-1,0,1} with no
+ *     two adjacent non-zero, leading digit +-1. For a prefix of length k+1 the
+ *     value is bounded below by 2^k - (2^(k-2) + 2^(k-4) + ...) > 2^(k-1), so
+ *     it is never zero, and above by the loop parameter, which is far smaller
+ *     than r. So r never divides v.
+ *
+ * The same two facts are what make the extra division by Z legal: Z = 0 would
+ * have made it a division by zero.
+ *
+ * Addition steps are untouched. add_line still goes through ep2_add, whose
+ * completeness covers the cases this function no longer does.
+ *
+ * The line and the doubled point are still computed together so that Y^2, Z^2
+ * and 2YZ are each formed once; splitting them cost 11% of the Miller loop
+ * when it was measured. */
 static void dbl_line(ep2_line_t *L, ep2_t *T)
 {
-    /* The line and the doubled point are computed together so that X^2, Y^2,
-     * Z^2, XY and YZ are each formed once. Splitting them into a line
-     * evaluation followed by a call to ep2_dbl cost 11% of the Miller loop,
-     * measured -- the shared subexpressions are most of the work. */
-    fp2_t XX, YY, ZZ, XY, YZ, t, u, la, lb, c3, b3;
-    fp2_t z3, x3, y3;
+    fp2_t B, C, E, F, H, J, t, u, x3, y3, z3;
 
-    fp2_sqr(XX, T->x);
-    fp2_sqr(YY, T->y);
-    fp2_sqr(ZZ, T->z);
-    fp2_mul(XY, T->x, T->y);
-    fp2_mul(YZ, T->y, T->z);
+    fp2_sqr(B, T->y);                           /* B = Y^2      */
+    fp2_sqr(C, T->z);                           /* C = Z^2      */
+    fp2_sqr(J, T->x);                           /* J = X^2      */
 
-    /* ---- line: c3 = 3X^3 - 2Y^2 Z, c5 = -3X^2 Z xP, c0 = xi yP 2YZ^2 ---- */
-    fp2_mul(t, XX, T->x);                       /* X^3        */
-    fp2_add(u, t, t); fp2_add(c3, u, t);        /* 3X^3       */
-    fp2_mul(t, YY, T->z); fp2_add(t, t, t);     /* 2 Y^2 Z    */
-    fp2_sub(c3, c3, t);
+    /* H = 2YZ from a squaring rather than a multiplication, which is the
+     * trade the whole formula is built on: an Fp2 square is 2 Fp
+     * multiplications against 3 for an Fp2 multiply. */
+    fp2_add(t, T->y, T->z);
+    fp2_sqr(H, t);
+    fp2_sub(H, H, B);
+    fp2_sub(H, H, C);
 
-    fp2_mul(t, XX, T->z);                       /* X^2 Z      */
-    fp2_add(u, t, t); fp2_add(u, u, t);         /* 3 X^2 Z    */
-    fp2_neg(lb, u);                             /* c5 = xP * lb */
+    ep2_curve_b(t);                             /* b'           */
+    fp2_add(u, t, t); fp2_add(u, u, t);         /* 3b'          */
+    fp2_mul(E, u, C);                           /* E = 3b'Z^2   */
+    fp2_add(F, E, E); fp2_add(F, F, E);         /* F = 9b'Z^2   */
 
-    fp2_mul(t, YZ, T->z);                       /* Y Z^2      */
-    fp2_add(t, t, t);
-    fp2_mul_xi(la, t);                          /* c0 = yP * la */
+    /* ---- line: c0 = xi yP (2YZ), c3 = Y^2 - 3b'Z^2, c5 = -3X^2 xP ---- */
+    fp2_mul_xi(L->a, H);
+    fp2_add(t, J, J); fp2_add(t, t, J);         /* 3X^2         */
+    fp2_neg(L->b, t);
+    fp2_sub(L->c, B, E);
 
-    /* ---- RCB doubling, reusing the same squares ---- */
-    ep2_curve_b(b3);
-    fp2_add(t, b3, b3); fp2_add(b3, t, b3);     /* 3b */
+    /* ---- doubling ---- */
+    fp2_mul(t, T->x, T->y);
+    fp2_add(t, t, t);                           /* 2XY          */
+    fp2_sub(u, B, F);                           /* Y^2 - 9b'Z^2 */
+    fp2_mul(x3, t, u);
 
-    fp2_add(z3, YY, YY); fp2_add(z3, z3, z3); fp2_add(z3, z3, z3);  /* 8Y^2 */
-    fp2_mul(t, b3, ZZ);                         /* b3 Z^2 */
-    fp2_mul(x3, t, z3);
-    fp2_add(y3, YY, t);
-    fp2_mul(z3, YZ, z3);
-    fp2_add(u, t, t); fp2_add(u, u, t);         /* 3 b3 Z^2 */
-    fp2_sub(u, YY, u);                          /* Y^2 - 3b3Z^2 */
-    fp2_mul(y3, u, y3);
-    fp2_add(y3, x3, y3);
-    fp2_mul(x3, u, XY);
-    fp2_add(x3, x3, x3);
+    fp2_add(t, B, F);                           /* Y^2 + 9b'Z^2 */
+    fp2_sqr(y3, t);
+    fp2_sqr(t, E);                              /* E^2          */
+    fp2_add(u, t, t); fp2_add(u, u, t);         /* 3E^2         */
+    fp2_add(u, u, u); fp2_add(u, u, u);         /* 12E^2 = 108b'^2 Z^4 */
+    fp2_sub(y3, y3, u);
+
+    fp2_mul(z3, B, H);                          /* 2Y^3 Z       */
+    fp2_add(z3, z3, z3); fp2_add(z3, z3, z3);   /* 8Y^3 Z       */
 
     fp2_copy(T->x, x3); fp2_copy(T->y, y3); fp2_copy(T->z, z3);
-
-    fp2_copy(L->a, la); fp2_copy(L->b, lb); fp2_copy(L->c, c3);
 }
 
 /* T <- T + Q (Q affine), and f *= the chord line evaluated at P.

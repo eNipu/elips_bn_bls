@@ -254,41 +254,54 @@ of Fp2 multiplications and the additions fall with them.
 
 That reframes the question, and the answer is one function.
 
-## The doubling step
+## The doubling step, and what replaced it
 
-`dbl_line` in `src/pairing/miller.c` costs, per call: **11 Fp2 multiplications
-and 3 Fp2 squarings**. blst's `line_dbl` costs **3 multiplications and 8
-squarings**. Both confirmed by attributing each library's Fp2 routines to
-their callers; 64 doubling steps in ELiPS against 63 in blst.
+**Done.** `dbl_line` cost 11 Fp2 multiplications and 3 squarings per call, 39
+Fp multiplications. blst's `line_dbl` costs 3 and 8, which is 25. It now costs
+**4 and 6, which is 24**, and the Miller loop is below blst on this step.
 
-An Fp2 multiplication is 3 Fp multiplications and an Fp2 squaring is 2, so:
+Two changes, and the first is the one that matters.
 
-| | per doubling step |
-|---|---:|
-| ELiPS `dbl_line` — 11M + 3S | **39 Mp** |
-| blst `line_dbl` — 3M + 8S | **25 Mp** |
+**The line is scaled by one more factor of Z, and the curve equation pays for
+the constant term.** Every scaling in this loop is free because any Fp2 factor
+dies in the final exponentiation. Taking one more factor of Z turns the
+constant coefficient into `(3X^3 - 2Y^2 Z)/Z`, and `Y^2 Z = X^3 + b'Z^3` gives
 
-**1.56x, on the step the Miller loop runs 64 times.** Over the loop that is
-2,496 Mp against 1,575 — a difference of **921 Mp, which is 55% of the entire
-1,683 multiplication gap.**
+```
+(3X^3 - 2Y^2 Z)/Z = (3(Y^2 Z - b'Z^3) - 2Y^2 Z)/Z = Y^2 - 3b'Z^2
+```
 
-The cause is visible in the source. `dbl_line` uses the Renes–Costello–Batina
-*complete* addition formulas, and forms X³, X²Z and YZ² explicitly for the
-line. Complete formulas handle every exceptional case, which is a real virtue
-in general and an unnecessary one here: inside a Miller loop T is a point of
-odd prime order r being doubled fewer than r times, so it is never the
-identity and never equals its own negative. The dedicated formula is safe in
-this context, and it trades multiplications for squarings — which is the
-direction that pays, because a squaring is two thirds the cost.
+The cubing is gone. What remains is one squaring the doubling already needs
+and one multiplication by the constant 3b'. That was the whole cost of the old
+line: `X^3`, `X^2 Z` and `Y Z^2` were three multiplications spent on terms the
+curve equation makes unnecessary.
 
-Adopting a 3M + 8S doubling-and-line formula would be worth, arithmetically:
+**The doubling drops the complete formulas for the dedicated ones.** The
+Renes-Costello-Batina formulas handle every exceptional case, which is a real
+virtue in general and an unnecessary one here. The dedicated formulas for
+`Y^2 Z = X^3 + b'Z^3` are undefined only at `Z = 0` and `Y = 0`, and T reaches
+neither: it is always `[v]Q` for Q of odd prime order r, so it is never
+2-torsion, and `ELIPS_LOOP` is a NAF whose prefix values satisfy
+`|v| > 2^(k-1)` and stay far below r, so it is never the identity. The
+argument is written out in the source, because a wrong one here fails silently
+rather than loudly.
 
-- **−896 Fp multiplications**, −10.5% of 8,550
-- **−1,600 Fp additions and subtractions**, −5.7% of 27,929
+The usual halvings in these formulas are avoided by scaling all three output
+coordinates by 4, which is free in projective coordinates.
 
-roughly **8% off the miller loop**, from one function, with no change to the
-field layer and no new representation. It attacks both gaps at once, which
-neither of the other two levers does.
+Measured by callgrind over one Miller loop:
+
+| | before | after | delta |
+|---|---:|---:|---:|
+| `fp_mul` | 8,566 | 7,606 | **-960, -11.2%** |
+| `fp_add` | 14,618 | 13,978 | -640 |
+| `fp_sub` | 13,325 | 12,557 | -768 |
+| `fp2_mul` | 2,609 | 2,161 | -448 |
+| `fp2_sqr` | 192 | 384 | +192 |
+
+-960 is exactly 15 Fp multiplications times 64 doubling steps, and the
+squaring count rises by exactly 3 per step. The counts are the formula, with
+nothing unaccounted.
 
 ## Revised ordering
 
