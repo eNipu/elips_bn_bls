@@ -313,11 +313,15 @@ repository trusts:
 |---|---:|---:|---:|
 | BLS12-381 miller | 470.1 us | 431.5 | **-8.5%, 100% confidence** |
 | BLS12-461 miller | 891.9 | 809.4 | **-9.5%** |
+| BN-462 miller | 1392.0 | 1263.4 | **-9.0%** |
 | BLS12-381 pairing | 1266.4 | 1232.2 | -2.7% |
+| BLS12-461 pairing | 2236.2 | 2159.7 | -3.8% |
+| BN-462 pairing | 2969.0 | 2842.1 | -4.4% |
 
-Every other row reports `unchanged`, which matters as much as the miller row:
-`hash_to_g1` moves 201.9 to 201.8 and `final_exp` 522.4 to 522.3, so nothing
-outside the doubling step was disturbed.
+All three curves improve and not one row on any of them reports `slower`,
+which matters as much as the miller rows: `hash_to_g1` moves 201.9 to 201.8
+and `final_exp` 522.4 to 522.3, so nothing outside the doubling step was
+disturbed.
 
 **11.2% of the multiplications bought 8.5% of the time.** The shortfall is
 worth naming rather than rounding away: the formula trades multiplications for
