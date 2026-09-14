@@ -168,3 +168,11 @@ Nothing in `test/` compares one C implementation against another.
   cannot.
 
 `CONTRIBUTING.md` has the commands.
+
+## Where the time goes
+
+[`PAIRING-PERFORMANCE.md`](PAIRING-PERFORMANCE.md) measures this library
+against blst operation by operation: the base field is at parity, and the gap
+is in the extension tower — 2.56x more Montgomery reductions, 1.6x more
+additions. It also records what lazy reduction is actually worth, measured
+rather than projected.
