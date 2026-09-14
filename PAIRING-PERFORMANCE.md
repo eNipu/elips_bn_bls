@@ -168,11 +168,82 @@ Both together, if the normalization can be made cheap, land somewhere near
 30–35% off the miller loop. That takes 400 µs to about 270 — still 1.5x behind
 blst's 180.
 
-**Beating blst on the pairing needs the 1.6x addition gap explained as well**,
-and that is the part this document cannot yet account for. 27,929 Fp additions
-and subtractions for a miller loop is a lot, and where they come from has not
-been traced. That is the next measurement, and it should come before any more
-implementation work.
+## The additions, traced
+
+Every `fp_add` and `fp_sub` in the miller loop, attributed to its caller by
+parsing callgrind's `cfn=`/`calls=` pairs inside each `fn=` block:
+
+| `fp_add` 14,613 | | | `fp_sub` 13,316 | |
+|---|---:|---|---|---:|
+| from `fp2_add` | 8,148 | | from `fp2_mul` | 7,821 |
+| from `fp2_mul` | 5,214 | | from `fp2_sub` | 4,296 |
+| from `fp2_mul_xi` | 867 | | from `fp2_mul_xi` | 867 |
+| from `fp2_sqr` | 384 | | from `fp2_sqr` | 192 |
+
+**Every leaf routine is exactly at its formula minimum.** Karatsuba `fp2_mul`
+needs 2 additions and 3 subtractions: 2,607 calls give 5,214 and 7,821.
+`fp2_add` needs 2, `fp2_mul_xi` needs 1 of each for ξ = 1+u. There is no waste
+at the Fp level and nothing to reclaim there.
+
+So the additions are not a defect in their own right. They are a *consequence*
+of how many Fp2-level operations the tower performs — `fp2_mul` alone creates
+13,035 of the 27,929, **47%**, purely as Karatsuba overhead. Reduce the number
+of Fp2 multiplications and the additions fall with them.
+
+That reframes the question, and the answer is one function.
+
+## The doubling step
+
+`dbl_line` in `src/pairing/miller.c` costs, per call: **11 Fp2 multiplications
+and 3 Fp2 squarings**. blst's `line_dbl` costs **3 multiplications and 8
+squarings**. Both confirmed by attributing each library's Fp2 routines to
+their callers; 64 doubling steps in ELiPS against 63 in blst.
+
+An Fp2 multiplication is 3 Fp multiplications and an Fp2 squaring is 2, so:
+
+| | per doubling step |
+|---|---:|
+| ELiPS `dbl_line` — 11M + 3S | **39 Mp** |
+| blst `line_dbl` — 3M + 8S | **25 Mp** |
+
+**1.56x, on the step the Miller loop runs 64 times.** Over the loop that is
+2,496 Mp against 1,575 — a difference of **921 Mp, which is 55% of the entire
+1,683 multiplication gap.**
+
+The cause is visible in the source. `dbl_line` uses the Renes–Costello–Batina
+*complete* addition formulas, and forms X³, X²Z and YZ² explicitly for the
+line. Complete formulas handle every exceptional case, which is a real virtue
+in general and an unnecessary one here: inside a Miller loop T is a point of
+odd prime order r being doubled fewer than r times, so it is never the
+identity and never equals its own negative. The dedicated formula is safe in
+this context, and it trades multiplications for squarings — which is the
+direction that pays, because a squaring is two thirds the cost.
+
+Adopting a 3M + 8S doubling-and-line formula would be worth, arithmetically:
+
+- **−896 Fp multiplications**, −10.5% of 8,550
+- **−1,600 Fp additions and subtractions**, −5.7% of 27,929
+
+roughly **8% off the miller loop**, from one function, with no change to the
+field layer and no new representation. It attacks both gaps at once, which
+neither of the other two levers does.
+
+## Revised ordering
+
+| | worth | risk |
+|---|---|---|
+| `dbl_line` formula, 11M+3S → 3M+8S | ~8% of the miller loop | contained: one function, existing KATs, complete-vs-dedicated needs the subgroup argument written down |
+| 8M2 line kernel (`normalized_miller_ref.py`) | 17% of multiplications | normalization cost this call pattern cannot amortise; needs a projective preparation first |
+| lazy reduction through Fp6/Fp12 | 7.7% measured at Fp2 | touches the whole tower; adds additive work to remove reductions |
+
+The doubling step is now the first thing to do: it is the largest single
+identified item, the most contained, and the only one that reduces
+multiplications and additions together.
+
+**It still does not close 2.2x.** All three together land somewhere near 30%,
+taking 400 µs to roughly 280 against blst's 180. The remaining 762 Mp of the
+multiplication gap is not yet attributed — `fp12_mul_sparse035` at 9 Fp2
+multiplications per call and `fp6_mul` at 6 are the places left to look.
 
 ## Reproducing any of this
 
