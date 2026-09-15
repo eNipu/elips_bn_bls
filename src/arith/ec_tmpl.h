@@ -152,6 +152,40 @@ int PT(to_affine)(EC_FT x, EC_FT y, const PTT *p)
     return 1;
 }
 
+/* [k]P where k is a PUBLIC CONSTANT of the curve, not a caller's scalar.
+ *
+ * The two subgroup tests multiply by |x| and by 6x^2, which are curve
+ * parameters compiled into fp_params.h. Nothing about them is secret, so the
+ * loop below branches on their bits and skips the zero ones. The saving is
+ * large because these constants are chosen to be sparse: |x| on BLS12-381 is
+ * 0xd201000000010000, six set bits in sixty-four, so this is 63 doublings and
+ * 5 additions against the fixed-window ladder's 71 doublings, 23 additions and
+ * 768 masked field selects.
+ *
+ * Still constant time in P, which is the property that matters here. The
+ * control flow depends on k alone, so the sequence of operations is identical
+ * for every point, and P is what an attacker supplies. Do NOT call this with a
+ * scalar derived from a secret: use PT(mul), which is constant time in both.
+ *
+ * Complete addition again, and here it is not an optimisation to give up. The
+ * caller is validating a point it does not trust, so every exceptional case
+ * has to work rather than be argued away. */
+void PT(mul_pubconst)(PTT *r, const PTT *p, const limb_t *k, int kbits)
+{
+    PTT acc;
+    int i = kbits - 1;
+
+    while (i >= 0 && !((k[i / 64] >> (i % 64)) & 1)) i--;
+    if (i < 0) { PT(set_infinity)(r); return; }
+
+    PT(copy)(&acc, p);
+    for (i--; i >= 0; i--) {
+        PT(dbl)(&acc, &acc);
+        if ((k[i / 64] >> (i % 64)) & 1) PT(add)(&acc, &acc, p);
+    }
+    PT(copy)(r, &acc);
+}
+
 /* Constant-time fixed-window scalar multiplication, 4 bits at a time.
  *
  * The window index selects from the table by scanning every entry under a mask,

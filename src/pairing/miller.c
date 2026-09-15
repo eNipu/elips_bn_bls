@@ -774,8 +774,8 @@ int ep_in_subgroup(const ep_t *p)
      * 255 on BLS12-381. */
     ep_t lhs, rhs;
     ep_phi(&lhs, p);
-    ep_mul(&rhs, p,    ELIPS_ABSX, ELIPS_ABSX_BITS);
-    ep_mul(&rhs, &rhs, ELIPS_ABSX, ELIPS_ABSX_BITS);
+    ep_mul_pubconst(&rhs, p,    ELIPS_ABSX, ELIPS_ABSX_BITS);
+    ep_mul_pubconst(&rhs, &rhs, ELIPS_ABSX, ELIPS_ABSX_BITS);
     ep_neg(&rhs, &rhs);
     return ep_eq(&lhs, &rhs);
 #endif
@@ -790,12 +790,12 @@ int ep2_in_subgroup(const ep2_t *q)
     ep2_t lhs, rhs;
     ep2_psi(&lhs, q);
 #ifdef ELIPS_FAMILY_BLS12
-    ep2_mul(&rhs, q, ELIPS_ABSX, ELIPS_ABSX_BITS);
+    ep2_mul_pubconst(&rhs, q, ELIPS_ABSX, ELIPS_ABSX_BITS);
 #if ELIPS_X_NEGATIVE
     ep2_neg(&rhs, &rhs);
 #endif
 #else
-    ep2_mul(&rhs, q, ELIPS_6XSQ, ELIPS_6XSQ_BITS);
+    ep2_mul_pubconst(&rhs, q, ELIPS_6XSQ, ELIPS_6XSQ_BITS);
 #endif
     return ep2_eq(&lhs, &rhs);
 }

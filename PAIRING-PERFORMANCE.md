@@ -41,11 +41,13 @@ Three things were checked before any number here was believed:
 | final exponentiation | 522 | 409 | 1.22x |
 | pairing, arithmetic only | 963 | 716 | 1.34x |
 | pairing, validation included | 1232 | 837 | 1.47x |
-| G1 subgroup check | 96 | 52 | 1.85x |
-| G2 subgroup check | 161 | 62 | **2.49x** |
+| G1 subgroup check | **61** | 50 | **1.24x** |
+| G2 subgroup check | **103** | 61 | **1.69x** |
 
-The miller row is after the doubling-step change below. Before it the loop was
-468 us and 1.52x.
+The miller row is after the doubling-step change below, and the two subgroup
+rows are after the scalar-multiplication change after it. Before those the
+loop was 468 us and 1.52x, and the checks were 96 and 161 us, 1.85x and
+2.49x. The pairing row carries both.
 
 Two rows, not one, because `elips_pairing` validates both input points and
 `blst_miller_loop` plus `blst_final_exp` do not. Comparing the first against
@@ -333,6 +335,69 @@ One warning about method. Comparing the new numbers against the recorded
 the BLS12-461 scalar multiplications 13 to 15% slower, none of which this
 change can touch. That is host drift between two recorded runs, and it is
 exactly why `compare.py --ab` alternates binaries rather than comparing files.
+
+## The subgroup checks
+
+**Done.** The G2 check was the largest single ratio in the table at 2.49x. It
+is now 1.69x, and the G1 check 1.24x from 1.85x.
+
+The test itself did not change, and that is the point. Both libraries use the
+same one, Scott, https://eprint.iacr.org/2021/1130:
+
+```
+G1   sigma^2(P) == [-z^2]P
+G2   psi(P)     == [z]P
+```
+
+blst's `POINTonE2_in_G2` and `ep2_in_subgroup` are the same three lines. The
+entire 2.49x was in how `[z]P` gets computed.
+
+ELiPS used `ep2_mul`, the general constant-time fixed-window ladder: a
+16-entry table, and every window scans the whole table under a mask so that no
+memory address depends on the scalar. That is the right routine for a caller's
+secret scalar and the wrong one here, because **z is a curve parameter
+compiled into `fp_params.h`**. Nothing about it is secret, and it is chosen to
+be sparse: |x| on BLS12-381 is `0xd201000000010000`, six set bits in
+sixty-four.
+
+`ep_mul_pubconst` and `ep2_mul_pubconst` branch on the bits of that constant
+and skip the zeros. The control flow depends on the constant alone, so the
+routines remain **constant time in the point**, which is the property that
+matters when the point is what an attacker supplies. They keep the complete
+addition formulas, which unlike the Miller loop is not something to give up
+here: the caller is validating a point it does not trust, so every exceptional
+case has to work rather than be argued away.
+
+| per `ep2_in_subgroup` | before | after |
+|---|---:|---:|
+| `fp_mul` | 3,017 | **2,019** |
+| `ep2_add` | 23 | **5** |
+| `ep2_dbl` | 71 | 63 |
+| `fp2_cselect` | 768 | **0** |
+
+5 additions is exactly the six set bits of |x| less the leading one. Measured:
+
+| | before | after | |
+|---|---:|---:|---:|
+| `ep2_in_subgroup` | 158.0 us | 100.2 | **-36.8%** |
+| `ep_in_subgroup` | 95.6 | 60.2 | **-37.1%** |
+| `pairing` | 1226.4 | 1132.1 | **-7.5%** |
+| `bls_verify` | 3209.6 | 2909.7 | **-9.0%** |
+| `miller` | 430.7 | 429.6 | unchanged, as it should be |
+
+Nothing here required a new exactness argument, and that is worth stating
+plainly rather than glossing: the test is untouched, so the gcd conditions
+`tools/reference/subgroup_ref.py` derives and `gen_params.py` re-asserts still
+cover it. Only the route to `[z]P` changed, and that was checked against
+`ep_mul` over 200,000 random point-and-scalar pairs plus the cases a
+double-and-add loop gets wrong: k = 0, k = 1, a declared bit length longer
+than the value, and the point at infinity.
+
+**What is left.** 1.69x on G2 is no longer the biggest ratio but it is not
+parity either. The remainder is formula cost: ELiPS doubles and adds with the
+complete formulas throughout, blst uses dedicated ones. The same trade as the
+Miller loop, but the safety argument is harder because the input is untrusted
+rather than a known multiple of a prime-order point, so it is not taken here.
 
 ## Revised ordering
 

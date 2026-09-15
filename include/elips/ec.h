@@ -36,6 +36,9 @@ void ep_add(ep_t *r, const ep_t *p, const ep_t *q);
 void ep_from_affine(ep_t *r, const fp_t x, const fp_t y);
 int  ep_to_affine(fp_t x, fp_t y, const ep_t *p);   /* 0 if p is infinity */
 void ep_mul(ep_t *r, const ep_t *p, const limb_t *k, int kbits);
+/* [k]P for a k that is a public curve constant. Constant time in p but not in
+ * k, so never call it with a secret scalar. See src/arith/ec_tmpl.h. */
+void ep_mul_pubconst(ep_t *r, const ep_t *p, const limb_t *k, int kbits);
 int  ep_on_curve(const ep_t *p);
 /* Projective equality: no inversion, and correct for infinity. */
 int  ep_eq(const ep_t *a, const ep_t *b);
@@ -55,6 +58,8 @@ void ep2_add(ep2_t *r, const ep2_t *p, const ep2_t *q);
 void ep2_from_affine(ep2_t *r, const fp2_t x, const fp2_t y);
 int  ep2_to_affine(fp2_t x, fp2_t y, const ep2_t *p);
 void ep2_mul(ep2_t *r, const ep2_t *p, const limb_t *k, int kbits);
+/* As ep_mul_pubconst. Not for secret scalars. */
+void ep2_mul_pubconst(ep2_t *r, const ep2_t *p, const limb_t *k, int kbits);
 
 /* [k0]P0 + [k1]P1 in a single interleaved ladder, constant time.
  *
