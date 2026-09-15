@@ -429,6 +429,88 @@ complete formulas throughout, blst uses dedicated ones. The same trade as the
 Miller loop, but the safety argument is harder because the input is untrusted
 rather than a known multiple of a prime-order point, so it is not taken here.
 
+## The final exponentiation, traced
+
+It had never been traced. It is 42% of the pairing and 1.22x off blst, and the
+ranking of everything else was being made without it. The result is the
+opposite of what was expected.
+
+**ELiPS already does less multiplication work than blst here.** The entire gap
+is reductions.
+
+| one final exponentiation | ELiPS | blst | |
+|---|---:|---:|---|
+| cyclotomic squarings | 321 | 315 | parity |
+| Fp2 squarings | **2,234** | 2,841 | **ELiPS 21% fewer** |
+| Fp2 multiplications | 678 | 646 | parity |
+| 384-bit multiplications | **6,568** | 7,707 | **ELiPS 15% fewer** |
+| Montgomery reductions | 6,568 | **4,225** | **ELiPS 55% more** |
+
+The chain, attributed:
+
+```
+pairing_final_exp_fast    1        fp12_exp_param     5
+fp12_sqr_cyc             81        fp12_sqr_cyc_run  10
+fp12_mul                 34        fp6_mul          104
+fp12_frobenius            3        fp12_conj          9
+fp2_sqr               2,234        fp2_mul          678
+```
+
+`2,234 x 2 + 678 x 3 = 6,502` against an actual `fp_mul` of 6,568. The 66
+remaining are the 11 `fp_inv` and 11 `fp2_inv` of Karabina decompression and
+their helpers. **The map is complete**, not complete to within 10%.
+
+### Why ELiPS is ahead on multiplications
+
+Karabina. `fp12_exp_param` walks the exponent in runs of consecutive zero
+digits and squares a compressed representation across any run of 16 or more,
+which is cheaper per squaring but costs an Fp2 inversion to undo. Per
+exponentiation the runs are 2, 2, 3, 9, 32, 16: the 32 and the 16 go through
+`fp12_sqr_cyc_run`, the rest through plain Granger-Scott squaring. Over five
+exponentiations that is 240 compressed and 80 uncompressed, plus one
+standalone, so 321 cyclotomic squarings against blst's 315 with the same
+algebra but no compression. Same squarings, 21% fewer Fp2 squarings to do
+them.
+
+**A candidate checked and rejected.** Lowering `ELIPS_KARABINA_MIN_RUN` below
+16 to catch the run of 9 does not pay: nine compressed squarings save roughly
+45 Fp2 squarings, and the decompression they would need costs an Fp2 inversion,
+which is the divstep at `3 * FP_BITS` iterations. The threshold is where it
+should be.
+
+### What the gap actually is
+
+Both halves of a Montgomery multiply cost about the same, measured earlier in
+this document at 46% and 50% by two independent methods. Counting each as one
+unit:
+
+| | raw multiplies | reductions | total |
+|---|---:|---:|---:|
+| ELiPS | 6,568 | 6,568 | **13,136** |
+| blst | 7,707 | 4,225 | **11,932** |
+
+1.10x against a measured 1.22x, the remainder being additions and blst's
+instruction-level parallelism. And the counter-factual is the useful part:
+
+**If ELiPS reduced once per output coefficient as blst does, its final
+exponentiation would do about 10,768 units against blst's 11,932. It would be
+ahead by 10%.**
+
+### The ranked list
+
+1. **Lazy reduction, and nothing else.** 2,343 surplus reductions is the whole
+   of it. This is the same lever as the Miller loop, where the surplus ratio is
+   larger still at 2.56x.
+2. There is no second item. Karabina already beats what blst does on the
+   squaring side, the squaring counts are at parity, and the multiplication
+   count is in ELiPS's favour.
+
+**This closes the question the trace was run to answer.** The final
+exponentiation was the last place large enough to hide a novel algorithmic
+result, and it does not contain one: ELiPS is already ahead of blst on
+algorithm here and behind only on representation. Every remaining microsecond
+in the pairing, in both halves, now runs through lazy reduction.
+
 ## Revised ordering
 
 | | worth | risk |
