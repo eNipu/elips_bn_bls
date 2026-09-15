@@ -699,14 +699,52 @@ void fp2_mul_u(fp2_t r, const fp2_t a)
     fp_copy(r[1], t);
 }
 
+/* Fixed 4-bit window, and NOT constant time in e.
+ *
+ * It never was: the square-and-multiply this replaces branched on every
+ * exponent bit. Both call sites are fp2_sqrt, where e is (p-3)/4 or (p-1)/2,
+ * derived from the modulus and public. Indexing a table by a window of a
+ * public exponent leaks nothing the branch did not. Do not pass a secret
+ * exponent to this function; nothing in the library does.
+ *
+ * What changes is the count. These exponents are dense, so binary is the wrong
+ * shape for them, exactly as it was for the subgroup checks:
+ *
+ *     (p-3)/4        bits   popcount   non-zero 4-bit windows
+ *     BLS12-381       379        228                       92
+ *     BLS12-461       459        201                       98
+ *     BN-462          460        208                       79
+ *
+ * 228 multiplications become 92 plus 7 to build the table. The squarings are
+ * unchanged, and they are two thirds of the cost, so this is worth about a
+ * quarter of an exponentiation rather than half. */
 void fp2_exp(fp2_t r, const fp2_t a, const limb_t *e, int ebits)
 {
-    fp2_t acc;
-    fp2_set_one(acc);
-    for (int i = ebits - 1; i >= 0; i--) {
-        fp2_sqr(acc, acc);
-        if ((e[i / 64] >> (i % 64)) & 1) fp2_mul(acc, acc, a);
+    fp2_t tbl[16], acc;
+    int started = 0;
+
+    fp2_copy(tbl[1], a);
+    for (int i = 2; i < 16; i++) {
+        if (i & 1) fp2_mul(tbl[i], tbl[i - 1], a);
+        else       fp2_sqr(tbl[i], tbl[i / 2]);
     }
+
+    for (int pos = ((ebits + 3) / 4) * 4 - 4; pos >= 0; pos -= 4) {
+        unsigned w = 0;
+        for (int b = 0; b < 4; b++) {
+            int bit = pos + b;
+            if (bit < ebits) w |= (unsigned)((e[bit / 64] >> (bit % 64)) & 1) << b;
+        }
+        if (started) {
+            fp2_sqr(acc, acc); fp2_sqr(acc, acc);
+            fp2_sqr(acc, acc); fp2_sqr(acc, acc);
+            if (w) fp2_mul(acc, acc, tbl[w]);
+        } else if (w) {
+            fp2_copy(acc, tbl[w]);
+            started = 1;
+        }
+    }
+    if (!started) fp2_set_one(acc);
     fp2_copy(r, acc);
 }
 

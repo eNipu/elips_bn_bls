@@ -576,6 +576,90 @@ result, and it does not contain one: ELiPS is already ahead of blst on
 algorithm here and behind only on representation. Every remaining microsecond
 in the pairing, in both halves, now runs through lazy reduction.
 
+## hash_to_g2, the largest ratio in the library
+
+Issue #42 measured `hash_to_g2` at 6.7x off blst, on 18,982 `fp_mul`. Traced,
+it splits cleanly:
+
+| | `fp_mul` | share |
+|---|---:|---:|
+| `fp2_exp`, inside `fp2_sqrt` | 11,580 | **61%** |
+| cofactor clearing, the GLV ladder | 6,924 | 36% |
+| the SSWU map itself | ~480 | 3% |
+
+**Cofactor clearing is already at parity** and is not the problem: 132
+`ep2_dbl` against blst's 127. The whole gap is the square root.
+
+### What was fixed
+
+`fp2_exp` was plain binary square-and-multiply, branching on every exponent
+bit. Its two call sites are both in `fp2_sqrt`, with exponents `(p-3)/4` and
+`(p-1)/2` derived from the modulus and public, and those exponents are dense:
+
+| | bits | popcount | non-zero 4-bit windows |
+|---|---:|---:|---:|
+| BLS12-381 `(p-3)/4` | 379 | **228** | 92 |
+| BLS12-461 `(p-3)/4` | 459 | 201 | 98 |
+| BN-462 `(p-3)/4` | 460 | 208 | 79 |
+
+**The same shape as the subgroup checks**: a dense exponent walked one bit at a
+time. A 4-bit window turns 228 multiplications into 92 plus 7 to build the
+table. The squarings are untouched and they are two thirds of the cost, so this
+is worth about a quarter of an exponentiation, not half.
+
+It changes no security property. The routine already branched on the exponent;
+indexing a table by a window of a public exponent leaks nothing the branch did
+not.
+
+| `hash_to_g2` | before | after | |
+|---|---:|---:|---:|
+| `fp_mul` | 18,982 | 15,870 | **-16.4%** |
+| `fp2_mul` | 4,198 | 3,150 | -25.0% |
+| `fp_sub` | 16,973 | 13,845 | -18.4% |
+
+Measured, median of three alternating runs:
+
+| | before | after | |
+|---|---:|---:|---:|
+| `hash_to_g2` | 716.2 us | 633.5 | **-16.8%** |
+| `bls_sign` | 1111.5 | 916.1 | **-17.1%** |
+| `bls_verify` | 2474.8 | 2213.7 | **-10.9%** |
+| `miller`, `final_exp`, `pairing` | | | unchanged |
+
+`bls_sign` moves almost one for one with `hash_to_g2`, which is the check that
+the attribution was right: signing is a hash to G2 and a scalar multiplication.
+
+### What remains, and it is most of it
+
+**blst performs ONE exponentiation per map. ELiPS performs four.**
+
+`map_sswu` computes `sqrt(gx1)` and `sqrt(gx2)` and discards one, deliberately:
+choosing between them would branch on the message, which RFC 9380 treats as
+secret. Each `fp2_sqrt` is then two exponentiations, because the complex method
+needs `a^((p-3)/4)` and `(1+alpha)^((p-1)/2)`. Two maps, two roots, two
+exponentiations: eight.
+
+blst uses `sswu_opt` from the CFRG draft, where one call returns both the root
+and the square/non-square flag, and the other branch is `y2 = y1 * u^3`. It
+also carries `(xn, xd)` as a fraction and never inverts; ELiPS inverts three
+times per map.
+
+The obvious shortcut does not apply here, and it is worth recording why rather
+than leaving someone to rediscover it. The identity
+
+```
+g(x2) == (Z u^2)^3 g(x1)
+```
+
+does hold, checked on 400 random inputs. But deriving the second root from the
+first needs `sqrt(-Z^3)` as a constant, and on this curve **neither `Z^3` nor
+`-Z^3` is a square**, because `p^2 == 9 mod 16` rather than `3 mod 4`. That is
+exactly why blst passes `recip_ZZZ` and `magic_ZZZ` tables into
+`recip_sqrt_fp2`. Adopting it means implementing the 9-mod-16 square root, not
+adding a constant.
+
+That is the remaining 4x, and it is scoped rather than started.
+
 ## Revised ordering
 
 | | worth | risk |
