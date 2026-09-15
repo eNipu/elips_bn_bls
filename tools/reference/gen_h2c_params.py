@@ -53,6 +53,14 @@ def emit_curve(name, macro):
                     % (nm, tag, len(poly), n, rows))
         return out
 
+    def fp2_rows(nm, elems):
+        rows = []
+        for f in elems:
+            a, b = f.limbs()
+            rows.append("    { { %s },\n      { %s } }" % (limbs(mont(a), n), limbs(mont(b), n)))
+        return ("  static const limb_t %s[%d][2][%d] = {\n%s\n  };\n"
+                % (nm, len(elems), n, ",\n".join(rows)))
+
     def fp2_table(nm, polys):
         out = ""
         for tag, poly in zip(("XNUM", "XDEN", "YNUM", "YDEN"), polys):
@@ -95,6 +103,103 @@ def emit_curve(name, macro):
         txt += fp2_const("H2C_G2_MB_OVER_A", -g2.iso_B * g2.iso_A.inv0())
         txt += fp2_const("H2C_G2_B_OVER_ZA", g2.iso_B * (g2.Z * g2.iso_A).inv0())
         txt += fp2_table("H2C_G2_ISO", g2.iso)
+
+        # --- one square root per map instead of two -------------------------
+        #
+        # map_sswu needs sqrt(gx1) when gx1 is square and sqrt(gx2) otherwise.
+        # Computing both and discarding one costs two square roots, and each is
+        # two exponentiations. These constants let ONE exponentiation give
+        # either, which halves the dominant cost of hash_to_g2.
+        #
+        # p^2 == 9 mod 16 on every curve here, so the 2-Sylow of Fp2* has
+        # order 8. For y = gx1^((q+7)/16), the value t = y^2/gx1 is an 8th root
+        # of unity, and its index k says everything:
+        #
+        #   k even  gx1 is the square, and   (y * zeta^(-k/2))^2      == gx1
+        #   k odd   gx2 is the square, and   (y * FIX[k] * u^3)^2     == gx2
+        #
+        # using g(x2) = (Z u^2)^3 g(x1), which holds by construction. For odd k
+        # the constant is sqrt(Z^3 zeta^-k): both factors are non-squares, so
+        # their product is a square and the root exists. Verified against the
+        # map over random u before this file is written.
+        q = p * p
+        assert q % 16 == 9, "the 8-element table assumes q == 9 mod 16"
+        one2 = g2.Z.one()
+
+        def f2pow(x, e):
+            r, b = one2, x
+            while e:
+                if e & 1:
+                    r = r * b
+                b = b * b
+                e >>= 1
+            return r
+
+        m8 = (q - 1) // 8
+        zeta = None
+        for za in range(0, 16):
+            for zb in range(0, 16):
+                if za == 0 and zb == 0:
+                    continue
+                cand = g2.Z.from_coeffs([za, zb])
+                if cand.is_square():
+                    continue
+                z = f2pow(cand, m8)
+                if f2pow(z, 8) == one2 and all(f2pow(z, o) != one2 for o in (1, 2, 4)):
+                    zeta = z
+                    break
+            if zeta is not None:
+                break
+        assert zeta is not None, "no primitive 8th root of unity found"
+
+        c1 = (q + 7) // 16
+        cn = (c1.bit_length() + W - 1) // W
+        Z3 = g2.Z * g2.Z * g2.Z
+        zetas = [f2pow(zeta, k) for k in range(8)]
+        fix = []
+        for k in range(8):
+            if k % 2 == 0:
+                fix.append(f2pow(zeta, (-(k // 2)) % 8))
+            else:
+                v = Z3 * f2pow(zeta, (-k) % 8)
+                assert v.is_square(), "Z^3 zeta^-k must be square for odd k"
+                fix.append(v.sqrt())
+
+        # Prove the table against the map itself, not just against algebra.
+        # A private generator: seeding the module-wide one would perturb
+        # anything else in this script or in h2c_ref that draws from it.
+        import random as _random
+        _rnd = _random.Random(20250915)
+        checked = 0
+        while checked < 32:
+            uu = g2.Z.from_coeffs([_rnd.randrange(p), _rnd.randrange(p)])
+            zu2 = g2.Z * uu * uu
+            tv = zu2 * zu2 + zu2
+            if tv.is_zero():
+                continue
+            x1 = (one2 + tv.inv0()) * ((-g2.iso_B) * g2.iso_A.inv0())
+            x2 = zu2 * x1
+
+            def _gx(x):
+                return x * x * x + g2.iso_A * x + g2.iso_B
+
+            gx1 = _gx(x1)
+            yy = f2pow(gx1, c1)
+            ysq = yy * yy
+            kk = next(i for i in range(8) if ysq == gx1 * zetas[i])
+            if kk % 2 == 0:
+                r = yy * fix[kk]
+                assert r * r == gx1 and gx1.is_square()
+            else:
+                r = yy * fix[kk] * (uu * uu * uu)
+                assert r * r == _gx(x2) and not gx1.is_square()
+            checked += 1
+
+        txt += "  #define H2C_G2_SQRT_EXP_BITS %d\n" % c1.bit_length()
+        txt += ("  static const limb_t H2C_G2_SQRT_EXP[%d] = {\n        %s\n  };\n"
+                % (cn, limbs(c1, cn)))
+        txt += fp2_rows("H2C_G2_ZETA", zetas)
+        txt += fp2_rows("H2C_G2_FIX", fix)
     else:
         txt += ("  #define ELIPS_H2C_SVDW     1\n"
                 "  /* Shallue-van de Woestijne needs no isogeny; c1..c4 are the\n"

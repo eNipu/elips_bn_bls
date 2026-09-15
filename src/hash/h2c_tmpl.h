@@ -57,6 +57,63 @@ static void FN(gx)(H2C_FT out, const H2C_FT x, const H2C_FT A, const H2C_FT B)
  * The two square roots are both computed and selected. fp_sqrt returns zero and
  * a false flag on a non-residue, so the unused branch is harmless.
  */
+#if defined(H2C_SSWU_ONE_ROOT)
+/* One exponentiation instead of four, for the map's square root.
+ *
+ * map_sswu needs sqrt(g(x1)) when g(x1) is square and sqrt(g(x2)) otherwise,
+ * and it cannot look first: choosing would branch on the message. The obvious
+ * answer, computing both roots and selecting, is what the other branch below
+ * does, and it costs two square roots of two exponentiations each.
+ *
+ * ONE exponentiation gives either. q = p^2 is 9 mod 16 on every curve here, so
+ * the 2-Sylow of Fp2* has order 8. Write y = g(x1)^((q+7)/16). Then
+ *
+ *     t = y^2 / g(x1)
+ *
+ * is an 8th root of unity, and its index k decides everything:
+ *
+ *     k even   g(x1) is the square, and (y * zeta^(-k/2))^2      == g(x1)
+ *     k odd    g(x2) is the square, and (y * FIX[k] * u^3)^2     == g(x2)
+ *
+ * The odd case works because g(x2) = (Z u^2)^3 g(x1) holds by construction, so
+ * the missing factor is sqrt(Z^3 zeta^-k). That exists precisely because both
+ * Z^3 and an odd power of zeta are non-squares, and a product of two
+ * non-squares is a square. gen_h2c_params.py derives FIX and re-checks the
+ * whole table against the map before emitting it.
+ *
+ * t is never formed, because that would need an inversion. The loop compares
+ * y^2 against g(x1)*zeta^k instead, which is eight multiplications against a
+ * divstep, and selects under a mask so k stays hidden. k is compared with a
+ * loop counter, which is public; only the match is data.
+ *
+ * Returns all-ones if x1 was the right abscissa, zero if x2. */
+static limb_t FN(sswu_root)(H2C_FT y, const H2C_FT gx1, const H2C_FT u)
+{
+    H2C_FT cand, ysq, t, fix, u3, one, sel;
+    limb_t even = 0;
+
+    F(exp)(cand, gx1, M(SQRT_EXP), M(SQRT_EXP_BITS));
+    F(sqr)(ysq, cand);
+
+    F(set_zero)(fix);
+    for (int k = 0; k < 8; k++) {
+        F(mul)(t, gx1, H2C_ELEM(M(ZETA), k));
+        limb_t m = FN(mask)(F(eq)(t, ysq));
+        FN(cmov)(fix, H2C_ELEM(M(FIX), k), fix, m);
+        if (!(k & 1)) even |= m;
+    }
+
+    F(sqr)(u3, u);
+    F(mul)(u3, u3, u);
+    F(set_one)(one);
+    FN(cmov)(sel, one, u3, even);           /* even -> 1, odd -> u^3 */
+
+    F(mul)(y, cand, fix);
+    F(mul)(y, y, sel);
+    return even;
+}
+#endif /* H2C_SSWU_ONE_ROOT */
+
 static void FN(map_sswu)(H2C_FT xo, H2C_FT yo, const H2C_FT u)
 {
     H2C_FT zu2, t, tinv, x1, x1e, x2, gx1, gx2, y1, y2, ny;
@@ -77,6 +134,12 @@ static void FN(map_sswu)(H2C_FT xo, H2C_FT yo, const H2C_FT u)
     F(mul)(x2, zu2, x1);
 
     FN(gx)(gx1, x1, M(ISO_A), M(ISO_B));
+
+#if defined(H2C_SSWU_ONE_ROOT)
+    limb_t m = FN(sswu_root)(yo, gx1, u);
+    FN(cmov)(xo, x1, x2, m);
+    (void)gx2; (void)y1; (void)y2;
+#else
     FN(gx)(gx2, x2, M(ISO_A), M(ISO_B));
 
     int is_sq = F(sqrt)(y1, gx1);
@@ -85,6 +148,7 @@ static void FN(map_sswu)(H2C_FT xo, H2C_FT yo, const H2C_FT u)
     limb_t m = FN(mask)(is_sq);
     FN(cmov)(xo, x1, x2, m);
     FN(cmov)(yo, y1, y2, m);
+#endif
 
     F(neg)(ny, yo);
     FN(cmov)(yo, yo, ny, FN(mask)(F(sgn0)(yo) == F(sgn0)(u)));

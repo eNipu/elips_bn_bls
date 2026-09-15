@@ -674,7 +674,77 @@ exactly why blst passes `recip_ZZZ` and `magic_ZZZ` tables into
 `recip_sqrt_fp2`. Adopting it means implementing the 9-mod-16 square root, not
 adding a constant.
 
-That is the remaining 4x, and it is scoped rather than started.
+### One exponentiation instead of four: done
+
+The map now computes **one** square root, not two, and that root costs one
+exponentiation rather than two. `fp2_sqrt` is no longer on the G2 path at all.
+
+`q = p^2` is 9 mod 16 on all three curves, so the 2-Sylow of Fp2* has order 8.
+For `y = g(x1)^((q+7)/16)`, the value `t = y^2/g(x1)` is an 8th root of unity
+and its index `k` decides everything:
+
+```
+k even   g(x1) is the square, and (y * zeta^(-k/2))^2    == g(x1)
+k odd    g(x2) is the square, and (y * FIX[k] * u^3)^2   == g(x2)
+```
+
+The odd case works because `g(x2) = (Z u^2)^3 g(x1)`, so the missing factor is
+`sqrt(Z^3 zeta^-k)`. It exists precisely because `Z^3` and an odd power of
+`zeta` are both non-squares and a product of two non-squares is a square. That
+is the shortcut the paragraph above says does not exist in the simple form: it
+does exist, once the correction is allowed to depend on `k`.
+
+`t` is never formed, because that would need an inversion. The loop compares
+`y^2` against `g(x1) * zeta^k` for the eight `k`, which is eight
+multiplications against a divstep, and selects under a mask so `k` stays
+hidden. Nothing branches on the message.
+
+`gen_h2c_params.py` derives `zeta`, `ZETA[8]` and `FIX[8]` from the curve
+parameters and **re-checks the whole table against the map over 32 random
+inputs before emitting the header**, so a wrong constant fails generation
+rather than silently producing points that are on the curve, in the group, and
+disagree with every other implementation.
+
+| `hash_to_g2` | before P8 | after P8 | after P9 |
+|---|---:|---:|---:|
+| `fp_mul` | 18,982 | 15,870 | **11,558** |
+| `fp2_sqr` | 3,064 | 3,080 | **1,536** |
+| `fp2_exp` | 8 | 8 | **2** |
+| `fp2_sqrt` | 4 | 4 | **0** |
+
+**-27.2% against P8, -39.1% against where issue #42 started.** Against blst's
+4,919 multiplications the ratio is now 2.35x, from 3.86x.
+
+Measured:
+
+| | before | after | |
+|---|---:|---:|---:|
+| `hash_to_g2` | 750.7 us | 580.3 | **-23.3%** |
+| `bls_sign` | 1023.1 | 847.6 | **-16.7%** |
+| `bls_verify` | 2430.3 | 2257.0 | -6.4% |
+| `hash_to_g1`, `miller`, `pairing` | | | unchanged |
+
+Median of three alternating runs, every `hash_to_g2` and `bls_sign` row at
+100% confidence and `miller` and `pairing` never leaving the noise.
+
+R11 is exact here rather than statistical: BLS12-461 and BN-462 use
+Shallue-van de Woestijne, not SSWU, and their `hash_to_g2` operation counts are
+**byte-identical** before and after, 23,521 and 24,115. BLS12-381's G1 also
+keeps the two-root form, because Fp is 3 mod 4 and its 2-Sylow has order 2, so
+the eight-element table does not apply.
+
+### What is left in hash_to_g2
+
+Cofactor clearing is now the largest part at 6,924 of 11,558, and it is already
+at parity with blst in point operations. The rest of the gap to blst is the
+same lazy reduction that P6 rejected: blst's Fp2 operations are cheaper, not
+fewer. The remaining SSWU item is blst's fraction form, which carries
+`(xn, xd)` and never inverts, against the three Fp2 inversions still here.
+
+**The SvdW curves have the bigger untouched item.** BLS12-461 and BN-462
+compute *three* square roots per map, six exponentiations against BLS12-381's
+one, which is why their counts are twice BLS12-381's. Nothing here addresses
+that.
 
 ### A note on the machine, and why the README was not updated
 

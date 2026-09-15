@@ -165,7 +165,13 @@ void elips_hash_to_field_fp2(fp2_t *out, int count,
 #define H2C_F  fp2
 #define H2C_FT fp2_t
 #define H2C_CN H2C_G2_
+/* Only Fp2 has the 8-element table: q = p^2 is 9 mod 16, where Fp is 3 mod 4
+ * and its 2-Sylow has order 2. G1 keeps the two-root form. */
+#if defined(ELIPS_H2C_SSWU)
+#define H2C_SSWU_ONE_ROOT 1
+#endif
 #include "hash/h2c_tmpl.h"
+#undef H2C_SSWU_ONE_ROOT
 #undef H2C_PT
 #undef H2C_F
 #undef H2C_FT
