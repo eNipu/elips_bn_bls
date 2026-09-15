@@ -398,11 +398,22 @@ Measured on BLS12-381:
 
 | | before | after | |
 |---|---:|---:|---:|
-| `ep2_in_subgroup` | 158.0 us | 100.2 | **-36.8%** |
-| `ep_in_subgroup` | 95.6 | 60.2 | **-37.1%** |
-| `pairing` | 1226.4 | 1132.1 | **-7.5%** |
-| `bls_verify` | 3209.6 | 2909.7 | **-9.0%** |
-| `miller` | 430.7 | 429.6 | unchanged, as it should be |
+| `ep2_in_subgroup` | 158.7 us | 102.4 | **-35.8%** |
+| `ep_in_subgroup` | 96.2 | 61.5 | **-36.3%** |
+| `pairing` | 1239.8 | 1143.2 | **-7.8%** |
+| `bls_verify` | 3227.4 | 2933.5 | **-9.1%** |
+| `miller` | 434.2 | 434.1 | unchanged, as it should be |
+
+and on the other two, which is where the first attempt at this failed:
+
+| | before | after | |
+|---|---:|---:|---:|
+| BLS12-461 `ep2_in_subgroup` | 308.5 us | 186.4 | **-39.3%** |
+| BLS12-461 `pairing` | 2138.1 | 1963.4 | **-8.8%** |
+| BN-462 `ep2_in_subgroup` | 813.9 | 596.3 | **-26.6%** |
+| BN-462 `pairing` | 2851.3 | 2623.9 | **-8.0%** |
+
+No row on any curve reports `slower`.
 
 Nothing here required a new exactness argument, and that is worth stating
 plainly rather than glossing: the test is untouched, so the gcd conditions

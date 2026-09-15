@@ -4,8 +4,8 @@
   "compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
   "cflags": "-O3 -DNDEBUG (CMAKE_BUILD_TYPE=Release; CMake's default, the project does not override it)",
   "gmp": "2:6.3.0+dfsg-2ubuntu6.1",
-  "commit": "2a65425",
-  "date": "2026-09-14",
+  "commit": "c3d5707",
+  "date": "2026-09-15",
   "harness": {
     "reps": 15,
     "inner": 60,
@@ -14,87 +14,87 @@
   "units": "microseconds",
   "curves": {
     "BLS12-381": {
-      "ep_mul": 169.799,
-      "ep_mul_glv": 122.821,
-      "ep2_mul": 558.866,
-      "ep2_mul_glv": 302.493,
-      "gt_exp": 1005.996,
-      "miller": 434.453,
-      "final_exp": 524.966,
-      "pairing": 1225.826,
-      "ep_in_subgroup": 96.269,
-      "ep2_in_subgroup": 160.982,
-      "hash_to_g1": 203.017,
-      "hash_to_g2": 1009.872,
+      "ep_mul": 166.599,
+      "ep_mul_glv": 120.438,
+      "ep2_mul": 553.698,
+      "ep2_mul_glv": 296.325,
+      "gt_exp": 1008.798,
+      "miller": 436.501,
+      "final_exp": 523.179,
+      "pairing": 1147.093,
+      "ep_in_subgroup": 61.606,
+      "ep2_in_subgroup": 103.436,
+      "hash_to_g1": 204.88,
+      "hash_to_g2": 1001.302,
       "_spread_pct": {
-        "ep_mul": 9.38,
-        "ep_mul_glv": 8.56,
-        "ep2_mul": 10.1,
-        "ep2_mul_glv": 6.34,
-        "gt_exp": 9.06,
-        "miller": 3.47,
-        "final_exp": 7.52,
-        "pairing": 9.27,
-        "ep_in_subgroup": 11.24,
-        "ep2_in_subgroup": 9.92,
-        "hash_to_g1": 9.09,
-        "hash_to_g2": 34.93
+        "ep_mul": 12.85,
+        "ep_mul_glv": 23.43,
+        "ep2_mul": 14.54,
+        "ep2_mul_glv": 51.42,
+        "gt_exp": 13.65,
+        "miller": 10.77,
+        "final_exp": 16.42,
+        "pairing": 14.64,
+        "ep_in_subgroup": 62.61,
+        "ep2_in_subgroup": 66.41,
+        "hash_to_g1": 53.08,
+        "hash_to_g2": 37.47
       }
     },
     "BLS12-461": {
-      "ep_mul": 323.632,
-      "ep_mul_glv": 227.253,
-      "ep2_mul": 1057.358,
-      "ep2_mul_glv": 561.025,
-      "gt_exp": 1960.152,
-      "miller": 808.637,
-      "final_exp": 827.525,
-      "pairing": 2148.495,
-      "ep_in_subgroup": 186.92,
-      "ep2_in_subgroup": 309.277,
-      "hash_to_g1": 370.111,
-      "hash_to_g2": 2152.847,
+      "ep_mul": 322.377,
+      "ep_mul_glv": 228.535,
+      "ep2_mul": 1055.113,
+      "ep2_mul_glv": 555.369,
+      "gt_exp": 1945.93,
+      "miller": 800.449,
+      "final_exp": 820.14,
+      "pairing": 1934.722,
+      "ep_in_subgroup": 111.84,
+      "ep2_in_subgroup": 185.713,
+      "hash_to_g1": 368.662,
+      "hash_to_g2": 2129.386,
       "_spread_pct": {
-        "ep_mul": 4.36,
-        "ep_mul_glv": 3.65,
-        "ep2_mul": 8.54,
-        "ep2_mul_glv": 40.6,
-        "gt_exp": 31.43,
-        "miller": 3.67,
-        "final_exp": 5.72,
-        "pairing": 33.97,
-        "ep_in_subgroup": 3.81,
-        "ep2_in_subgroup": 7.66,
-        "hash_to_g1": 40.14,
-        "hash_to_g2": 32.27
+        "ep_mul": 2.17,
+        "ep_mul_glv": 4.49,
+        "ep2_mul": 10.89,
+        "ep2_mul_glv": 7.78,
+        "gt_exp": 7.4,
+        "miller": 5.36,
+        "final_exp": 3.03,
+        "pairing": 2.3,
+        "ep_in_subgroup": 4.45,
+        "ep2_in_subgroup": 3.3,
+        "hash_to_g1": 3.05,
+        "hash_to_g2": 2.0
       }
     },
     "BN-462": {
-      "ep_mul": 486.183,
-      "ep_mul_glv": 365.968,
-      "ep2_mul": 1567.138,
-      "ep2_mul_glv": 1051.013,
-      "gt_exp": 2940.291,
-      "miller": 1249.12,
-      "final_exp": 745.853,
-      "pairing": 2813.707,
-      "ep_in_subgroup": 0.502,
-      "ep2_in_subgroup": 806.714,
-      "hash_to_g1": 293.104,
-      "hash_to_g2": 2246.052,
+      "ep_mul": 490.211,
+      "ep_mul_glv": 365.885,
+      "ep2_mul": 1590.573,
+      "ep2_mul_glv": 1057.9,
+      "gt_exp": 2921.313,
+      "miller": 1261.449,
+      "final_exp": 743.582,
+      "pairing": 2637.699,
+      "ep_in_subgroup": 0.503,
+      "ep2_in_subgroup": 594.104,
+      "hash_to_g1": 294.97,
+      "hash_to_g2": 2259.815,
       "_spread_pct": {
-        "ep_mul": 60.92,
-        "ep_mul_glv": 78.13,
-        "ep2_mul": 24.64,
-        "ep2_mul_glv": 1.95,
-        "gt_exp": 28.46,
-        "miller": 2.02,
-        "final_exp": 10.68,
-        "pairing": 9.44,
-        "ep_in_subgroup": 61.5,
-        "ep2_in_subgroup": 3.17,
-        "hash_to_g1": 4.81,
-        "hash_to_g2": 30.24
+        "ep_mul": 12.4,
+        "ep_mul_glv": 13.5,
+        "ep2_mul": 16.34,
+        "ep2_mul_glv": 10.5,
+        "gt_exp": 9.09,
+        "miller": 13.88,
+        "final_exp": 16.07,
+        "pairing": 8.13,
+        "ep_in_subgroup": 257.88,
+        "ep2_in_subgroup": 8.24,
+        "hash_to_g1": 5.03,
+        "hash_to_g2": 12.07
       }
     }
   },
@@ -102,94 +102,94 @@
   "fp_addsub_backend": "x86-64 adc/sbb/cmov (issue #37). Baseline x86-64, so it needs no CPUID check and is always on. ELIPS_NO_ASM_ADDSUB=1 records the portable C for this pair alone, which is how its 1.58x was measured without moving fp_mul at the same time.",
   "results": {
     "ep_mul": {
-      "median": 169.799,
-      "min": 166.497,
-      "max": 182.427,
-      "spread_pct": 9.38
+      "median": 166.599,
+      "min": 165.567,
+      "max": 186.97,
+      "spread_pct": 12.85
     },
     "ep_mul_glv": {
-      "median": 122.821,
-      "min": 120.818,
-      "max": 131.329,
-      "spread_pct": 8.56
+      "median": 120.438,
+      "min": 119.624,
+      "max": 147.841,
+      "spread_pct": 23.43
     },
     "ep2_mul": {
-      "median": 558.866,
-      "min": 545.043,
-      "max": 601.501,
-      "spread_pct": 10.1
+      "median": 553.698,
+      "min": 545.281,
+      "max": 625.789,
+      "spread_pct": 14.54
     },
     "ep2_mul_glv": {
-      "median": 302.493,
-      "min": 296.775,
-      "max": 315.965,
-      "spread_pct": 6.34
+      "median": 296.325,
+      "min": 293.237,
+      "max": 445.62,
+      "spread_pct": 51.42
     },
     "gt_exp": {
-      "median": 1005.996,
-      "min": 984.159,
-      "max": 1075.282,
-      "spread_pct": 9.06
+      "median": 1008.798,
+      "min": 987.242,
+      "max": 1124.903,
+      "spread_pct": 13.65
     },
     "gt_exp_ct": {
-      "median": 388.136,
-      "min": 382.932,
-      "max": 425.363,
-      "spread_pct": 10.93
+      "median": 391.71,
+      "min": 386.005,
+      "max": 424.282,
+      "spread_pct": 9.77
     },
     "miller": {
-      "median": 434.453,
-      "min": 429.719,
-      "max": 444.796,
-      "spread_pct": 3.47
+      "median": 436.501,
+      "min": 430.041,
+      "max": 477.04,
+      "spread_pct": 10.77
     },
     "final_exp": {
-      "median": 524.966,
-      "min": 517.66,
-      "max": 557.157,
-      "spread_pct": 7.52
+      "median": 523.179,
+      "min": 519.753,
+      "max": 605.658,
+      "spread_pct": 16.42
     },
     "pairing": {
-      "median": 1225.826,
-      "min": 1214.328,
-      "max": 1327.989,
-      "spread_pct": 9.27
+      "median": 1147.093,
+      "min": 1127.96,
+      "max": 1295.855,
+      "spread_pct": 14.64
     },
     "ep_in_subgroup": {
-      "median": 96.269,
-      "min": 95.327,
-      "max": 106.15,
-      "spread_pct": 11.24
+      "median": 61.606,
+      "min": 61.084,
+      "max": 99.654,
+      "spread_pct": 62.61
     },
     "ep2_in_subgroup": {
-      "median": 160.982,
-      "min": 157.402,
-      "max": 173.374,
-      "spread_pct": 9.92
+      "median": 103.436,
+      "min": 102.236,
+      "max": 170.928,
+      "spread_pct": 66.41
     },
     "hash_to_g1": {
-      "median": 203.017,
-      "min": 199.937,
-      "max": 218.393,
-      "spread_pct": 9.09
+      "median": 204.88,
+      "min": 202.113,
+      "max": 310.862,
+      "spread_pct": 53.08
     },
     "hash_to_g2": {
-      "median": 1009.872,
-      "min": 983.885,
-      "max": 1336.611,
-      "spread_pct": 34.93
+      "median": 1001.302,
+      "min": 976.888,
+      "max": 1352.112,
+      "spread_pct": 37.47
     },
     "bls_sign": {
-      "median": 1303.547,
-      "min": 1288.881,
-      "max": 1363.127,
-      "spread_pct": 5.7
+      "median": 1296.192,
+      "min": 1281.135,
+      "max": 1564.357,
+      "spread_pct": 21.85
     },
     "bls_verify": {
-      "median": 3202.027,
-      "min": 3183.184,
-      "max": 3434.909,
-      "spread_pct": 7.86
+      "median": 2961.584,
+      "min": 2899.542,
+      "max": 3226.943,
+      "spread_pct": 11.05
     }
   },
   "reps": 15,
