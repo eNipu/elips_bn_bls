@@ -143,7 +143,72 @@ measurements agree:
 
 So 5,200 surplus reductions is real work, not bookkeeping.
 
-## What lazy reduction is actually worth — measured, not projected
+## Lazy reduction, measured and rejected
+
+**Do not build this.** The section below it records a 7.7% prototype gain at
+Fp2. That number was measured with portable primitives on both sides, and it
+does not survive contact with the shipping assembly. Reproduce any of this
+with `bench/lazy_probe.c`.
+
+The two primitives a lazy tower needs were written in assembly, as the halves
+of `ROUND6` separated, and checked against `fp_mul` over random inputs:
+
+| | ns | share of a fused multiply |
+|---|---:|---:|
+| fused `fp_mul` (asm, multiply and reduce) | 36.05 | 100% |
+| `mulw` raw 384x384 product | 17.74 | **49%** |
+| `redcw` 768 -> 384 reduction | 22.63 | **63%** |
+
+**The halves sum to 112% of the whole they replace.** The fused CIOS routine
+interleaves both carry chains across its multiply and reduction halves; split
+apart, each has a tighter dependency chain and less to overlap. That 12% is
+paid on every multiplication and it is what the reduction saving has to beat.
+
+At Fp2 it does not even start: three fused multiplies cost 106.1 ns, and three
+raw products plus two reductions plus the wide combination cost 106.0 ns.
+**0.1%.**
+
+### Fp6 is where the amortising happens, and it still fails
+
+Reductions amortise 3:1 at Fp6, one per output coefficient against one per
+multiplication. A complete lazy Fp6 multiply was written and checked against
+`fp6_mul` over 20,000 random inputs with 0 mismatches. Every wide value is kept
+in `[0, p*R)` by conditionally adding or subtracting `p*R`, which is what
+blst's `add_mod_384x384` does, and which is exact because
+`REDC(w + p*R) = w*R^-1 + p == w*R^-1 (mod p)`. `p*R` has six zero low limbs,
+so that conditional only ever touches the top half: a 768-bit modular add
+costs **1.68 ns**.
+
+| `fp6_mul` | ns | |
+|---|---:|---:|
+| eager, shipping | 1030.5 | |
+| lazy, ideal: 18 `mulw` + 6 `redcw` + 40 wide adds | **522.2** | **-49.3%** |
+| lazy, measured in C | **1801.5** | **+74.8%** |
+
+**The algorithm is worth 49%. The C implementation gives away 1,279 ns, more
+than the entire eager multiply.**
+
+The overhead is memory. A 768-bit intermediate is 96 bytes and does not live in
+registers across a C function boundary: `fp2_mulw` measures 153.4 ns where its
+own parts sum to 58.3, the difference being the spill and reload of values
+`mulw` has just written. One `fp6_mul` moves about two kilobytes of stack that
+the eager version never touches, because 384-bit values fit in registers.
+
+blst does not pay this because `mul_fp6x2` **is assembly**: its double-width
+intermediates never leave registers inside the routine.
+
+### What this actually costs, and why it stops here
+
+Lazy reduction in this library is not "carry the double-width representation up
+through Fp6 and Fp12". It is **write the Fp6 and Fp12 multiplication in
+assembly**, for every curve, with a C fallback that must stay eager because in
+C the transformation is a large loss. That forks the tower rather than
+extending it, and it is a different and much larger project than the one that
+was scoped.
+
+The gate was set in advance at 6% and the measurement is -74.8%. Stopped.
+
+## What the earlier prototype measured — superseded, kept for the record
 
 A prototype Fp2 multiply with lazy reduction (three raw multiplies, two
 reductions, 768-bit combination) was written and checked against the shipping
