@@ -360,22 +360,41 @@ compiled into `fp_params.h`**. Nothing about it is secret, and it is chosen to
 be sparse: |x| on BLS12-381 is `0xd201000000010000`, six set bits in
 sixty-four.
 
-`ep_mul_pubconst` and `ep2_mul_pubconst` branch on the bits of that constant
-and skip the zeros. The control flow depends on the constant alone, so the
-routines remain **constant time in the point**, which is the property that
-matters when the point is what an attacker supplies. They keep the complete
-addition formulas, which unlike the Miller loop is not something to give up
-here: the caller is validating a point it does not trust, so every exceptional
-case has to work rather than be argued away.
+`ep_mul_pubconst` and `ep2_mul_pubconst` expand that constant into
+non-adjacent form and skip the zero digits. The control flow depends on the
+constant alone, so the routines remain **constant time in the point**, which
+is the property that matters when the point is what an attacker supplies. They
+keep the complete addition formulas, which unlike the Miller loop is not
+something to give up here: the caller is validating a point it does not trust,
+so every exceptional case has to work rather than be argued away.
 
-| per `ep2_in_subgroup` | before | after |
-|---|---:|---:|
-| `fp_mul` | 3,017 | **2,019** |
-| `ep2_add` | 23 | **5** |
-| `ep2_dbl` | 71 | 63 |
-| `fp2_cselect` | 768 | **0** |
+**NAF and not plain binary, and that distinction was not free.** Binary was
+written first and measured first, and it made two of the three curves slower:
+BLS12-461's `ep2_in_subgroup` by 6.9% and BN-462's by 11.7%. The seeds are
+sparse in signed-digit form and dense in bits:
 
-5 additions is exactly the six set bits of |x| less the leading one. Measured:
+| constant | bits | popcount | NAF |
+|---|---:|---:|---:|
+| BLS12-381 seed | 64 | 6 | 6 |
+| BLS12-461 seed | 77 | **43** | **3** |
+| BN-462 seed | 115 | **101** | **4** |
+| BN-462 6x^2 | 231 | **106** | **18** |
+
+BLS12-461 pays 42 additions in binary and 2 in NAF. These seeds are chosen
+near powers of two, which is precisely the shape plain binary represents
+worst, and BLS12-381 was the one curve sparse enough in bits to hide it.
+
+`ep2_in_subgroup`, counted on all three curves:
+
+| | `fp_mul` | `ep2_add` | `fp2_cselect` |
+|---|---|---|---|
+| BLS12-381 | 3,017 -> **2,047** (-32%) | 23 -> **5** | 768 -> **0** |
+| BLS12-461 | 3,637 -> **2,282** (-37%) | 27 -> **2** | 960 -> **0** |
+| BN-462 | 9,527 -> **7,239** (-24%) | 65 -> **17** | 2,784 -> **0** |
+
+Every addition count is exactly the NAF weight less the leading digit: 6-1,
+3-1, 18-1. The counts are the representation, with nothing unaccounted.
+Measured on BLS12-381:
 
 | | before | after | |
 |---|---:|---:|---:|

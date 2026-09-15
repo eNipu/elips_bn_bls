@@ -155,12 +155,21 @@ int PT(to_affine)(EC_FT x, EC_FT y, const PTT *p)
 /* [k]P where k is a PUBLIC CONSTANT of the curve, not a caller's scalar.
  *
  * The two subgroup tests multiply by |x| and by 6x^2, which are curve
- * parameters compiled into fp_params.h. Nothing about them is secret, so the
- * loop below branches on their bits and skips the zero ones. The saving is
- * large because these constants are chosen to be sparse: |x| on BLS12-381 is
- * 0xd201000000010000, six set bits in sixty-four, so this is 63 doublings and
- * 5 additions against the fixed-window ladder's 71 doublings, 23 additions and
- * 768 masked field selects.
+ * parameters compiled into fp_params.h. Nothing about them is secret, so this
+ * expands them into non-adjacent form and skips the zero digits.
+ *
+ * NAF rather than plain binary, and the difference is not small. Binary was
+ * tried first and made two of the three curves SLOWER, because the seeds are
+ * sparse in signed-digit form and dense in bits:
+ *
+ *      constant                  bits   popcount   NAF
+ *      BLS12-381  |x|              64          6     6
+ *      BLS12-461  |x|              77         43     3
+ *      BN-462     |x|             115        101     4
+ *      BN-462     6x^2            231        106    18
+ *
+ * BLS12-461 pays 42 additions in binary and 2 in NAF. These seeds are chosen
+ * near powers of two, which is exactly the shape binary represents worst.
  *
  * Still constant time in P, which is the property that matters here. The
  * control flow depends on k alone, so the sequence of operations is identical
@@ -170,18 +179,53 @@ int PT(to_affine)(EC_FT x, EC_FT y, const PTT *p)
  * Complete addition again, and here it is not an optimisation to give up. The
  * caller is validating a point it does not trust, so every exceptional case
  * has to work rather than be argued away. */
+#define PUBCONST_LIMBS (((ELIPS_ORDER_BITS + 63) / 64) + 1)
+#define PUBCONST_BITS  (64 * PUBCONST_LIMBS)
+
 void PT(mul_pubconst)(PTT *r, const PTT *p, const limb_t *k, int kbits)
 {
-    PTT acc;
-    int i = kbits - 1;
+    signed char naf[PUBCONST_BITS + 1];
+    limb_t t[PUBCONST_LIMBS];
+    PTT acc, np;
+    int n = 0, i, nz;
 
-    while (i >= 0 && !((k[i / 64] >> (i % 64)) & 1)) i--;
-    if (i < 0) { PT(set_infinity)(r); return; }
+    /* Nothing here is sized for a caller's scalar, and nothing should reach
+     * it. Fall back rather than overrun if one ever does. */
+    if (kbits <= 0 || kbits > PUBCONST_BITS) { PT(mul)(r, p, k, kbits > 0 ? kbits : 0); return; }
 
-    PT(copy)(&acc, p);
-    for (i--; i >= 0; i--) {
+    for (i = 0; i < PUBCONST_LIMBS; i++)
+        t[i] = (i < (kbits + 63) / 64) ? k[i] : 0;
+    if (kbits % 64) t[(kbits - 1) / 64] &= (limb_t)-1 >> (64 - kbits % 64);
+
+    for (;;) {
+        for (nz = 0, i = 0; i < PUBCONST_LIMBS; i++) nz |= (t[i] != 0);
+        if (!nz) break;
+        if (t[0] & 1) {
+            /* digit is +1 when the next bit up is 0, else -1 */
+            int z = 2 - (int)(t[0] & 3);
+            naf[n] = (signed char)z;
+            if (z == 1) {                       /* t -= 1 */
+                for (i = 0; i < PUBCONST_LIMBS && t[i]-- == 0; i++) { }
+            } else {                            /* t += 1 */
+                for (i = 0; i < PUBCONST_LIMBS && ++t[i] == 0; i++) { }
+            }
+        } else {
+            naf[n] = 0;
+        }
+        for (i = 0; i + 1 < PUBCONST_LIMBS; i++)
+            t[i] = (t[i] >> 1) | (t[i + 1] << 63);
+        t[PUBCONST_LIMBS - 1] >>= 1;
+        n++;
+    }
+
+    if (n == 0) { PT(set_infinity)(r); return; }
+
+    PT(neg)(&np, p);
+    PT(copy)(&acc, naf[n - 1] > 0 ? p : &np);
+    for (i = n - 2; i >= 0; i--) {
         PT(dbl)(&acc, &acc);
-        if ((k[i / 64] >> (i % 64)) & 1) PT(add)(&acc, &acc, p);
+        if      (naf[i] > 0) PT(add)(&acc, &acc, p);
+        else if (naf[i] < 0) PT(add)(&acc, &acc, &np);
     }
     PT(copy)(r, &acc);
 }
