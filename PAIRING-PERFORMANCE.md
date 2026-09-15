@@ -626,6 +626,22 @@ Measured, median of three alternating runs:
 | `bls_verify` | 2474.8 | 2213.7 | **-10.9%** |
 | `miller`, `final_exp`, `pairing` | | | unchanged |
 
+and on the other two curves, exact counts rather than timings because the
+timing noise on that run exceeded the effect:
+
+| `hash_to_g2` | `fp_mul` before | after | |
+|---|---:|---:|---:|
+| BLS12-381 | 18,982 | 15,870 | **-16.4%** |
+| BLS12-461 | 26,965 | 23,521 | **-12.8%** |
+| BN-462 | 28,471 | 24,115 | **-15.3%** |
+
+No row on any curve reports `slower`. The A/B on the two larger curves put
+`hash_to_g2` at -17.2% and -13.6%, matching the counts, but at 62% and 75%
+confidence: within each of those runs every other row drifted together, by -1
+to -5% on BLS12-461 and +0.4 to +3.2% on BN-462, and `hash_to_g2` stands
+clearly outside that drift in both. The counts are the stronger evidence here
+and they are backend independent.
+
 `bls_sign` moves almost one for one with `hash_to_g2`, which is the check that
 the attribution was right: signing is a hash to G2 and a scalar multiplication.
 
@@ -659,6 +675,26 @@ exactly why blst passes `recip_ZZZ` and `magic_ZZZ` tables into
 adding a constant.
 
 That is the remaining 4x, and it is scoped rather than started.
+
+### A note on the machine, and why the README was not updated
+
+Everything above is an A/B on one host in one sitting, which is what makes the
+percentages trustworthy. The absolute microseconds are not comparable across
+the other tables in this document: the container moved from a 2.80 GHz Xeon to
+a 2.10 GHz one partway through, so `hash_to_g2` reads 716 us here and 1010 us
+in `bench/baseline.json` for code that differs by this one commit.
+
+`bench/baseline.json` and the README table were deliberately **not**
+regenerated. The README says "both columns on that one machine", and its
+WebAssembly column was measured on the 2.80 GHz host. There is no `emcc` in
+this container and the checked-in `bindings/js/dist/elips_wasm.mjs` predates
+this change, so a regenerated native column would have been paired with a
+WebAssembly column from a different machine and a different commit, under a
+sentence claiming otherwise.
+
+The record is therefore a consistent snapshot at `dd63ab1` on the 2.80 GHz
+host, and it understates current signing by about 17%. Re-measuring **both**
+columns together, on one machine, is what fixes it.
 
 ## Revised ordering
 
