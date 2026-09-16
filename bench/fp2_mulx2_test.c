@@ -1,6 +1,6 @@
 /* Correctness test for bench/fp2_mulx2_x86_64.S. Build:
  *   gcc -O3 -std=c11 -Iinclude -DELIPS_CURVE_BLS12_381 \\
- *       bench/fp2_mulx2_test.c bench/fp2_mulx2_x86_64.S bench/lazy_kernels.S \\
+ *       bench/fp2_mulx2_test.c src/arith/fp2_mulx2_x86_64.S src/arith/fp_lazy_x86_64.S \\
  *       -o x2test build/libelips_arith_BLS12_381.a -lm && ./x2test
  *
  * elips_fp2_mulx2 must agree with the C Karatsuba it replaces, limb for limb. */

@@ -111,7 +111,105 @@ void fp6_mul_v(fp6_t r, const fp6_t a)
     fp2_copy(r[2], c1);
 }
 
-void fp6_mul(fp6_t r, const fp6_t a, const fp6_t b)
+/* ------------------------------------------------------- lazy Fp6 ------
+ *
+ * Eighteen fused multiply-and-reduce become eighteen raw products and SIX
+ * reductions, one per output coefficient. That is what blst does and what this
+ * library did not, and it is worth 6.1% of the miller loop and 13.6% of a GT
+ * exponentiation, measured.
+ *
+ * It took three assembly routines, and the reason is instructive. The same
+ * algorithm written in plain C is 22.5% SLOWER than the eager tower: the
+ * 768-bit intermediates cost more in function prologues and carry handling
+ * than the reductions they save. See PAIRING-PERFORMANCE.md for each step.
+ *
+ * Requires BMI2 and ADX, the same requirement as the fused multiply, so the
+ * choice is the same one fp_mul already made at startup. Everything else --
+ * the 8-limb curves, non-x86-64, and any machine without ADX -- takes the
+ * eager path below, unchanged.
+ */
+#if (FP_LIMBS == 6) && defined(__x86_64__) && !defined(__ILP32__)
+#define ELIPS_HAVE_LAZY_FP6 1
+
+/* EXPERIMENT: Fp6 multiply with the reductions amortised 3:1.
+ * Six wide Fp2 products, combined at 768 bits, reduced once per output
+ * coefficient. Algebra identical to bench/lazy_kernels.c, which is
+ * differential-checked against the eager form. */
+void elips_fp_mulw_6_x86_64(limb_t w[12], const limb_t a[6], const limb_t b[6]);
+void elips_fp_redcw_6_x86_64(limb_t r[6], const limb_t w[12], const limb_t p[6], limb_t n0);
+
+typedef limb_t fpw_t[12];
+
+/* p*R has six zero low limbs, so the conditional only touches the high half. */
+/* adc/sbb directly. The __int128 borrow-extraction these replaced compiled to
+ * roughly 5,000 instructions per fp6_mul for the combination alone, more than
+ * the six wide multiplies it wraps. */
+#include <x86intrin.h>
+
+static inline void fpw_addm(fpw_t r, const fpw_t a, const fpw_t b)
+{
+    unsigned char c = 0, br = 0;
+    limb_t hi[6], cand[6];
+    for (int i = 0; i < 6; i++) c = _addcarry_u64(c, a[i], b[i], (unsigned long long *)&r[i]);
+    for (int i = 0; i < 6; i++) c = _addcarry_u64(c, a[i+6], b[i+6], (unsigned long long *)&hi[i]);
+    for (int i = 0; i < 6; i++) br = _subborrow_u64(br, hi[i], FP_MODULUS[i], (unsigned long long *)&cand[i]);
+    limb_t keep = (limb_t)0 - (limb_t)(br & (c ^ 1));
+    for (int i = 0; i < 6; i++) r[i+6] = (hi[i] & keep) | (cand[i] & ~keep);
+}
+
+static inline void fpw_subm(fpw_t r, const fpw_t a, const fpw_t b)
+{
+    unsigned char br = 0, c = 0;
+    limb_t hi[6], cand[6];
+    for (int i = 0; i < 6; i++) br = _subborrow_u64(br, a[i], b[i], (unsigned long long *)&r[i]);
+    for (int i = 0; i < 6; i++) br = _subborrow_u64(br, a[i+6], b[i+6], (unsigned long long *)&hi[i]);
+    for (int i = 0; i < 6; i++) c = _addcarry_u64(c, hi[i], FP_MODULUS[i], (unsigned long long *)&cand[i]);
+    limb_t take = (limb_t)0 - (limb_t)br;
+    for (int i = 0; i < 6; i++) r[i+6] = (cand[i] & take) | (hi[i] & ~take);
+}
+
+void elips_fp2_mulx2_6_x86_64(limb_t c0[12], limb_t c1[12],
+                              const limb_t a[2][6], const limb_t b[2][6],
+                              const limb_t p[6]);
+
+/* One assembly routine, not three calls plus a C combination: 83 ns against
+ * 128, and against 137 for the eager fp2_mul it replaces. */
+static inline void fp2_mulw(fpw_t c0, fpw_t c1, const fp2_t a, const fp2_t b)
+{
+    elips_fp2_mulx2_6_x86_64(c0, c1, (const limb_t (*)[6])a,
+                             (const limb_t (*)[6])b, FP_MODULUS);
+}
+
+void elips_fp6_comb_x2_6_x86_64(limb_t out[6][12], const limb_t prod[12][12],
+                                const limb_t p[6]);
+
+static void fp6_mul_lazy(fp6_t r, const fp6_t a, const fp6_t b)
+{
+    limb_t prod[12][12], out[6][12];
+    fp2_t s1, s2;
+
+    fp2_mulw(prod[0],  prod[1],  a[0], b[0]);            /* v0  */
+    fp2_mulw(prod[2],  prod[3],  a[1], b[1]);            /* v1  */
+    fp2_mulw(prod[4],  prod[5],  a[2], b[2]);            /* v2  */
+    fp2_add(s1, a[0], a[1]); fp2_add(s2, b[0], b[1]);
+    fp2_mulw(prod[6],  prod[7],  s1, s2);                /* w01 */
+    fp2_add(s1, a[0], a[2]); fp2_add(s2, b[0], b[2]);
+    fp2_mulw(prod[8],  prod[9],  s1, s2);                /* w02 */
+    fp2_add(s1, a[1], a[2]); fp2_add(s2, b[1], b[2]);
+    fp2_mulw(prod[10], prod[11], s1, s2);                /* w12 */
+
+    elips_fp6_comb_x2_6_x86_64(out, (const limb_t (*)[12])prod, FP_MODULUS);
+
+    elips_fp_redcw_6_x86_64(r[0][0], out[0], FP_MODULUS, FP_MONT_N0);
+    elips_fp_redcw_6_x86_64(r[0][1], out[1], FP_MODULUS, FP_MONT_N0);
+    elips_fp_redcw_6_x86_64(r[1][0], out[2], FP_MODULUS, FP_MONT_N0);
+    elips_fp_redcw_6_x86_64(r[1][1], out[3], FP_MODULUS, FP_MONT_N0);
+    elips_fp_redcw_6_x86_64(r[2][0], out[4], FP_MODULUS, FP_MONT_N0);
+    elips_fp_redcw_6_x86_64(r[2][1], out[5], FP_MODULUS, FP_MONT_N0);
+}
+#endif /* ELIPS_HAVE_LAZY_FP6 */
+
+static void fp6_mul_eager(fp6_t r, const fp6_t a, const fp6_t b)
 {
     fp2_t t0, t1, t2, s, t, e0, e1, e2;
     fp2_mul(t0, a[0], b[0]);
@@ -128,6 +226,14 @@ void fp6_mul(fp6_t r, const fp6_t a, const fp6_t b)
     fp2_sub(s, s, t0); fp2_sub(s, s, t2); fp2_add(e2, s, t1);
 
     fp2_copy(r[0], e0); fp2_copy(r[1], e1); fp2_copy(r[2], e2);
+}
+
+void fp6_mul(fp6_t r, const fp6_t a, const fp6_t b)
+{
+#ifdef ELIPS_HAVE_LAZY_FP6
+    if (fp_mul_backend() == ELIPS_FP_MUL_X86_64) { fp6_mul_lazy(r, a, b); return; }
+#endif
+    fp6_mul_eager(r, a, b);
 }
 
 void fp6_sqr(fp6_t r, const fp6_t a)

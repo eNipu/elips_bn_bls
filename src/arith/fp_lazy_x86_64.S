@@ -1,9 +1,6 @@
 /*
- * MEASUREMENT ARTIFACT, not shipped code. See PAIRING-PERFORMANCE.md, "Lazy
- * reduction, measured and rejected". Built by bench/lazy_probe.c only.
- *
- * Raw product and standalone Montgomery reduction, the two primitives a lazy
- * tower needs and the fused CIOS multiply cannot provide.
+ * Raw product and standalone Montgomery reduction: the two primitives the
+ * lazy tower needs and the fused CIOS multiply cannot provide.
  *
  *   void elips_fp_mulw_6_x86_64 (limb_t w[12], const limb_t a[6],
  *                                const limb_t b[6]);

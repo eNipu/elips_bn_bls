@@ -1,9 +1,4 @@
 /*
- * MEASUREMENT ARTIFACT, not yet shipped code. See PAIRING-PERFORMANCE.md,
- * "The assembly path, as far as it got". Correct and tested
- * (bench/fp2_mulx2_test.c), and measured to work; what is missing is the Fp6
- * combination above it, which is still C and still costs more than this saves.
- *
  * Fp2 multiply into double width: c0, c1 each 768 bits, unreduced.
  * blst calls its equivalent mulx_382x.
  *

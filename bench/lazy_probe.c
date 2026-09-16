@@ -2,7 +2,7 @@
  *
  * Run it:
  *   gcc -O3 -std=c11 -Iinclude -DELIPS_CURVE_BLS12_381 \
- *       bench/lazy_probe.c bench/lazy_kernels.c bench/lazy_kernels.S \
+ *       bench/lazy_probe.c bench/lazy_kernels.c src/arith/fp_lazy_x86_64.S \
  *       -o lazy_probe build/libelips_arith_BLS12_381.a -lm && ./lazy_probe
  *
  * The answer is in PAIRING-PERFORMANCE.md. In short: the algorithm is worth

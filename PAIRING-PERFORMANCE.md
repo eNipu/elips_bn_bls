@@ -895,29 +895,53 @@ the same twenty-two wide add and subtract operations with `_addcarry_u64` and
 **From 22.5% behind to parity, with `gt_exp` slightly ahead.** All 59 tests
 pass with the lazy tower driving the real library.
 
-### Where it stops, and what the last step is worth
+### Finished, and it ships
 
-Parity is not a win, so none of this ships. The remaining cost is now a single
-known quantity: the combination is **2,211 instructions per `fp6_mul` against
-4,873 for the six multiplies**. In assembly those twenty-two operations should
-be nearer 700, which would take `fp6_mul` from 7,084 instructions to about
-5,600, a 21% cut on the largest routine in both halves of the pairing.
+The combination is now assembly too: `src/arith/fp6_comb_x2_x86_64.S` does all
+twenty-two 768-bit operations in one body with one prologue.
 
-That is `mul_fp6x2`, the routine blst has and this library does not: six wide
-products and the entire Karatsuba combination in one register-scheduled body,
-so the 768-bit intermediates never round-trip through memory and the
-callee-saved registers are pushed once rather than twenty-two times.
+| | lazy Fp6 in C | + asm multiply | + adc/sbb | **+ asm combination** |
+|---|---:|---:|---:|---:|
+| miller | +22.5% | +7.2% | +0.2% | **-6.3%** |
+| pairing | +13.6% | +3.9% | +0.4% | **-3.4%** |
+| final exponentiation | +10.5% | +3.0% | +0.6% | **-2.9%** |
+| `gt_exp` | +43.0% | +12.8% | -1.4% | **-12.8%** |
+| `gt_exp_ct` | | | | **-8.3%** |
 
-The pieces are all in `bench/`: `fp2_mulx2_x86_64.S` with its test,
-`lazy_kernels.S` for the raw product and the reduction, and `lazy_fp6_ref.c`,
-which drops over `fp6_mul` and passes the full suite.
+**Eighteen fused multiply-and-reduce become eighteen raw products and six
+reductions, one per output coefficient.** That is what blst does and what this
+library did not.
 
-**Two corrections to what this document said before.** P6 concluded the lazy
-path could not be reached from C and that 768-bit values spilling across C
-boundaries were the cause. The first is too strong -- the path reaches parity
-from C once the carry handling is right -- and the second was wrong: the
-dominant costs were function prologues and `__int128` borrow extraction, both
-fixable without touching the memory traffic.
+Against blst, over three runs:
+
+| | before | after |
+|---|---|---|
+| miller loop | 1.40x | **1.29x** |
+| final exponentiation | 1.22x | **1.18x** |
+| pairing, validation included | 1.36x | **1.28x** |
+
+The result is bit-for-bit what it was: the pairing digest over 3,000 inputs is
+`76da830b565dbafb` on the lazy path, on the eager path forced with
+`ELIPS_NO_ASM`, and on the commit before any of this. Nothing about the value
+changed, only how it is computed.
+
+**Three routines, and each one was necessary.**
+
+| | what it removes |
+|---|---|
+| `fp2_mulx2_x86_64.S` | three prologues and three 96-byte round trips per Fp2 product |
+| `adc`/`sbb` intrinsics | `__int128` borrow extraction, 5,000 instructions per `fp6_mul` |
+| `fp6_comb_x2_x86_64.S` | twenty-two more prologues and round trips |
+
+Written in plain C the same algorithm is **22.5% slower** than the eager tower.
+Every one of those three steps was needed to get from there to -6.3%, and the
+middle one is not assembly at all.
+
+**Scope.** The lazy path needs BMI2 and ADX, the same requirement as the fused
+multiply, so it reuses the choice `fp_mul` already makes at startup. The
+8-limb curves, non-x86-64 targets, and any machine without ADX take the eager
+path, which is unchanged and still covered by the full suite under
+`ELIPS_NO_ASM`. That is a fork in the tower, and it is the price of this.
 
 ## Revised ordering
 
