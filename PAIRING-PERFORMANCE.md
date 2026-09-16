@@ -1138,6 +1138,87 @@ The rotation exponent differs per curve -- `w^3` on BLS12-381, `w^5` on
 BLS12-461, `w^1` on BN-462 -- so if the freedom had been narrower than claimed,
 the KAT vectors would have caught it on at least one of them.
 
+## fp12_sqr_cyc, lazy: probed and refuted
+
+The final exponentiation is the largest remaining gap at 1.18x, and
+`fp12_sqr_cyc` is 87% of it, about 321 calls each. Callgrind gives its exact
+shape: **18 `fp_mul` and 98 `fp_add`/`fp_sub`** per call. Twelve reductions is
+the floor for a twelve-coefficient output, so a lazy version saves 6 of 18,
+where the Fp6 work saved 12 of 18.
+
+### The kernel costs, which is where this was decided
+
+| ns | |
+|---|---:|
+| `fp_mul`, product and reduction fused | 34.55 |
+| raw 384x384 product alone | 16.67 |
+| `redcw`, reduction alone | 23.08 |
+| `fp_add` / `fp_sub` | 3.95 |
+| one wide modular add/sub | ~7.0 |
+
+The wide figure comes from the two shipped combination routines, whose
+operation counts are known exactly: `fp6_comb_x2` is 22 operations at 141.1 ns
+and `fp12_line_comb_x2` is 44 at 308.5 ns, a slope of 7.6 ns and an average of
+6.4 to 7.0.
+
+**Read the first three rows again: 16.67 + 23.08 = 39.75 against 34.55.
+Splitting a multiply into a product and a separate reduction costs 15% MORE
+than the fused form.** Lazy reduction is never free; it only ever wins by
+amortisation, and the amortisation has to be steep.
+
+For `fp12_sqr_cyc` it is not:
+
+| | now | lazy |
+|---|---:|---:|
+| 18 fused multiplies | 621.9 ns | |
+| 18 raw + 12 reductions | | 577.1 ns |
+| 98 narrow add/sub | 387.1 ns | |
+| ~71 wide + ~18 narrow | | 568.1 ns |
+| **total** | **1,009 ns** | **1,145 ns** |
+
+A predicted **13% regression**, and the multiply side wins only 44.8 ns.
+
+### The probe, run anyway
+
+Three of the nine `fp2_sqr` calls inside `fp12_sqr_cyc` were replaced with two
+raw products and no reduction, and six with two raw products and two `redcw`:
+eighteen products and twelve reductions, exactly the lazy budget, with the
+answer wrong and everything else unchanged. ABBA, ten rounds:
+
+| | shipped | 18 raw + 12 redc | change | agreement |
+|---|---:|---:|---:|---:|
+| `final_exp` | 478.7 | 476.5 | -0.4% | 40% |
+| `gt_exp` | 860.2 | 851.8 | -1.0% | 80% |
+| `gt_exp_ct` | 331.4 | 329.9 | -0.5% | 70% |
+
+The model predicted -3.0% on `final_exp` from the multiply side alone.
+**Only about a seventh of it appeared, at agreement no better than a coin.**
+The standalone kernel timings are throughput numbers from tight loops; inside
+the real routine the multiplies interleave with dependent additions and the
+saving hides. Same lesson as the refuted Karatsuba on the sparse middle term.
+
+So the measured win is under 1% and the modelled cost is over 12%. Refuted.
+
+A narrower variant was checked on paper before giving up: keep the outer
+`3a +- 2b` combination narrow and make only the three `fp4_sqr` lazy. That
+still reaches twelve reductions, because three `fp4_sqr` produce exactly twelve
+coefficients, and it needs only 33 wide operations instead of 71. It comes to
+1,041 ns against 1,009. Also a regression, for a new wide Fp2 squaring kernel
+and a combination routine.
+
+### The rule this gives the project
+
+Every lazy-reduction change so far, scored by reductions saved per wide
+operation added:
+
+| | saved / wide | outcome |
+|---|---:|---|
+| `fp6_mul` | 12 / 22 = 0.55 | -6.3% miller |
+| sparse line multiply | 21 / 52 = 0.40 | -5.4% miller |
+| `fp12_sqr_cyc` | 6 / 71 = 0.085 | refuted |
+
+Below roughly 0.3, do not write it. Above it, probe first anyway.
+
 ## Revised ordering
 
 | | worth | risk |
