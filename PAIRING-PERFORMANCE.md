@@ -824,6 +824,67 @@ exactly the batch-normalised kernel whose `1I2 + 342M2` normalisation costs
 more than it saves on the single-pairing path. The note now says so rather than
 inviting a third attempt.
 
+## The assembly path, as far as it got
+
+P6 concluded that lazy reduction could not be reached from C. That was
+confirmed end to end here, in the shipping code path rather than in a
+microbenchmark: wiring P6's verified lazy Fp6 into `fpx.c` and running the
+normal benchmark gives
+
+```
+miller +22.5%   final_exp +10.5%   pairing +13.6%   gt_exp +43.0%    all SLOWER
+```
+
+**But the obstacle is one routine, and writing it in assembly recovers most of
+the loss.** The Karatsuba for a wide Fp2 product, done as three calls to the
+raw-product routine plus a C combination, measures 128 ns -- against 137 for
+the eager `fp2_mul` it is supposed to beat, even though the three raw products
+alone are 52. The rest is call overhead (five callee-saved registers saved and
+restored three times) and three 96-byte buffers stored and immediately
+reloaded.
+
+`bench/fp2_mulx2_x86_64.S` does the whole thing in one routine, which is what
+blst's `mulx_382x` is for:
+
+| | ns |
+|---|---:|
+| wide Fp2, C calling the raw product | 128.5 |
+| wide Fp2, **one assembly routine** | **83.0** |
+| shipping eager `fp2_mul` (reduced output) | 137.1 |
+
+**0.61x the eager multiply, and its output is not even reduced yet.** Checked
+against the C version over random inputs and the zero and one edge cases, and
+all 59 tests pass with it driving a lazy Fp6 inside the library.
+
+End to end that turns the loss into a much smaller one:
+
+| | lazy Fp6 in C | with the assembly multiply |
+|---|---:|---:|
+| miller | +22.5% | **+7.2%** |
+| pairing | +13.6% | **+3.9%** |
+| final exponentiation | +10.5% | +3.0%, `unchanged` |
+| `gt_exp` | +43.0% | +12.8% |
+
+**Fifteen points recovered on the miller loop from one routine.** What remains
+is arithmetic, not mystery: six wide multiplies at 83 ns plus six reductions at
+23 is 636 ns against the eager Fp6 multiply's 989, which should be 36% faster.
+The Fp6-level combination -- twenty-two 768-bit conditional add and subtract
+operations over eight 192-byte temporaries, still in C -- is costing more than
+350 ns, more than the reductions save.
+
+### What finishing it takes
+
+`mul_fp6x2` in assembly: the six wide products and the whole Karatsuba
+combination in one register-scheduled routine, which is exactly the routine
+blst has and this library does not. The projection, from measured parts rather
+than a model, is roughly 30% off the Fp6 multiply and 15 to 20% off the miller
+loop.
+
+Two things are settled that were not before. The approach is **not** dead, as
+the P6 write-up implied; it was blocked on a single missing routine and that
+routine now exists and is tested. And the remaining cost is **located**, not
+guessed: it is the Fp6 combination, not the multiply and not the reduction.
+
 ## Revised ordering
 
 | | worth | risk |
