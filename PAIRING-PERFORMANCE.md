@@ -783,6 +783,38 @@ The record is therefore a consistent snapshot at `dd63ab1` on the 2.80 GHz
 host, and it understates current signing by about 17%. Re-measuring **both**
 columns together, on one machine, is what fixes it.
 
+## The line multiply: one product recovered, and one avenue closed
+
+`fp12_mul_sparse035` applies the line to the accumulator 69 times per Miller
+loop and is the largest single item in it. Two things were checked.
+
+**The middle term was schoolbook.** `f1 * (0, c3, c5)` was six Fp2
+multiplications where Karatsuba needs five: `(0,c3,c5)` is `v*(c3 + c5 v)`, so
+splitting `f1` as `(a0 + a1 v) + a2 v^2` takes three products for the first
+half and two for the second, and the sixth is recovered as `p4 - p0 - p1`. The
+sparse multiply is 14 Fp2 multiplications, not 15.
+
+| miller loop | before | after |
+|---|---:|---:|
+| `fp_mul` | 7,606 | **7,399** (-207) |
+| `fp2_mul` | 2,161 | **2,092** (-69) |
+| `fp_sub` | 12,557 | 12,626 (+69) |
+
+Exactly one Fp2 multiply per line traded for one subtraction. The identity is
+exact, with no scaling freedom used, so the pairing output is **byte-identical**
+before and after: digest `76da830b565dbafb` over 3,000 inputs on both sides.
+That is a stronger check than a tolerance.
+
+**The other avenue is closed, and the note in the source was stale.**
+`miller.c` carried a note that the legacy code reached two non-trivial
+coefficients by rescaling P so that yP became 1, "worth copying if the final
+measurement asks for it". The measurement has been made and the answer is no.
+Making the w^0 coefficient 1 means dividing each line by its own w^0
+coefficient, which varies per line, so it is a per-line inversion. That is
+precisely the batch-normalised 8M2 kernel whose `1I2 + 342M2` normalisation
+costs more than it saves on the single-pairing path. The note now says so and
+points here.
+
 ## Revised ordering
 
 | | worth | risk |
