@@ -561,6 +561,23 @@ instruction-level parallelism. And the counter-factual is the useful part:
 exponentiation would do about 10,768 units against blst's 11,932. It would be
 ahead by 10%.**
 
+### The hard-part chain is already blst's, checked and closed
+
+The obvious follow-up to the above is that ELiPS's hard-part chain might simply
+be longer than blst's. It is not.
+
+| | exp by x | fp12 multiplies | cyclotomic squarings |
+|---|---:|---:|---:|
+| ELiPS | 5 | **34** | 321 |
+| blst | 5 | 35 | 315 |
+
+**One fewer multiplication than blst, six more squarings.** The six are the
+3*lambda convention this library computes by design, worth about 1.6%. Both
+invert once in the easy part. There is no shorter chain to adopt here, so the
+1.22x is reductions and only reductions, which is what the section above
+already concluded from the operation counts. Recorded so the chain is not
+re-examined a third time.
+
 ### The ranked list
 
 1. **Lazy reduction, and nothing else.** 2,343 surplus reductions is the whole
