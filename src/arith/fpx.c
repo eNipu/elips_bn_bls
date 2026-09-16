@@ -183,12 +183,10 @@ static inline void fp2_mulw(fpw_t c0, fpw_t c1, const fp2_t a, const fp2_t b)
 void elips_fp6_comb_x2_6_x86_64(limb_t out[6][12], const limb_t prod[12][12],
                                 const limb_t p[6]);
 
-/* The sparse line multiply's combination, likewise in one routine. */
-void elips_fp12_sparse_comb_x2_6_x86_64(limb_t out[12][12],
-                                        const limb_t t0[6][12],
-                                        const limb_t m[12][12],
-                                        const limb_t s[6][12],
-                                        const limb_t p[6]);
+/* The rotated line multiply's combination, likewise in one routine. */
+void elips_fp12_line_comb_x2_6_x86_64(limb_t out[12][12],
+                                      const limb_t prod[26][12],
+                                      const limb_t p[6]);
 
 static void fp6_mul_lazy(fp6_t r, const fp6_t a, const fp6_t b)
 {
@@ -326,21 +324,37 @@ void fp12_mul(fp12_t r, const fp12_t a, const fp12_t b)
     fp6_copy(r[1], s);
 }
 
-/* f *= (c0 + c3 w^3 + c5 w^5), the sparse line multiply of the Miller loop.
+/* f *= w * (c0 + c3 w^3 + c5 w^5), the sparse line multiply of the Miller loop.
+ *
+ * THE EXTRA FACTOR OF w IS DELIBERATE, and nothing removes it: the miller loop
+ * returns its value times some power of w. That is free rather than a debt,
+ * because every power of w dies in the final exponentiation; the argument and
+ * the test for it are on the note in src/pairing/miller.c.
+ *
+ * It is there because it makes the multiply cheaper. Our storage puts w^0, w^2
+ * and w^4 in f0 and w^1, w^3, w^5 in f1, so a line at (0,3,5) splits 1+2 --
+ * L0 = (c0,0,0), L1 = (0,c3,c5) -- and Karatsuba over fp12 costs
+ * 3 + 6 + 6 = 15 fp2 multiplications. Scaling by w moves the line to (1,4,0),
+ * which splits 2+1:
+ *
+ *     L0 = (xi c5, 0, c3),   L1 = (c0, 0, 0)
+ *
+ * and the same Karatsuba costs 5 + 3 + 5 = 13. Two fewer fp2 multiplications
+ * per line, measured at -2.4% of the miller loop for the products alone, and
+ * it also drops the wide combination from 52 operations to 44.
+ *
  *
  * In storage terms the sparse element is L0 = (c0,0,0), L1 = (0,c3,c5), so
  * Karatsuba over fp6 costs 3 + 6 + 6 = 15 fp2 multiplications against 18 for a
  * dense fp12 multiply.
  *
- * The middle term below is schoolbook, six products, and Karatsuba would make
- * it five: (0,c3,c5) is v*(c3 + c5 v), so splitting f1 as (a0 + a1 v) + a2 v^2
- * takes three products for the first half and two for the second, recovering
- * the sixth as p4 - p0 - p1. That was implemented, checked byte-identical over
- * 3,000 pairings, and measured: 207 fewer fp_mul per miller loop and NO change
- * in time, -0.1% on the assembly path and -0.1% on the portable one. The six
- * schoolbook products are mutually independent and fill issue slots the
- * Karatsuba chain then serialises. Reverted; the count was not the cost. See
- * PAIRING-PERFORMANCE.md.
+ * An earlier attempt at the unrotated form -- Karatsuba on its six-product
+ * middle term, five products instead of six -- removed 207 fp_mul per miller
+ * loop and bought NOTHING, -0.1% on both paths, because those six products
+ * were independent and filled issue slots the Karatsuba chain then serialised.
+ * That is why this one was probed before it was written: two of the fifteen
+ * products were deleted from the shipped routine and the miller loop measured,
+ * 16 pairs at 100% agreement. See PAIRING-PERFORMANCE.md.
  *
  * The note that used to stand here said the legacy code reached two
  * non-trivial coefficients by rescaling P so yP became 1, and that it was
@@ -360,58 +374,71 @@ void fp12_mul(fp12_t r, const fp12_t a, const fp12_t b)
  * cannot be distinguished from a true one is worth the signature change.
  * Passing the halves gives GCC types it reasons about correctly, and costs
  * nothing at runtime. */
-#ifdef ELIPS_HAVE_LAZY_FP6
-/* The same trade as fp6_mul, one level up and with more to gain.
+
+/* r = f * (A + B v^2), the two-nonzero Fp6 multiply, in five products.
  *
- * An fp12 has twelve Fp coefficients, so twelve Montgomery reductions is the
- * floor. The eager form below spends 33: nine in t0, eighteen in the six-product
- * t1 block, and six inside the fp6_mul that builds s -- that one already takes
- * the lazy path, but it reduces its result only for the caller to subtract it
- * narrow. Holding all fifteen products at 768 bits pays the floor exactly.
+ *   r0 = a0A + xi(a1B)
+ *   r1 = a1A + xi(a2B)
+ *   r2 = a2A + a0B  =  (a0+a2)(A+B) - a0A - a2B
  *
- * The line multiply is 42% of the miller loop, so this is 21 reductions saved
- * on each of roughly 110 calls. */
-static void fp12_mul_sparse035_lazy(fp6_t f0, fp6_t f1,
-                                    const fp2_t c0, const fp2_t c3,
-                                    const fp2_t c5)
+ * so a0A, a1B, a1A, a2B and (a0+a2)(A+B) are enough, and all five are
+ * independent of one another. */
+static void fp6_mul_a0b(fp6_t r, const fp6_t f, const fp2_t A, const fp2_t B)
 {
-    limb_t t0[6][12], m[12][12], kar[12][12], s[6][12], out[12][12];
-    fp6_t sf;
-    fp2_t x, y;
+    fp2_t p1, p2, p3, p4, p5, sa, sb, x;
+    fp2_mul(p1, f[0], A);
+    fp2_mul(p2, f[1], B);
+    fp2_mul(p3, f[1], A);
+    fp2_mul(p4, f[2], B);
+    fp2_add(sa, f[0], f[2]); fp2_add(sb, A, B);
+    fp2_mul(p5, sa, sb);
+    fp2_sub(p5, p5, p1); fp2_sub(p5, p5, p4);
+    fp2_mul_xi(x, p2); fp2_add(r[0], p1, x);
+    fp2_mul_xi(x, p4); fp2_add(r[1], p3, x);
+    fp2_copy(r[2], p5);
+}
 
-    /* t0 = f0 * (c0,0,0) */
-    fp2_mulw(t0[0], t0[1], f0[0], c0);
-    fp2_mulw(t0[2], t0[3], f0[1], c0);
-    fp2_mulw(t0[4], t0[5], f0[2], c0);
+#ifdef ELIPS_HAVE_LAZY_FP6
+/* Thirteen wide products, one combination, twelve reductions. Twelve is the
+ * floor for an fp12 output, so the only thing left to cut here was the product
+ * count, and the rotation is what cut it. */
+static void fp12_mul_sparse035w_lazy(fp6_t f0, fp6_t f1,
+                                     const fp2_t c0, const fp2_t c3,
+                                     const fp2_t c5)
+{
+    limb_t prod[26][12], out[12][12];
+    fp2_t A, B, C, E, sa, sb;
+    fp6_t d;
 
-    /* the six products of t1 = f1 * (0,c3,c5); combined below */
-    fp2_mulw(m[0],  m[1],  f1[1], c5);          /* m1 = a1*c5 */
-    fp2_mulw(m[2],  m[3],  f1[2], c3);          /* m2 = a2*c3 */
-    fp2_mulw(m[4],  m[5],  f1[0], c3);          /* m3 = a0*c3 */
-    fp2_mulw(m[6],  m[7],  f1[2], c5);          /* m4 = a2*c5 */
-    fp2_mulw(m[8],  m[9],  f1[0], c5);          /* m5 = a0*c5 */
-    fp2_mulw(m[10], m[11], f1[1], c3);          /* m6 = a1*c3 */
+    fp2_mul_xi(A, c5);                      /* L0 = (A, 0, B) */
+    fp2_copy(B, c3);
+    fp2_copy(C, c0);                        /* L1 = (C, 0, 0) */
+    fp2_add(E, A, C);
 
-    /* s = (f0 + f1) * (c0,c3,c5), Karatsuba, left wide */
-    fp6_add(sf, f0, f1);
-    fp2_mulw(kar[0],  kar[1],  sf[0], c0);                       /* v0  */
-    fp2_mulw(kar[2],  kar[3],  sf[1], c3);                       /* v1  */
-    fp2_mulw(kar[4],  kar[5],  sf[2], c5);                       /* v2  */
-    fp2_add(x, sf[0], sf[1]); fp2_add(y, c0, c3);
-    fp2_mulw(kar[6],  kar[7],  x, y);                            /* w01 */
-    fp2_add(x, sf[0], sf[2]); fp2_add(y, c0, c5);
-    fp2_mulw(kar[8],  kar[9],  x, y);                            /* w02 */
-    fp2_add(x, sf[1], sf[2]); fp2_add(y, c3, c5);
-    fp2_mulw(kar[10], kar[11], x, y);                            /* w12 */
-    elips_fp6_comb_x2_6_x86_64(s, (const limb_t (*)[12])kar, FP_MODULUS);
+    /* t0 = f0 * (A, 0, B) */
+    fp2_mulw(prod[0],  prod[1],  f0[0], A);
+    fp2_mulw(prod[2],  prod[3],  f0[1], B);
+    fp2_mulw(prod[4],  prod[5],  f0[1], A);
+    fp2_mulw(prod[6],  prod[7],  f0[2], B);
+    fp2_add(sa, f0[0], f0[2]); fp2_add(sb, A, B);
+    fp2_mulw(prod[8],  prod[9],  sa, sb);
 
-    /* t1 = f1 * (0,c3,c5) and both output halves: thirty wide operations under
-     * one prologue. Written in C with adc/sbb intrinsics those thirty gave the
-     * miller loop only 2.2%, most of the reduction saving spent getting the
-     * 768-bit values in and out of thirty function calls. */
-    elips_fp12_sparse_comb_x2_6_x86_64(out, (const limb_t (*)[12])t0,
-                                       (const limb_t (*)[12])m,
-                                       (const limb_t (*)[12])s, FP_MODULUS);
+    /* s = (f0 + f1) * (E, 0, B) */
+    fp6_add(d, f0, f1);
+    fp2_mulw(prod[10], prod[11], d[0], E);
+    fp2_mulw(prod[12], prod[13], d[1], B);
+    fp2_mulw(prod[14], prod[15], d[1], E);
+    fp2_mulw(prod[16], prod[17], d[2], B);
+    fp2_add(sa, d[0], d[2]); fp2_add(sb, E, B);
+    fp2_mulw(prod[18], prod[19], sa, sb);
+
+    /* t1 = f1 * (C, 0, 0) */
+    fp2_mulw(prod[20], prod[21], f1[0], C);
+    fp2_mulw(prod[22], prod[23], f1[1], C);
+    fp2_mulw(prod[24], prod[25], f1[2], C);
+
+    elips_fp12_line_comb_x2_6_x86_64(out, (const limb_t (*)[12])prod,
+                                     FP_MODULUS);
 
     for (int i = 0; i < 6; i++)
         elips_fp_redcw_6_x86_64(f0[i >> 1][i & 1], out[i],
@@ -422,38 +449,26 @@ static void fp12_mul_sparse035_lazy(fp6_t f0, fp6_t f1,
 }
 #endif /* ELIPS_HAVE_LAZY_FP6 */
 
-static void fp12_mul_sparse035_eager(fp6_t f0, fp6_t f1,
-                                     const fp2_t c0, const fp2_t c3,
-                                     const fp2_t c5)
+static void fp12_mul_sparse035w_eager(fp6_t f0, fp6_t f1,
+                                      const fp2_t c0, const fp2_t c3,
+                                      const fp2_t c5)
 {
-    fp6_t t0, t1, s, u;
+    fp2_t A, B, C, E;
+    fp6_t t0, t1, s, d, u;
 
-    /* t0 = a0 * (c0,0,0) */
-    fp2_mul(t0[0], f0[0], c0);
-    fp2_mul(t0[1], f0[1], c0);
-    fp2_mul(t0[2], f0[2], c0);
+    fp2_mul_xi(A, c5);                      /* L0 = (A, 0, B) */
+    fp2_copy(B, c3);
+    fp2_copy(C, c0);                        /* L1 = (C, 0, 0) */
 
-    /* t1 = a1 * (0,c3,c5), using v^3 = xi:
-     *   r0 = (a1*c5 + a2*c3)*xi
-     *   r1 =  a0*c3 + a2*c5*xi
-     *   r2 =  a0*c5 + a1*c3   */
-    {
-        const fp_t *a0 = f1[0], *a1 = f1[1], *a2 = f1[2];
-        fp2_t m1, m2, m3, m4, m5, m6;
-        fp2_mul(m1, a1, c5); fp2_mul(m2, a2, c3);
-        fp2_add(t1[0], m1, m2); fp2_mul_xi(t1[0], t1[0]);
-        fp2_mul(m3, a0, c3); fp2_mul(m4, a2, c5); fp2_mul_xi(m4, m4);
-        fp2_add(t1[1], m3, m4);
-        fp2_mul(m5, a0, c5); fp2_mul(m6, a1, c3);
-        fp2_add(t1[2], m5, m6);
-    }
+    fp6_mul_a0b(t0, f0, A, B);              /* 5 */
 
-    /* s = (a0 + a1) * (c0, c3, c5) */
-    fp6_add(s, f0, f1);
-    {
-        fp6_t L; fp2_copy(L[0], c0); fp2_copy(L[1], c3); fp2_copy(L[2], c5);
-        fp6_mul(s, s, L);
-    }
+    fp2_mul(t1[0], f1[0], C);               /* 3 */
+    fp2_mul(t1[1], f1[1], C);
+    fp2_mul(t1[2], f1[2], C);
+
+    fp6_add(d, f0, f1);
+    fp2_add(E, A, C);
+    fp6_mul_a0b(s, d, E, B);                /* 5 */
     fp6_sub(s, s, t0);
     fp6_sub(s, s, t1);
 
@@ -462,16 +477,16 @@ static void fp12_mul_sparse035_eager(fp6_t f0, fp6_t f1,
     fp6_copy(f1, s);
 }
 
-void fp12_mul_sparse035(fp6_t f0, fp6_t f1,
-                        const fp2_t c0, const fp2_t c3, const fp2_t c5)
+void fp12_mul_sparse035w(fp6_t f0, fp6_t f1,
+                         const fp2_t c0, const fp2_t c3, const fp2_t c5)
 {
 #ifdef ELIPS_HAVE_LAZY_FP6
     if (fp_mul_backend() == ELIPS_FP_MUL_X86_64) {
-        fp12_mul_sparse035_lazy(f0, f1, c0, c3, c5);
+        fp12_mul_sparse035w_lazy(f0, f1, c0, c3, c5);
         return;
     }
 #endif
-    fp12_mul_sparse035_eager(f0, f1, c0, c3, c5);
+    fp12_mul_sparse035w_eager(f0, f1, c0, c3, c5);
 }
 
 void fp12_sqr(fp12_t r, const fp12_t a)

@@ -82,11 +82,18 @@ void fp12_sub(fp12_t r, const fp12_t a, const fp12_t b);
 void fp12_neg(fp12_t r, const fp12_t a);
 void fp12_mul(fp12_t r, const fp12_t a, const fp12_t b);
 void fp12_sqr(fp12_t r, const fp12_t a);
-/* f *= (c0 + c3 w^3 + c5 w^5): the miller loop's sparse line multiply, 15
- * fp2 multiplications against 18 for the dense form. The two fp6 halves are
- * passed separately; see the note on the definition. */
-void fp12_mul_sparse035(fp6_t f0, fp6_t f1,
-                        const fp2_t c0, const fp2_t c3, const fp2_t c5);
+/* f *= w * (c0 + c3 w^3 + c5 w^5): the miller loop's sparse line multiply, 13
+ * fp2 multiplications against 18 for the dense form.
+ *
+ * The extra factor of w is part of the contract, not an accident: it is what
+ * makes the line split 2+1 across the two fp6 halves instead of 1+2, which is
+ * where 15 becomes 13. Nothing removes it, and nothing needs to: every power
+ * of w dies in the final exponentiation. The argument is on the note in
+ * src/pairing/miller.c and pairing_test.c checks it.
+ *
+ * The two fp6 halves are passed separately, also explained there. */
+void fp12_mul_sparse035w(fp6_t f0, fp6_t f1,
+                         const fp2_t c0, const fp2_t c3, const fp2_t c5);
 void fp12_inv(fp12_t r, const fp12_t a);
 void fp12_conj(fp12_t r, const fp12_t a);     /* the p^6 Frobenius */
 /* r = a^(p^k) for k in {1,2,3}. k=6 is fp12_conj. */

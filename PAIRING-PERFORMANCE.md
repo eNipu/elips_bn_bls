@@ -1014,6 +1014,130 @@ one-operand change. 59 tests pass on both paths, `ct_branch_scan` is clean over
 51 objects, and both py_ecc cross-checks pass: the exact 12-coefficient pairing
 comparison and 320 BLS signature checks.
 
+## Where the gap actually was, measured
+
+After the lazy tower the obvious assumption was that the remaining 1.23x on the
+miller loop was per-multiply speed. It was not. Head to head on the same
+machine, same harness, with the outputs checked bit-identical:
+
+| ns | ELiPS | blst |
+|---|---:|---:|
+| `fp_mul`, fused Montgomery | **34.6** | 36.1 |
+| raw 384x384 | 16.7 | **15.8** |
+| `fp2_sqr` | 82.8 | 83.7 |
+| `fp2_mul` | 124.6 | **119.0** |
+
+**The kernels are at parity.** And so are the reductions: ~3,294 per miller
+loop against blst's ~3,336. That lever is spent.
+
+What is not at parity is the multiplication count. Callgrind on one miller loop
+each: **ELiPS 7,602 Fp multiplications, blst 6,867.** Call counts are
+backend-independent, which is what makes this comparison legal under valgrind.
+
+Most of the 735 sat in one routine.
+
+## Rotating the line by w: 15 Fp2 multiplications become 13
+
+Our line is non-zero at w^0, w^3 and w^5. Storage puts w^0, w^2, w^4 in the
+first Fp6 half and w^1, w^3, w^5 in the second, so the line splits **1+2** --
+`L0 = (c0,0,0)`, `L1 = (0,c3,c5)` -- and Karatsuba over Fp12 costs
+3 + 6 + 6 = 15. blst's line splits 2+1 and costs 5 + 3 + 5 = 13.
+
+Scaling the line by one power of w moves it to (1,4,0), which in our storage is
+
+    L0 = (xi c5, 0, c3),   L1 = (c0, 0, 0)
+
+a **2+1** split. The scaling is a relabelling plus one `fp2_mul_xi`.
+
+The two-non-zero Fp6 multiply is five products, not six. For `f = (a0,a1,a2)`
+and `L = A + B v^2` with `v^3 = xi`:
+
+    r0 = a0A + xi(a1B)
+    r1 = a1A + xi(a2B)
+    r2 = a2A + a0B  =  (a0+a2)(A+B) - a0A - a2B
+
+so `a0A, a1B, a1A, a2B, (a0+a2)(A+B)` are enough, and all five are independent
+of one another.
+
+### The probe came first, and it should have
+
+This project had already refuted a multiplication-count win in this exact
+routine: Karatsuba on the six-product middle term removed 207 `fp_mul` per
+miller loop and bought **nothing**, because those six products were independent
+and filled issue slots the Karatsuba chain then serialised.
+
+So before writing anything, two of the fifteen wide products were deleted from
+the shipped routine, aliasing their outputs so the answer was wrong and the
+shape was right, and the miller loop was measured against master, ABBA, 16
+pairs:
+
+    shipped  369.0 us      two products fewer  360.0 us      -2.4%
+
+Every pair agreed. 138 fewer Fp2 products saved 9.0 us against a theoretical
+11.4, which is coherent, so the machine is partly issue-bound but not entirely.
+Worth building. The probe cost one edit.
+
+### The fixup that turned out not to exist
+
+The first version tracked the accumulated power of w through the loop and
+divided it out at the end. It was written, it was correct, and then sabotaging
+it changed no answer.
+
+**Every power of w dies in the final exponentiation**, not just the Fp2 factors
+the file header already relied on. `w^6 = xi` lies in Fp2, so the order of w
+divides `6(p^2-1)`; r divides `p^12-1` and no smaller `p^k-1` because the
+embedding degree is 12, and r is far larger than 6; so r divides neither
+factor, r cannot divide the order of w, and `w^((p^12-1)/r) = 1`.
+
+The exponent tracking, the per-curve fixup and `fp12_mul_w_pow` were all
+deleted. The rotation is free. `pairing_test.c` now checks the property
+directly on every vector, scaling a miller value by `w^1` through `w^5` and
+confirming the final exponentiation is unmoved; sabotaged with `1 + w`, which
+is not a power of w, it fails on all four vectors.
+
+### Result
+
+`src/arith/fp12_line_comb_x2_x86_64.S` does the new combination: forty-four
+wide operations under one prologue, against the fifty-two the unrotated form
+needed across two routines.
+
+| | change | agreement |
+|---|---:|---:|
+| miller | **-3.8%, -3.4%** | 100%, 100% |
+| pairing | **-1.5%, -1.8%** | 88%, 100% |
+| `bls_verify` | -0.9%, -1.2% | 100%, 88% |
+
+Fp multiplications per miller loop: **7,602 to 7,188**, exactly the 414
+predicted (69 lines x 2 Fp2 products x 3). The gap against blst's 6,867 is now
+321.
+
+Against blst:
+
+| | after Fp6 | after the lazy line | **after the rotation** |
+|---|---:|---:|---:|
+| miller loop | 1.29x | 1.23x | **1.18x** |
+| final exponentiation | 1.18x | 1.18x | 1.18x |
+| pairing, validation included | 1.28x | 1.26x | **1.24x** |
+
+Over the two commits, the miller loop is **8.4% faster** and the pairing 3.1%.
+`gt_exp` is where it was, which is correct: nothing in a GT exponentiation
+touches the line multiply, and the -2.9% the previous commit showed on it was
+code layout, declined at the time and duly given back.
+
+### Verification
+
+The pairing output is unchanged on all three curves, on both the lazy and the
+`ELIPS_NO_ASM` eager paths: `b83e6405b41a18f2`, `91ac62b9ac181589`,
+`fe33dae4426b9a0a`. 59 tests pass on both paths.
+`bench/fp12_line_comb_x2_test.c` checks the assembly against the C combination
+over 200,000 random wide inputs, and was shown to fail on a one-operand change.
+`ct_branch_scan` is clean over 54 objects. Both py_ecc cross-checks pass: the
+exact 12-coefficient pairing comparison and 320 BLS signature checks.
+
+The rotation exponent differs per curve -- `w^3` on BLS12-381, `w^5` on
+BLS12-461, `w^1` on BN-462 -- so if the freedom had been narrower than claimed,
+the KAT vectors would have caught it on at least one of them.
+
 ## Revised ordering
 
 | | worth | risk |

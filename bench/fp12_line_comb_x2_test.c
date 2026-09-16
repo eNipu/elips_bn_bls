@@ -1,8 +1,8 @@
-/* Correctness test for src/arith/fp12_sparse_comb_x2_x86_64.S. Build:
+/* Correctness test for src/arith/fp12_line_comb_x2_x86_64.S. Build:
  *   gcc -O3 -std=c11 -Iinclude -Isrc -DELIPS_CURVE_BLS12_381 \
- *       bench/fp12_sparse_comb_x2_test.c src/arith/fp12_sparse_comb_x2_x86_64.S \
- *       -o sparsetest build/libelips_arith_BLS12_381.a -lm && ./sparsetest */
-/* elips_fp12_sparse_comb_x2 must match the C combination limb for limb. */
+ *       bench/fp12_line_comb_x2_test.c src/arith/fp12_line_comb_x2_x86_64.S \
+ *       -o linetest build/libelips_arith_BLS12_381.a -lm && ./linetest */
+/* elips_fp12_line_comb_x2 must match the C combination limb for limb. */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,11 +11,9 @@
 #include "elips/fpx.h"
 #include "elips/random.h"
 typedef limb_t fpw_t[12];
-void elips_fp12_sparse_comb_x2_6_x86_64(limb_t out[12][12],
-                                        const limb_t t0[6][12],
-                                        const limb_t m[12][12],
-                                        const limb_t s[6][12],
-                                        const limb_t p[6]);
+void elips_fp12_line_comb_x2_6_x86_64(limb_t out[12][12],
+                                      const limb_t prod[26][12],
+                                      const limb_t p[6]);
 
 static void addm(fpw_t r, const fpw_t a, const fpw_t b){
     unsigned char c=0,br=0; limb_t hi[6],cand[6];
@@ -33,19 +31,25 @@ static void subm(fpw_t r, const fpw_t a, const fpw_t b){
     limb_t take=(limb_t)0-(limb_t)br;
     for(int i=0;i<6;i++) r[i+6]=(cand[i]&take)|(hi[i]&~take);
 }
-/* m index: a1c5=0,1  a2c3=2,3  a0c3=4,5  a2c5=6,7  a0c5=8,9  a1c3=10,11 */
-static void ref(limb_t out[12][12], const limb_t t0[6][12],
-                const limb_t m[12][12], const limb_t s[6][12]){
-    fpw_t t1[6],w0,w1;
-    addm(w0,m[0],m[2]); addm(w1,m[1],m[3]);
-    subm(t1[0],w0,w1); addm(t1[1],w0,w1);
-    subm(w0,m[6],m[7]); addm(w1,m[6],m[7]);
-    addm(t1[2],m[4],w0); addm(t1[3],m[5],w1);
-    addm(t1[4],m[8],m[10]); addm(t1[5],m[9],m[11]);
-    for(int i=0;i<6;i++){ subm(w0,s[i],t0[i]); subm(out[6+i],w0,t1[i]); }
-    subm(w0,t1[4],t1[5]); addm(w1,t1[4],t1[5]);
+/* c0 = P1 + xi(P2), c1 = P3 + xi(P4), c2 = P5 - P1 - P4, on one five-product
+ * block starting at slot base. */
+static void block(fpw_t *out, const limb_t p[26][12], int base){
+    fpw_t w0,w1;
+    subm(w0,p[base+2],p[base+3]); addm(w1,p[base+2],p[base+3]);
+    addm(out[0],p[base+0],w0); addm(out[1],p[base+1],w1);
+    subm(w0,p[base+6],p[base+7]); addm(w1,p[base+6],p[base+7]);
+    addm(out[2],p[base+4],w0); addm(out[3],p[base+5],w1);
+    subm(w0,p[base+8],p[base+0]); subm(out[4],w0,p[base+6]);
+    subm(w0,p[base+9],p[base+1]); subm(out[5],w0,p[base+7]);
+}
+static void ref(limb_t out[12][12], const limb_t p[26][12]){
+    fpw_t t0[6], s[6], w0, w1;
+    block(t0,p,0); block(s,p,10);
+    for(int i=0;i<6;i++){ subm(w0,s[i],t0[i]); subm(out[6+i],w0,p[20+i]); }
+    subm(w0,p[24],p[25]); addm(w1,p[24],p[25]);
     addm(out[0],t0[0],w0); addm(out[1],t0[1],w1);
-    for(int i=0;i<4;i++) addm(out[2+i],t0[2+i],t1[i]);
+    addm(out[2],t0[2],p[20]); addm(out[3],t0[3],p[21]);
+    addm(out[4],t0[4],p[22]); addm(out[5],t0[5],p[23]);
 }
 /* random wide value in [0, p*R) */
 static void rw(limb_t w[12]){
@@ -56,14 +60,11 @@ static void rw(limb_t w[12]){
 }
 int main(int argc,char**argv){
     long n=(argc>1)?atol(argv[1]):200000; long bad=0;
-    limb_t t0[6][12], m[12][12], s[6][12], r[12][12], g[12][12];
+    limb_t prod[26][12], r[12][12], g[12][12];
     for(long i=0;i<n;i++){
-        for(int j=0;j<6;j++){ rw(t0[j]); rw(s[j]); }
-        for(int j=0;j<12;j++) rw(m[j]);
-        ref(r,(const limb_t(*)[12])t0,(const limb_t(*)[12])m,(const limb_t(*)[12])s);
-        elips_fp12_sparse_comb_x2_6_x86_64(g,(const limb_t(*)[12])t0,
-                                           (const limb_t(*)[12])m,
-                                           (const limb_t(*)[12])s,FP_MODULUS);
+        for(int j=0;j<26;j++) rw(prod[j]);
+        ref(r,(const limb_t(*)[12])prod);
+        elips_fp12_line_comb_x2_6_x86_64(g,(const limb_t(*)[12])prod,FP_MODULUS);
         if(memcmp(r,g,sizeof r)){ bad++; if(bad<3){ for(int j=0;j<12;j++) if(memcmp(r[j],g[j],96)) printf("FAIL at %ld, out[%d]\n",i,j);} }
         if((i+1)%50000==0){printf("%8ld ok\n",i+1);fflush(stdout);}
     }

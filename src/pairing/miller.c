@@ -183,8 +183,29 @@ static void line_mul(fp12_t f, const ep2_line_t *L, const fp_t px, const fp_t py
     fp2_t c0, c5;
     fp2_mul_fp(c0, L->a, py);
     fp2_mul_fp(c5, L->b, px);
-    fp12_mul_sparse035(f[0], f[1], c0, L->c, c5);
+    fp12_mul_sparse035w(f[0], f[1], c0, L->c, c5);
 }
+
+/* Every line is applied scaled by w, because that is what makes the sparse
+ * multiply 13 fp2 products instead of 15, and NOTHING PUTS IT BACK. The Miller
+ * value this loop returns is the true one times some power of w.
+ *
+ * That is allowed for the same reason the file header's line scalings are,
+ * only wider. w^6 = xi lies in Fp2, so the order of w divides 6(p^2 - 1),
+ * while r divides p^12 - 1 and no smaller p^k - 1 because the embedding degree
+ * is 12, and r is far larger than 6. So r divides neither factor, r cannot
+ * divide the order of w, and w^((p^12 - 1)/r) = 1: every power of w dies in
+ * the final exponentiation, exactly as every Fp2 factor does.
+ *
+ * pairing_test.c checks this rather than taking the argument on trust, by
+ * scaling a Miller value by w^1 through w^5 and confirming the final
+ * exponentiation is unmoved.
+ *
+ * The first version tracked the accumulated exponent and divided it out at the
+ * end of each loop. That code was written and was correct, and it is gone:
+ * sabotaging the fixup changed no answer, which is how the wider freedom was
+ * noticed.
+ */
 
 /* The direct forms, unchanged in behaviour: line then apply. Splitting them
  * costs nothing -- the values are the same ones, just handed over instead of

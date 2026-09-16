@@ -170,6 +170,32 @@ int main(int argc, char **argv)
         fp12_exp(chk, exact, ELIPS_ORDER, ELIPS_ORDER_BITS);
         ok(fp12_eq(chk, one), "e(P,Q)^r == 1");
 
+        /* The Miller value is defined only up to a factor the final
+         * exponentiation kills, and the line multiply leans on that freedom
+         * being wide enough to include a power of w: fp12_mul_sparse035w
+         * applies every line scaled by w and nothing puts it back.
+         *
+         * Why that is safe. w^6 = xi lies in Fp2, so the order of w divides
+         * 6(p^2 - 1). r divides p^12 - 1 and no smaller p^k - 1, because the
+         * embedding degree is 12, and r is far larger than 6. So r divides
+         * neither 6 nor p^2 - 1, r cannot divide the order of w, the order of
+         * w therefore divides (p^12 - 1)/r, and w^((p^12 - 1)/r) = 1.
+         *
+         * An argument is not a check. This is the check. */
+        {
+            fp12_t w, scaled, out;
+            fp12_set_zero(w);
+            fp2_set_one(w[1][0]);             /* the element w itself */
+            fp12_copy(scaled, raw);
+            int same = 1;
+            for (int k = 1; k <= 5; k++) {
+                fp12_mul(scaled, scaled, w);
+                pairing_final_exp_plain(out, scaled);
+                same &= fp12_eq(out, exact);
+            }
+            ok(same, "any power of w on the Miller value dies in the final exp");
+        }
+
         /* And the relationship between the two final exponentiations, which is
          * internal to this library and has no reference outside it. */
         fp12_t fast;
