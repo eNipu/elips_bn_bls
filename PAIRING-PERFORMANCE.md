@@ -872,18 +872,52 @@ The Fp6-level combination -- twenty-two 768-bit conditional add and subtract
 operations over eight 192-byte temporaries, still in C -- is costing more than
 350 ns, more than the reductions save.
 
-### What finishing it takes
+### Then the combination, and the surprise in it
 
-`mul_fp6x2` in assembly: the six wide products and the whole Karatsuba
-combination in one register-scheduled routine, which is exactly the routine
-blst has and this library does not. The projection, from measured parts rather
-than a model, is roughly 30% off the Fp6 multiply and 15 to 20% off the miller
-loop.
+With the assembly multiply the lazy Fp6 was still 7.2% behind. Instruction
+counts located the rest exactly: `fp6_mul`'s own cost, excluding everything it
+calls, was **1,030,704 instructions per miller loop** against 950,328 for all
+six wide multiplies together. The 768-bit combination was costing more than the
+multiplications it existed to enable.
 
-Two things are settled that were not before. The approach is **not** dead, as
-the P6 write-up implied; it was blocked on a single missing routine and that
-routine now exists and is tested. And the remaining cost is **located**, not
-guessed: it is the Fp6 combination, not the multiply and not the reduction.
+It was not the algorithm. It was `unsigned __int128` borrow extraction. Writing
+the same twenty-two wide add and subtract operations with `_addcarry_u64` and
+`_subborrow_u64`, which map to `adc` and `sbb` directly, cut that self cost to
+**431,233** and moved the whole tower:
+
+| | lazy Fp6 in C | + assembly multiply | + adc/sbb intrinsics |
+|---|---:|---:|---:|
+| miller | +22.5% | +7.2% | **+0.2%, unchanged** |
+| pairing | +13.6% | +3.9% | +0.4%, unchanged |
+| final exponentiation | +10.5% | +3.0% | +0.6%, unchanged |
+| `gt_exp` | +43.0% | +12.8% | **-1.4%** |
+
+**From 22.5% behind to parity, with `gt_exp` slightly ahead.** All 59 tests
+pass with the lazy tower driving the real library.
+
+### Where it stops, and what the last step is worth
+
+Parity is not a win, so none of this ships. The remaining cost is now a single
+known quantity: the combination is **2,211 instructions per `fp6_mul` against
+4,873 for the six multiplies**. In assembly those twenty-two operations should
+be nearer 700, which would take `fp6_mul` from 7,084 instructions to about
+5,600, a 21% cut on the largest routine in both halves of the pairing.
+
+That is `mul_fp6x2`, the routine blst has and this library does not: six wide
+products and the entire Karatsuba combination in one register-scheduled body,
+so the 768-bit intermediates never round-trip through memory and the
+callee-saved registers are pushed once rather than twenty-two times.
+
+The pieces are all in `bench/`: `fp2_mulx2_x86_64.S` with its test,
+`lazy_kernels.S` for the raw product and the reduction, and `lazy_fp6_ref.c`,
+which drops over `fp6_mul` and passes the full suite.
+
+**Two corrections to what this document said before.** P6 concluded the lazy
+path could not be reached from C and that 768-bit values spilling across C
+boundaries were the cause. The first is too strong -- the path reaches parity
+from C once the carry handling is right -- and the second was wrong: the
+dominant costs were function prologues and `__int128` borrow extraction, both
+fixable without touching the memory traffic.
 
 ## Revised ordering
 
