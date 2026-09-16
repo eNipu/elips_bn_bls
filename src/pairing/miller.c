@@ -46,9 +46,18 @@
 /* f *= (c0 + c3 w^3 + c5 w^5).
  *
  * In storage terms the sparse element is L0 = (c0,0,0), L1 = (0,c3,c5), so
- * Karatsuba over fp6 costs 3 + 5 + 6 = 14 fp2 multiplications against 18 for a
- * dense fp12 multiply. The middle term is five rather than the obvious six;
- * see the block below.
+ * Karatsuba over fp6 costs 3 + 6 + 6 = 15 fp2 multiplications against 18 for a
+ * dense fp12 multiply.
+ *
+ * The middle term below is schoolbook, six products, and Karatsuba would make
+ * it five: (0,c3,c5) is v*(c3 + c5 v), so splitting f1 as (a0 + a1 v) + a2 v^2
+ * takes three products for the first half and two for the second, recovering
+ * the sixth as p4 - p0 - p1. That was implemented, checked byte-identical over
+ * 3,000 pairings, and measured: 207 fewer fp_mul per miller loop and NO change
+ * in time, -0.1% on the assembly path and -0.1% on the portable one. The six
+ * schoolbook products are mutually independent and fill issue slots the
+ * Karatsuba chain then serialises. Reverted; the count was not the cost. See
+ * PAIRING-PERFORMANCE.md.
  *
  * The note that used to stand here said the legacy code reached two
  * non-trivial coefficients by rescaling P so yP became 1, and that it was
@@ -83,25 +92,14 @@ static void fp12_mul_sparse035(fp6_t f0, fp6_t f1,
      *   r1 =  a0*c3 + a2*c5*xi
      *   r2 =  a0*c5 + a1*c3   */
     {
-        /* Five products, not six. (0,c3,c5) is v*(c3 + c5 v), and a degree-2
-         * times a degree-1 polynomial is Karatsuba's case: split f1 as
-         * (a0 + a1 v) + a2 v^2, take three products for the first half and two
-         * for the second. The sixth schoolbook product is recovered as
-         * p4 - p0 - p1, which costs two subtractions instead of a
-         * multiplication. */
         const fp_t *a0 = f1[0], *a1 = f1[1], *a2 = f1[2];
-        fp2_t p0, p1, p2, p3, p4, s1, s2;
-
-        fp2_mul(p0, a0, c3);
-        fp2_mul(p1, a1, c5);
-        fp2_mul(p2, a2, c3);
-        fp2_mul(p3, a2, c5);
-        fp2_add(s1, a0, a1); fp2_add(s2, c3, c5);
-        fp2_mul(p4, s1, s2);
-
-        fp2_add(t1[0], p1, p2); fp2_mul_xi(t1[0], t1[0]);
-        fp2_mul_xi(p3, p3);     fp2_add(t1[1], p0, p3);
-        fp2_sub(t1[2], p4, p0); fp2_sub(t1[2], t1[2], p1);
+        fp2_t m1, m2, m3, m4, m5, m6;
+        fp2_mul(m1, a1, c5); fp2_mul(m2, a2, c3);
+        fp2_add(t1[0], m1, m2); fp2_mul_xi(t1[0], t1[0]);
+        fp2_mul(m3, a0, c3); fp2_mul(m4, a2, c5); fp2_mul_xi(m4, m4);
+        fp2_add(t1[1], m3, m4);
+        fp2_mul(m5, a0, c5); fp2_mul(m6, a1, c3);
+        fp2_add(t1[2], m5, m6);
     }
 
     /* s = (a0 + a1) * (c0, c3, c5) */

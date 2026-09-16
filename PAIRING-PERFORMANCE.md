@@ -783,37 +783,46 @@ The record is therefore a consistent snapshot at `dd63ab1` on the 2.80 GHz
 host, and it understates current signing by about 17%. Re-measuring **both**
 columns together, on one machine, is what fixes it.
 
-## The line multiply: one product recovered, and one avenue closed
+## The line multiply: both avenues closed
 
 `fp12_mul_sparse035` applies the line to the accumulator 69 times per Miller
-loop and is the largest single item in it. Two things were checked.
+loop and is the largest single item in it. Two ways to make it cheaper were
+checked. Neither survived.
 
-**The middle term was schoolbook.** `f1 * (0, c3, c5)` was six Fp2
-multiplications where Karatsuba needs five: `(0,c3,c5)` is `v*(c3 + c5 v)`, so
-splitting `f1` as `(a0 + a1 v) + a2 v^2` takes three products for the first
-half and two for the second, and the sixth is recovered as `p4 - p0 - p1`. The
-sparse multiply is 14 Fp2 multiplications, not 15.
+**Karatsuba on the middle term: 207 fewer multiplications, no time.** The term
+`f1 * (0, c3, c5)` was schoolbook, six Fp2 multiplications where Karatsuba
+needs five. It was implemented, and the identity is exact with no scaling
+freedom used, so the pairing output stayed byte-identical: digest
+`76da830b565dbafb` over 3,000 inputs.
 
 | miller loop | before | after |
 |---|---:|---:|
-| `fp_mul` | 7,606 | **7,399** (-207) |
-| `fp2_mul` | 2,161 | **2,092** (-69) |
+| `fp_mul` | 7,606 | 7,399 (-207) |
+| `fp2_mul` | 2,161 | 2,092 (-69) |
 | `fp_sub` | 12,557 | 12,626 (+69) |
 
-Exactly one Fp2 multiply per line traded for one subtraction. The identity is
-exact, with no scaling freedom used, so the pairing output is **byte-identical**
-before and after: digest `76da830b565dbafb` over 3,000 inputs on both sides.
-That is a stronger check than a tolerance.
+2.7% of the loop's multiplications, and the measured change was **-0.1% on the
+assembly path and -0.1% on the portable one**, both reported `unchanged` across
+repeated runs. Not the noise floor hiding a win: two tight runs agreeing near
+zero.
 
-**The other avenue is closed, and the note in the source was stale.**
+The six schoolbook products are mutually independent and fill issue slots that
+the Karatsuba chain then serialises, since `p4` waits on two sums and the last
+coefficient waits on `p4`. It was reverted. **This is the same lesson as the
+lazy reduction: an operation count is not a cost**, and it is the second time
+in this document that removing arithmetic bought nothing because of what it did
+to the dependency graph. The portable path was measured precisely because
+multiplication is roughly twice as expensive there relative to addition, which
+is where the trade should have paid if it paid anywhere.
+
+**Rescaling so that yP becomes 1 is the 8M2 kernel, already rejected.**
 `miller.c` carried a note that the legacy code reached two non-trivial
-coefficients by rescaling P so that yP became 1, "worth copying if the final
-measurement asks for it". The measurement has been made and the answer is no.
+coefficients this way, "worth copying if the final measurement asks for it".
 Making the w^0 coefficient 1 means dividing each line by its own w^0
 coefficient, which varies per line, so it is a per-line inversion. That is
-precisely the batch-normalised 8M2 kernel whose `1I2 + 342M2` normalisation
-costs more than it saves on the single-pairing path. The note now says so and
-points here.
+exactly the batch-normalised kernel whose `1I2 + 342M2` normalisation costs
+more than it saves on the single-pairing path. The note now says so rather than
+inviting a third attempt.
 
 ## Revised ordering
 
