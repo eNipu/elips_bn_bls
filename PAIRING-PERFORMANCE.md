@@ -943,6 +943,77 @@ multiply, so it reuses the choice `fp_mul` already makes at startup. The
 path, which is unchanged and still covered by the full suite under
 `ELIPS_NO_ASM`. That is a fork in the tower, and it is the price of this.
 
+## The sparse line multiply, lazy
+
+The lazy Fp6 left one dense-reduction site inside the miller loop, and it was
+the biggest: `fp12_mul_sparse035` is 42% of the loop.
+
+It spent **33 Montgomery reductions per call**. Nine in `t0 = f0*c0`, eighteen
+in the six-product `t1 = f1*(0,c3,c5)` block, and six inside the `fp6_mul` that
+builds `s` -- that one already took the lazy path, but it reduced its result
+only for the caller to subtract it narrow. An Fp12 has twelve Fp coefficients,
+so **twelve is the floor**, and holding all fifteen products at 768 bits pays
+exactly that.
+
+The function moved from `src/pairing/miller.c` to `src/arith/fpx.c`, where the
+wide machinery lives, and is declared in `elips/fpx.h`. The eager body is
+unchanged and is still what everything without ADX runs.
+
+### The combination in C, again
+
+Written first with the `adc`/`sbb` intrinsics, the thirty wide operations the
+combination needs gave the miller loop only **-2.2%** -- 21 reductions saved
+per call and most of the saving spent getting 768-bit values in and out of
+thirty function calls. Exactly the shape the Fp6 combination had.
+
+### The combination in assembly
+
+`src/arith/fp12_sparse_comb_x2_x86_64.S` does all thirty in one body with one
+prologue: the `t1` combination, `f0 = t0 + v*t1`, and `f1 = s - t0 - t1`,
+leaving twelve wide values for twelve `redcw`.
+
+| | C combination | **assembly combination** |
+|---|---:|---:|
+| miller | -2.2% | **-5.2%, -5.6%** |
+| pairing | -1.1% | **-2.0%, -2.4%** |
+| `bls_verify` | -0.8% | **-1.6%, -2.4%** |
+
+Two `--ab` runs, both at 100% agreement on those rows.
+
+The wide add and subtract are now in `src/arith/wide_x86_64.h`, included by
+both combination routines. Checked: the instruction stream `fp6_comb_x2` emits
+is byte-identical to what it emitted with its own copy of the macros.
+
+**`gt_exp` moved -2.9% and -3.2%, and this change is not on its path.** Nothing
+in a GT exponentiation calls the sparse multiply. What moved it is code layout
+in `fpx.o` from the function being added to that translation unit. It is real
+and it reproduces, but it is not this change working, and it would be dishonest
+to bank it.
+
+### Against blst
+
+| | before the lazy tower | after Fp6 | **after the line multiply** |
+|---|---:|---:|---:|
+| miller loop | 1.40x | 1.29x | **1.23x** |
+| final exponentiation | 1.22x | 1.18x | 1.18x |
+| pairing, validation included | 1.36x | 1.28x | **1.26x** |
+
+### Verification
+
+This is an exact algebraic identity, so the output must not move, and it does
+not. The pairing digest over 3,000 inputs is identical on the lazy path, on the
+eager path forced with `ELIPS_NO_ASM`, and on the commit before the change, on
+**all three curves**: `b83e6405b41a18f2`, `91ac62b9ac181589`, `fe33dae4426b9a0a`.
+
+The digest was shown able to fail: mis-indexing one of the thirty operands in
+the lazy path moved it to `abe544634aa1e2ef` while the eager path stayed
+correct, which also confirms `ELIPS_NO_ASM` really does take the eager branch.
+`bench/fp12_sparse_comb_x2_test.c` checks the assembly against the C
+combination over 200,000 random wide inputs and was likewise shown to fail on a
+one-operand change. 59 tests pass on both paths, `ct_branch_scan` is clean over
+51 objects, and both py_ecc cross-checks pass: the exact 12-coefficient pairing
+comparison and 320 BLS signature checks.
+
 ## Revised ordering
 
 | | worth | risk |

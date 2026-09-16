@@ -82,6 +82,11 @@ void fp12_sub(fp12_t r, const fp12_t a, const fp12_t b);
 void fp12_neg(fp12_t r, const fp12_t a);
 void fp12_mul(fp12_t r, const fp12_t a, const fp12_t b);
 void fp12_sqr(fp12_t r, const fp12_t a);
+/* f *= (c0 + c3 w^3 + c5 w^5): the miller loop's sparse line multiply, 15
+ * fp2 multiplications against 18 for the dense form. The two fp6 halves are
+ * passed separately; see the note on the definition. */
+void fp12_mul_sparse035(fp6_t f0, fp6_t f1,
+                        const fp2_t c0, const fp2_t c3, const fp2_t c5);
 void fp12_inv(fp12_t r, const fp12_t a);
 void fp12_conj(fp12_t r, const fp12_t a);     /* the p^6 Frobenius */
 /* r = a^(p^k) for k in {1,2,3}. k=6 is fp12_conj. */

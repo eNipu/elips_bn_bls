@@ -98,6 +98,7 @@ ASM_SOURCES = [
     _rel("src", "arith", "fp_lazy_x86_64.S"),
     _rel("src", "arith", "fp2_mulx2_x86_64.S"),
     _rel("src", "arith", "fp6_comb_x2_x86_64.S"),
+    _rel("src", "arith", "fp12_sparse_comb_x2_x86_64.S"),
     _rel("src", "arith", "fp_mul_aarch64.S"),
 ]
 
