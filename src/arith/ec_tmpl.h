@@ -30,21 +30,9 @@
 #define PTT       CAT(EC_PT, _t)
 #define F(name)   CAT(EC_F,  CAT(_, name))
 
-/* Squaring, for the places below where both operands are the same value.
- *
- * Only worth routing through F(sqr) when the field has a cheaper one than a
- * general multiply. Over Fp2 it does: fp2_sqr is two Fp products against
- * fp2_mul's three, 82.5 ns against 132.6. Over Fp it does NOT, because fp_sqr
- * IS fp_mul(a, a) -- see the note on it in fp.c -- so going through it buys
- * nothing and adds a call, measured at +1.3% on ep_mul at 100% agreement.
- * So the instantiation says which it is. */
-#ifdef EC_CHEAP_SQR
-#define FSQR(r, a)  F(sqr)(r, a)
-#else
-#define FSQR(r, a)  F(mul)(r, a, a)
-#endif
-
-/* 3b, the only curve constant the RCB formulas need. */
+#ifndef EC_JACOBIAN
+/* 3b, the only curve constant the homogeneous formulas need. The Jacobian ones
+ * use b itself, in the on-curve test. */
 static void PT(curve_b3)(EC_FT out)
 {
     EC_FT b, t;
@@ -52,6 +40,7 @@ static void PT(curve_b3)(EC_FT out)
     F(add)(t, b, b);
     F(add)(out, t, b);
 }
+#endif
 
 void PT(set_infinity)(PTT *r)
 {
@@ -71,171 +60,20 @@ void PT(neg)(PTT *r, const PTT *p)
 void PT(from_affine)(PTT *r, const EC_FT x, const EC_FT y)
 { F(copy)(r->x, x); F(copy)(r->y, y); F(set_one)(r->z); }
 
-/* RCB Algorithm 7: complete addition for a = 0.
- * Correct for every input pair, including equal, opposite and identity. */
-void PT(add)(PTT *r, const PTT *p, const PTT *q)
-{
-    EC_FT t0, t1, t2, t3, t4, x3, y3, z3, b3;
-    PT(curve_b3)(b3);
-
-    F(mul)(t0, p->x, q->x);
-    F(mul)(t1, p->y, q->y);
-    F(mul)(t2, p->z, q->z);
-
-    F(add)(t3, p->x, p->y);
-    F(add)(t4, q->x, q->y);
-    F(mul)(t3, t3, t4);
-    F(add)(t4, t0, t1);
-    F(sub)(t3, t3, t4);
-
-    F(add)(t4, p->y, p->z);
-    F(add)(x3, q->y, q->z);
-    F(mul)(t4, t4, x3);
-    F(add)(x3, t1, t2);
-    F(sub)(t4, t4, x3);
-
-    F(add)(x3, p->x, p->z);
-    F(add)(y3, q->x, q->z);
-    F(mul)(x3, x3, y3);
-    F(add)(y3, t0, t2);
-    F(sub)(y3, x3, y3);
-
-    F(add)(x3, t0, t0);
-    F(add)(t0, x3, t0);          /* t0 = 3 X1X2 */
-    F(mul)(t2, b3, t2);          /* t2 = b3 Z1Z2 */
-
-    F(add)(z3, t1, t2);
-    F(sub)(t1, t1, t2);
-    F(mul)(y3, b3, y3);
-
-    F(mul)(x3, t4, y3);
-    F(mul)(t2, t3, t1);
-    F(sub)(x3, t2, x3);
-
-    F(mul)(y3, y3, t0);
-    F(mul)(t1, t1, z3);
-    F(add)(y3, t1, y3);
-
-    F(mul)(t0, t0, t3);
-    F(mul)(z3, z3, t4);
-    F(add)(z3, z3, t0);
-
-    F(copy)(r->x, x3); F(copy)(r->y, y3); F(copy)(r->z, z3);
-}
-
-/* Doubling. Two bodies, and the field decides which.
+/* The group law itself, in whichever coordinate system the instantiation
+ * asked for. Everything above and below this point is representation-agnostic:
+ * set_infinity, is_infinity, copy, neg and from_affine mean the same thing in
+ * both, and so do the two ladders, which only ever call add, dbl and cselect.
  *
- * WHERE SQUARINGS ARE CHEAPER (the twist), the dedicated formulas for
- * y^2 z = x^3 + b z^3 with a = 0 cost 4M + 5S against RCB Algorithm 9's
- * 7M + 2S. Trading 3M for 3S is 150 ns of ep2_dbl's measured 1,255, and
- * ep2_dbl is 89% of ep2_in_subgroup. Over Fp, fp_sqr IS fp_mul(a, a), so the
- * trade is a wash on products and a loss on additions; there RCB stays.
- *
- * WHY THE DEDICATED FORM IS SAFE HERE, and it is worth being exact because
- * this is the routine that validates points an attacker chose. The complete
- * formulas were not chosen idly: ep2_in_subgroup runs on untrusted input, so
- * every case has to work rather than be argued away. The argument that they
- * all do:
- *
- *     X3 = 2XY(Y^2 - 9b Z^2)
- *     Y3 = (Y^2 + 9b Z^2)^2 - 108 b^2 Z^4
- *     Z3 = 8 Y^3 Z
- *
- *   - Z = 0. The only on-curve point with Z = 0 is O = (0:1:0), because
- *     Y^2 * 0 = X^3 forces X = 0. Substituting: X3 = 0, Y3 = Y^4, Z3 = 0,
- *     which is O. Correct.
- *   - Y = 0, Z != 0, that is 2-torsion. X3 = 0 and Z3 = 0, and
- *     Y3 = (9bZ^2)^2 - 108 b^2 Z^4 = -27 b^2 Z^4, which is non-zero because b
- *     and Z are. So the result is (0 : non-zero : 0) = O, and O is exactly
- *     what doubling a 2-torsion point should give. Correct.
- *   - The output is never the invalid (0:0:0): Z3 vanishes only in the two
- *     cases above, and both leave Y3 non-zero.
- *
- * So the formula is exception-free on the curve, not merely exception-free on
- * points of order r. The second case cannot even arise here: -b is not a cube
- * in Fp2 on any of the three curves, so none of the three twists has a point
- * of order 2, checked with tools/reference. The case is handled anyway, since
- * that fact is a property of the curves and not of the formula.
- *
- * bench/ec_dbl_test.c checks this against an independent RCB implementation
- * over random on-curve twist points, O, and the aliasing case, rather than
- * leaving the argument above as the only evidence. The ADDITIONS stay
- * complete: they are 11% of the ladder and they are where exceptions really
- * bite on untrusted input, since the NAF loop adds +-Q to acc = [v]Q and that
- * collides whenever Q has small order. See issue #49. */
-void PT(dbl)(PTT *r, const PTT *p)
-{
-#ifdef EC_CHEAP_SQR
-    EC_FT B, C, H, E, D, t, u, x3, y3, z3;
-
-    F(sqr)(B, p->y);                          /* B = Y^2       */
-    F(sqr)(C, p->z);                          /* C = Z^2       */
-
-    /* H = 2YZ from a squaring rather than a multiplication, which is the
-     * trade the whole formula is built on. */
-    F(add)(t, p->y, p->z);
-    F(sqr)(H, t);
-    F(sub)(H, H, B);
-    F(sub)(H, H, C);
-
-    PT(curve_b3)(u);                          /* 3b            */
-    F(mul)(E, u, C);                          /* E = 3b Z^2    */
-    F(add)(D, E, E); F(add)(D, D, E);         /* D = 9b Z^2    */
-
-    F(mul)(t, p->x, p->y);
-    F(add)(t, t, t);                          /* 2XY           */
-    F(sub)(u, B, D);                          /* Y^2 - 9b Z^2  */
-    F(mul)(x3, t, u);
-
-    F(add)(t, B, D);                          /* Y^2 + 9b Z^2  */
-    F(sqr)(y3, t);
-    F(sqr)(t, E);
-    F(add)(u, t, t); F(add)(u, u, t);         /* 3E^2          */
-    F(add)(u, u, u); F(add)(u, u, u);         /* 12E^2 = 108 b^2 Z^4 */
-    F(sub)(y3, y3, u);
-
-    F(mul)(z3, B, H);                         /* 2 Y^3 Z       */
-    F(add)(z3, z3, z3); F(add)(z3, z3, z3);   /* 8 Y^3 Z       */
+ * Splitting the two into their own files rather than one #if/#else body is
+ * deliberate. Each is a complete formula set with its own exception argument,
+ * and this is the code that decides whether an attacker-supplied point is
+ * accepted, so each wants to be readable as a unit. */
+#ifdef EC_JACOBIAN
+#include "arith/ec_jacobian.h"
 #else
-    EC_FT t0, t1, t2, x3, y3, z3, b3;
-    PT(curve_b3)(b3);
-
-    FSQR(t0, p->y);
-    F(add)(z3, t0, t0);
-    F(add)(z3, z3, z3);
-    F(add)(z3, z3, z3);          /* z3 = 8 Y^2 */
-
-    F(mul)(t1, p->y, p->z);
-    FSQR(t2, p->z);
-    F(mul)(t2, b3, t2);          /* t2 = b3 Z^2 */
-
-    F(mul)(x3, t2, z3);
-    F(add)(y3, t0, t2);
-    F(mul)(z3, t1, z3);
-
-    F(add)(t1, t2, t2);
-    F(add)(t2, t1, t2);          /* t2 = 3 b3 Z^2 */
-    F(sub)(t0, t0, t2);          /* t0 = Y^2 - 3 b3 Z^2 */
-
-    F(mul)(y3, t0, y3);
-    F(add)(y3, x3, y3);
-
-    F(mul)(t1, p->x, p->y);
-    F(mul)(x3, t0, t1);
-    F(add)(x3, x3, x3);
+#include "arith/ec_homog.h"
 #endif
-    F(copy)(r->x, x3); F(copy)(r->y, y3); F(copy)(r->z, z3);
-}
-
-int PT(to_affine)(EC_FT x, EC_FT y, const PTT *p)
-{
-    if (PT(is_infinity)(p)) { F(set_zero)(x); F(set_zero)(y); return 0; }
-    EC_FT zi;
-    F(inv)(zi, p->z);
-    F(mul)(x, p->x, zi);
-    F(mul)(y, p->y, zi);
-    return 1;
-}
 
 /* [k]P where k is a PUBLIC CONSTANT of the curve, not a caller's scalar.
  *
@@ -366,37 +204,8 @@ void PT(mul)(PTT *r, const PTT *p, const limb_t *k, int kbits)
 #undef EC_TBL_SIZE
 
 /* y^2 z == x^3 + b z^3 */
-int PT(on_curve)(const PTT *p)
-{
-    if (PT(is_infinity)(p)) return 1;
-    EC_FT lhs, rhs, z3, b;
-    PT(curve_b)(b);
-    FSQR(lhs, p->y);         F(mul)(lhs, lhs, p->z);
-    FSQR(rhs, p->x);         F(mul)(rhs, rhs, p->x);
-    FSQR(z3, p->z);          F(mul)(z3, z3, p->z);
-    F(mul)(z3, z3, b);
-    F(add)(rhs, rhs, z3);
-    return F(eq)(lhs, rhs);
-}
-
-/* (X1:Y1:Z1) == (X2:Y2:Z2) iff X1*Z2 == X2*Z1 and Y1*Z2 == Y2*Z1.
- *
- * Two points at infinity have Z = 0 and satisfy both, as they should. An
- * infinity never compares equal to an affine point: with (0:Y1:0) the X test
- * is 0 == 0 and passes, but the Y test needs Y1*Z2 == 0 with Y1 and Z2 both
- * nonzero, so it fails. No inversion and no branch on coordinate values. */
-int PT(eq)(const PTT *a, const PTT *b)
-{
-    EC_FT t0, t1;
-    F(mul)(t0, a->x, b->z); F(mul)(t1, b->x, a->z);
-    if (!F(eq)(t0, t1)) return 0;
-    F(mul)(t0, a->y, b->z); F(mul)(t1, b->y, a->z);
-    return F(eq)(t0, t1);
-}
-
 #undef CAT_
 #undef CAT
 #undef PT
 #undef PTT
 #undef F
-#undef FSQR

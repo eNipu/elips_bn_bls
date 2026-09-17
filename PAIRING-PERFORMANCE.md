@@ -1407,6 +1407,121 @@ closes that. Changing the representation touches every routine in `ec_tmpl.h`,
 the serialisation, the hash-to-curve and the Miller loop, and it is a much
 larger question than this one.
 
+## Jacobian coordinates for G2
+
+#49 ended by naming the residual: the coordinate system, not the formulas. blst
+is Jacobian, where `dbl-2009-l` is 2M + 5S; we were homogeneous projective,
+where the dedicated form is 4M + 5S. G2 is now Jacobian.
+
+### The trade, including the half that gets worse
+
+The doubling is where the win is. The addition goes the other way, and that has
+to be said plainly:
+
+| | homogeneous | Jacobian |
+|---|---|---|
+| doubling | 4M + 5S | **2M + 5S** |
+| addition | 14M (RCB) | **13M + 5S** (unified) |
+
+A complete Jacobian addition has to be the unified add-or-double form. With
+`S/M = 0.62` in Fp2 that is 2,137 ns against RCB's 1,856, so the addition is
+**15% slower than what it replaced**. Doublings outnumber additions twelve to
+one in the ladder, so the trade is worth taking, but it is a trade.
+
+### Scope, which was smaller than it looked
+
+Two things that could have made this enormous did not:
+
+- **`ep2_psi` is representation-agnostic.** It conjugates all three coordinates
+  and scales X by PSI_X, Y by PSI_Y. Under `x = X/Z^2`, conjugation is a field
+  homomorphism so `conj(X)/conj(Z)^2 = conj(x)`, and scaling x by a constant
+  still means scaling X by it. Unchanged. Same for `ep_phi`.
+- **The Miller loop keeps its own homogeneous T.** `dbl_line` maintains T with
+  its own 4M + 6S formula and never calls `ep2_dbl`; its only coupling was
+  `add_line` calling `ep2_add`. That became `homog_add`, a private copy of RCB
+  in `miller.c`. The Miller loop was deliberately NOT converted: it is at 1.18x
+  on a derivation written for homogeneous coordinates, and there is nothing to
+  win there, only a tuned formula to get wrong. The digest confirms it: byte
+  identical on all three curves.
+
+So the change is the ep2 instantiation of the group law. `ec_tmpl.h` now keeps
+only what is representation-agnostic and includes `ec_homog.h` or
+`ec_jacobian.h`. Two files rather than one `#if/#else` body, because each is a
+complete formula set with its own exception argument and this is the code that
+decides whether an attacker's point is accepted.
+
+G1 stays homogeneous: over Fp a squaring IS a multiplication, so Jacobian would
+trade two doubling multiplies for four addition ones and come out level, and
+level is not worth giving up completeness for.
+
+### Safety
+
+Jacobian is not complete the way RCB is, so both routines carry an argument.
+
+- **Doubling**, `dbl-2009-l`. At Z = 0, `Z3 = 2Y*0 = 0`, the identity stays the
+  identity. At Y = 0 (2-torsion), `B = C = 0` so `D = 2((X+0)^2 - X^2 - 0) = 0`
+  and `Z3 = 0`, which is the identity, which is what doubling 2-torsion should
+  give. The identity is Z = 0 regardless of X and Y, so unlike homogeneous
+  there is no degenerate `(0:0:0)` output to guard against.
+- **Addition**, the unified form. It computes the addition and the doubling
+  helpers side by side and selects with a mask on `H == 0 && R == 0`.
+  `P == Q` selects the doubling helpers, and substituting them reproduces
+  `dbl-2009-l` exactly. `P == -Q` gives `H = 0` but `R != 0`, so the addition
+  path runs and `Z3 = H Z1 Z2 = 0` is the identity. Either input at infinity is
+  handled by two masked selects. Every choice is a mask over both candidates;
+  `ct_branch_scan` is clean over 51 objects.
+
+### Checked against affine, not against a second projective formula
+
+`test/ec_group_test.c` replaces the RCB differential test. **Its oracle is
+affine arithmetic with a real field inversion and explicit special cases** --
+deliberately not another projective formula, so it shares no algebra with the
+code under test and cannot be wrong in the same direction.
+
+30,000 random on-curve twist points per curve, each in a random projective
+representative, **all 30,000 outside G2**, and on every one of them: `dbl`,
+`add` with a second random point, and then `P+P`, `P+(-P)`, `P+O`, `O+P`, plus
+commutativity and both aliasing directions. Then `dbl(O)`, `O+O`, and O reached
+the way a ladder reaches it, from `[r]G`. **764,973 checks per curve, 0
+failures.**
+
+It fails when it should. `is_dbl = 0`, which removes only the add-or-double
+selection, fails it and eight other tests. `X3 = F - D` in the doubling fails
+403 of 5,128 checks and 30 of the 62 tests.
+
+### Result
+
+| | change | agreement |
+|---|---:|---:|
+| `ep2_in_subgroup` | **-25.0%, -25.5%, -25.6%** | 100% |
+| `ep2_mul` | **-17.4%, -18.0%, -17.6%** | 100% |
+| `hash_to_g2` | -4.9%, -5.7%, -5.4% | 100% |
+| `bls_verify` | -4.8%, -4.4%, -4.9% | 100% |
+| `bls_sign` | -4.6%, -3.9%, -4.6% | 100% |
+| `pairing` | -3.3%, -2.4%, -2.4% | 75%, 100%, 100% |
+
+Every G1 row is unchanged, which is the design.
+
+The multiplication count is now **at parity**:
+
+| | fp_mul per check | `in_g2` us | vs blst |
+|---|---:|---:|---:|
+| before #48 | 2,047 | | 1.73x |
+| squarings (#48) | 1,916 | | 1.61x |
+| dedicated doubling (#49) | 1,724 | 91.4 | 1.49x |
+| **Jacobian (#50)** | **1,315** | **68.3** | **1.12x** |
+| blst | 1,281 | 61.2 | |
+
+The count is exact: 64 doublings x (2M + 5S) plus 5 additions x (13M + 5S) plus
+psi, the on-curve test and the comparison is 204 Fp2 multiplications and 351
+squarings, which is what callgrind reports. 1,315 against 1,281 is within 3%,
+so what remains is not arithmetic any more.
+
+**The dedicated homogeneous doubling from #49 and the `FSQR` machinery from #48
+are deleted.** They existed for the twist, the twist no longer uses them, and
+dead code whose comment says it is 89% of `ep2_in_subgroup` is worse than no
+code. The measurements stay recorded above; the code does not.
+
 ## Revised ordering
 
 | | worth | risk |

@@ -290,14 +290,14 @@ if(ELIPS_BUILD_TESTS)
     add_test(NAME edge.${_cv} COMMAND edge_test_${_cv})
     set_tests_properties(edge.${_cv} PROPERTIES TIMEOUT 900)
 
-    # The dedicated doubling against an independent RCB implementation. This
-    # one guards a security property, not a performance one: ep2_dbl drives
+    # The projective group law against affine arithmetic. This
+    # guards a security property, not a performance one: ep2_dbl and ep2_add drive
     # ep2_in_subgroup, which validates attacker-chosen points.
-    add_executable(ec_dbl_test_${_cv} test/ec_dbl_test.c)
-    target_link_libraries(ec_dbl_test_${_cv} PRIVATE elips_arith_${_cv})
-    elips_test_warnings(ec_dbl_test_${_cv})
-    add_test(NAME ec_dbl.${_cv} COMMAND ec_dbl_test_${_cv} 4000)
-    set_tests_properties(ec_dbl.${_cv} PROPERTIES TIMEOUT 900)
+    add_executable(ec_group_test_${_cv} test/ec_group_test.c)
+    target_link_libraries(ec_group_test_${_cv} PRIVATE elips_arith_${_cv})
+    elips_test_warnings(ec_group_test_${_cv})
+    add_test(NAME ec_group.${_cv} COMMAND ec_group_test_${_cv} 4000)
+    set_tests_properties(ec_group.${_cv} PROPERTIES TIMEOUT 900)
   endforeach()
 
   # Timing-leakage tests. Statistical, so they are noisy by nature and their
