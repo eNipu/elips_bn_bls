@@ -1736,6 +1736,96 @@ what this issue built.
 The lazy path was proved live by sabotage: one bit flipped in the wide product
 before reduction fails 12 of the 62 tests.
 
+## A dedicated fp_sqr: measured, and deferred rather than refuted
+
+`fp_sqr` is `fp_mul(a, a)`. The comment refusing to write a dedicated one
+argued from the call mix: only 4.7% of the `fp_mul` calls in a pairing have
+equal operands, because the Fp2, Fp6 and Fp12 layers carry their own squaring
+formulas. #51 made that argument stale by moving G1 to Jacobian, where five of
+the seven multiplies in a doubling are squarings.
+
+### The call mix, counted
+
+Counters on `fp_mul` and `fp_sqr`, 200 iterations each on BLS12-381:
+
+| workload | `fp_mul` | of them `fp_sqr` | share |
+|---|---:|---:|---:|
+| `ep_in_subgroup` | 218,600 | 139,200 | **63.7%** |
+| `ep_mul` | 623,800 | 334,000 | **53.5%** |
+| `ep_mul_glv` | 464,400 | 209,000 | **45.0%** |
+| `pairing` | 465,400 | 36,050 | 7.7% |
+| `ep2_in_subgroup` | 263,000 | 0 | **0%** |
+
+The static count agrees: a subgroup check is about 126 doublings and 10
+additions, so 382M + 680S, and 680/1062 is 64% against 63.7% measured.
+
+`ep2_in_subgroup` at exactly zero is worth noticing. The twist never reaches
+`fp_sqr` at all, because `fp2_sqr` has its own two-multiply formula. So this is
+a G1 question only.
+
+### CIOS cannot fuse a squaring, which is the whole problem
+
+Each CIOS round consumes one limb of `b` and multiply-accumulates the whole of
+`a` by it. With `b == a` the product `a[i]*a[j]` is needed in round `i` and
+again in round `j`, and between them the accumulator has been shifted and
+reduced, so the two land at different scales and neither can serve the other.
+The triangle needs the whole product formed first, which forces the SEPARATED
+form: a raw square, then a standalone reduction. blst's `sqr_mont_384` is
+separated for exactly this reason.
+
+So a dedicated squaring cannot avoid the split, and the split is not free.
+
+### The split cost, measured twice
+
+The kernel probe, four runs, gives `mulw + redcw` against the fused `fp_mul` at
+98%, 119%, 112% and 108%: mean **109%**. Worth noting against the earlier
+record, which quotes 112% as though it were exact; the spread is about ten
+points and the rule survives the noise but the precision does not.
+
+Then in situ. `fp_sqr` was wired to `mulw(a, a) + redcw`, which is the separated
+route with NO triangle saving, purely to price the split where it actually runs:
+
+| | change | agreement |
+|---|---:|---|
+| `ep_in_subgroup` | +6.5% | 88% |
+| `ep_mul` | +4.7% | 100% |
+| `hash_to_g1` | +4.4% | 75% |
+| `ep_mul_glv` | +3.7% | 75% |
+
+Exactly the four G1 squaring-heavy rows and nothing else. `ep_mul` is the
+cleanest at 100% agreement: +4.7% on a workload that is 53.5% squarings is
+**8.8% per squaring**, against the kernel probe's 9%. Two independent routes to
+the same number.
+
+### What the real thing would be worth
+
+The triangle computes 21 partial products instead of 36. `mulw` is about 46% of
+a fused multiply, so saving 15 of 36 is a ceiling of 19%, and after the
+doubling pass 14% to 16% is the realistic figure. Against the 8.8% the split
+costs:
+
+| | net per squaring | workload |
+|---|---:|---:|
+| ceiling | -10.2% | -6.5% on `ep_in_subgroup` |
+| realistic | -5% to -7% | **-3% to -4.5%** on `ep_in_subgroup` |
+| | | under 1% on a pairing |
+
+Not the 12.7% the issue estimated going in. That estimate assumed the whole
+routine shrank by the product saving; it does not, because the reduction half
+is a general multiply by p and the triangle cannot touch it.
+
+### Deferred, not refuted
+
+It is worth roughly 4% on G1 scalar multiplication and under 1% on a pairing,
+for a new hand-written assembly kernel on the routine everything else is built
+on, plus a portable fallback and a differential test. The standing goal is the
+pairing, so this ranks below re-tracing the final exponentiation, which is 49%
+of a pairing and has no current map.
+
+The numbers are recorded so it does not have to be re-derived. One trap is
+recorded with them: **`mulw(a, a) + redcw` is not a shortcut to this.** It is
+the probe above and it is a measured regression of 4 to 6 percent.
+
 ## Revised ordering
 
 | | worth | risk |

@@ -331,14 +331,52 @@ const char *fp_mul_backend_name(void)
 void fp_sqr(fp_t r, const fp_t a)
 {
     /* A dedicated squaring saves roughly a third of the partial products, and
-     * an earlier note here deferred one to the Phase 6 assembly. Phase 6 then
-     * measured what it would be worth and did not write it.
+     * an earlier note here deferred one to the Phase 6 assembly. Phase 6
+     * measured what it would be worth and did not write it. Issue #53
+     * re-measured it after the curve layer went Jacobian and still did not,
+     * for a different reason. Both are worth keeping straight.
      *
-     * Only 4.7% of the fp_mul calls in a BLS12-381 pairing have a == b, and
-     * 5.4% on BN-462, because the Fp2, Fp6 and Fp12 layers carry their own
-     * squaring formulas and never reach this path with equal operands. A third
-     * off 5% of the multiplies is under 1% of a pairing, for four more
-     * hand-written routines to keep correct. */
+     * THE OLD REASON WAS THE CALL MIX, and it has changed. It was 4.7% of the
+     * fp_mul calls in a BLS12-381 pairing, because the Fp2, Fp6 and Fp12
+     * layers carry their own squaring formulas and never reach this path with
+     * equal operands. Counted again after #51 moved G1 to Jacobian, where five
+     * of the seven multiplies in a doubling are squarings:
+     *
+     *      ep_in_subgroup   63.7%      pairing           7.7%
+     *      ep_mul           53.5%      ep2_in_subgroup   0.0%
+     *      ep_mul_glv       45.0%
+     *
+     * So the mix is no longer the objection for G1. It still is for the
+     * pairing, and ep2 never arrives here at all: fp2_sqr has its own formula
+     * and calls fp_mul directly.
+     *
+     * THE NEW REASON IS THAT CIOS CANNOT FUSE A SQUARING. Each CIOS round
+     * consumes one limb of b and multiply-accumulates a whole a by it. With
+     * b == a the product a[i]*a[j] is needed in round i and again in round j,
+     * and between them T has been shifted and reduced, so the two land at
+     * different scales and neither can serve the other. The triangle needs the
+     * whole product formed first, which forces the separated form: a raw
+     * square, then a standalone reduction. blst's sqr_mont_384 is separated
+     * for this reason.
+     *
+     * And separating costs. Measured both ways. The kernel probe puts
+     * mulw + redcw at 98% to 119% of the fused multiply over four runs, mean
+     * 109%. Wiring fp_sqr to mulw(a,a) + redcw -- the separated route with no
+     * triangle saving at all -- cost +4.7% on ep_mul at 100% agreement, and
+     * ep_mul is 53.5% squarings, so 8.8% per squaring. Two independent routes
+     * to the same number.
+     *
+     * A real dedicated squaring is that 8.8% against a triangle that saves 15
+     * of 36 partial products. The product half is ~46% of a fused multiply, so
+     * the ceiling is 19% and the realistic figure, after the doubling pass,
+     * is 14% to 16%. Net 5% to 7% per squaring, which is 3% to 4.5% on
+     * ep_in_subgroup and under 1% on a pairing.
+     *
+     * That is worth having and it is not worth having FIRST, for a
+     * hand-written kernel on the routine everything else is built on. The
+     * numbers are in issue #53 so the next person does not have to re-derive
+     * them. Do not reach for mulw(a,a) + redcw as a shortcut: that is the
+     * probe above, and it is a measured regression. */
     fp_mul(r, a, a);
 }
 
