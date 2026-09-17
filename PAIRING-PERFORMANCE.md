@@ -1314,6 +1314,99 @@ to work rather than be argued away. The Miller loop could give up the complete
 formulas because T there is a known multiple of a prime-order point. Here there
 is no such argument available.
 
+## Dedicated doubling for the G2 ladder
+
+Follow-on from the trace. `ep2_dbl` was 89% of `ep2_in_subgroup` and cost 7 Fp2
+multiplications and 2 squarings. The dedicated homogeneous-projective doubling
+for `a = 0` is **4M + 5S**, and it is the formula `dbl_line` already uses:
+
+    X3 = 2XY(Y^2 - 9b Z^2)
+    Y3 = (Y^2 + 9b Z^2)^2 - 108 b^2 Z^4
+    Z3 = 8 Y^3 Z
+
+with `2YZ` recovered from `(Y+Z)^2 - Y^2 - Z^2`, which is the squaring the
+trade is built on.
+
+The predicate for using it is the same one that decided `FSQR`: the change is
+3M for 3S, so it pays exactly when a squaring is cheaper than a multiply. Over
+Fp it is not, so Fp keeps RCB.
+
+### The safety argument, which was the actual work
+
+The complete formulas were in this ladder on purpose: `ep2_in_subgroup`
+validates points an attacker chose, so every case has to work rather than be
+argued away. The dedicated form is nonetheless exception-free **on the curve**,
+not merely on points of order r:
+
+- **Z = 0.** The only on-curve point with Z = 0 is O = (0:1:0), since
+  `Y^2 * 0 = X^3` forces X = 0. Substituting gives X3 = 0, Y3 = Y^4, Z3 = 0,
+  which is O.
+- **Y = 0, Z != 0**, that is 2-torsion. X3 = 0, Z3 = 0, and
+  `Y3 = (9bZ^2)^2 - 108 b^2 Z^4 = -27 b^2 Z^4`, non-zero because b and Z are.
+  So the result is (0 : non-zero : 0) = O, which is what doubling a 2-torsion
+  point should give.
+- The output is never the invalid (0:0:0): Z3 vanishes only in those two cases
+  and both leave Y3 non-zero.
+
+The second case cannot even arise: **-b is not a cube in Fp2 on any of the
+three curves**, so no twist here has a point of order 2, checked against
+`tools/reference`. The formula handles it anyway, since that is a fact about
+the curves and not about the formula.
+
+**The additions stay complete.** They are 11% of the ladder and they are where
+exceptions really bite on untrusted input: the NAF loop adds +-Q to
+`acc = [v]Q`, which collides whenever Q has small order. Keeping RCB there
+costs little and removes the hazard entirely.
+
+### Checked, not just argued
+
+`test/ec_dbl_test.c` compares `ep2_dbl` against an independent RCB
+implementation written out in the test, over random points on the twist **not
+restricted to G2** and each in a random projective representative, plus O, plus
+O reached the way the ladder reaches it, plus the aliasing case. 50,000 points
+per curve, 150,005 checks, **every point outside G2** because the cofactor is
+enormous, which is the property that makes the test worth running. Comparison
+is by `ep2_eq` and not `memcmp`: the two formulas give different projective
+representatives of the same point, which is exactly what should be allowed.
+
+Sabotaged with `6E^2` in place of `12E^2` it fails 602 of 605 checks, and the
+main suite fails 20 tests including all three subgroup runners. It now runs in
+CI on all three curves, because this guards a security property rather than a
+performance one.
+
+### Result
+
+| | change | agreement |
+|---|---:|---:|
+| `ep2_in_subgroup` | **-7.2%, -7.9%** | 75%, 100% |
+| `ep2_mul` | **-3.8%, -4.3%** | 100%, 88% |
+| `ep2_mul_glv` | -2.5%, -2.3% | 88%, 88% |
+| `hash_to_g2` | -2.5%, -3.1% | 75%, 88% |
+| `bls_sign` | -2.0%, -1.6% | 88%, 62% |
+
+Fp multiplications per check, and the ratio, over the two changes:
+
+| | fp_mul | `in_g2` us | vs blst |
+|---|---:|---:|---:|
+| before #48 | 2,047 | 89.9 | 1.73x |
+| squarings (#48) | 1,916 | 83.6 | 1.61x |
+| **dedicated doubling (#49)** | **1,724** | **77.3** | **1.49x** |
+| blst | 1,281 | 51.9 | |
+
+The counts are exact: 64 doublings x (4M + 5S) plus 5 additions x 14M plus psi
+and the on-curve check is 336 Fp2 multiplications and 323 squarings, which is
+what callgrind reports.
+
+### What is left, and why it is not taken here
+
+1,724 against blst's 1,281. **The residual is the coordinate system, not the
+formulas.** blst is Jacobian, where `dbl-2009-l` is 2M + 5S; we are homogeneous
+projective, where the dedicated form is 4M + 5S. 63 x (2x3 + 5x2) = 1,008 is
+most of blst's 1,281, and no formula choice inside homogeneous coordinates
+closes that. Changing the representation touches every routine in `ec_tmpl.h`,
+the serialisation, the hash-to-curve and the Miller loop, and it is a much
+larger question than this one.
+
 ## Revised ordering
 
 | | worth | risk |

@@ -123,14 +123,80 @@ void PT(add)(PTT *r, const PTT *p, const PTT *q)
     F(copy)(r->x, x3); F(copy)(r->y, y3); F(copy)(r->z, z3);
 }
 
-/* RCB Algorithm 9: exception-free doubling for a = 0.
+/* Doubling. Two bodies, and the field decides which.
  *
- * Y^2 and Z^2 go through FSQR, not F(mul). The formula is untouched and so is
- * the exception-freeness argument: these are the same two values, computed the
- * cheaper way. Two of the nine products in this routine, and this routine is
- * 89% of ep2_in_subgroup. See issue #48. */
+ * WHERE SQUARINGS ARE CHEAPER (the twist), the dedicated formulas for
+ * y^2 z = x^3 + b z^3 with a = 0 cost 4M + 5S against RCB Algorithm 9's
+ * 7M + 2S. Trading 3M for 3S is 150 ns of ep2_dbl's measured 1,255, and
+ * ep2_dbl is 89% of ep2_in_subgroup. Over Fp, fp_sqr IS fp_mul(a, a), so the
+ * trade is a wash on products and a loss on additions; there RCB stays.
+ *
+ * WHY THE DEDICATED FORM IS SAFE HERE, and it is worth being exact because
+ * this is the routine that validates points an attacker chose. The complete
+ * formulas were not chosen idly: ep2_in_subgroup runs on untrusted input, so
+ * every case has to work rather than be argued away. The argument that they
+ * all do:
+ *
+ *     X3 = 2XY(Y^2 - 9b Z^2)
+ *     Y3 = (Y^2 + 9b Z^2)^2 - 108 b^2 Z^4
+ *     Z3 = 8 Y^3 Z
+ *
+ *   - Z = 0. The only on-curve point with Z = 0 is O = (0:1:0), because
+ *     Y^2 * 0 = X^3 forces X = 0. Substituting: X3 = 0, Y3 = Y^4, Z3 = 0,
+ *     which is O. Correct.
+ *   - Y = 0, Z != 0, that is 2-torsion. X3 = 0 and Z3 = 0, and
+ *     Y3 = (9bZ^2)^2 - 108 b^2 Z^4 = -27 b^2 Z^4, which is non-zero because b
+ *     and Z are. So the result is (0 : non-zero : 0) = O, and O is exactly
+ *     what doubling a 2-torsion point should give. Correct.
+ *   - The output is never the invalid (0:0:0): Z3 vanishes only in the two
+ *     cases above, and both leave Y3 non-zero.
+ *
+ * So the formula is exception-free on the curve, not merely exception-free on
+ * points of order r. The second case cannot even arise here: -b is not a cube
+ * in Fp2 on any of the three curves, so none of the three twists has a point
+ * of order 2, checked with tools/reference. The case is handled anyway, since
+ * that fact is a property of the curves and not of the formula.
+ *
+ * bench/ec_dbl_test.c checks this against an independent RCB implementation
+ * over random on-curve twist points, O, and the aliasing case, rather than
+ * leaving the argument above as the only evidence. The ADDITIONS stay
+ * complete: they are 11% of the ladder and they are where exceptions really
+ * bite on untrusted input, since the NAF loop adds +-Q to acc = [v]Q and that
+ * collides whenever Q has small order. See issue #49. */
 void PT(dbl)(PTT *r, const PTT *p)
 {
+#ifdef EC_CHEAP_SQR
+    EC_FT B, C, H, E, D, t, u, x3, y3, z3;
+
+    F(sqr)(B, p->y);                          /* B = Y^2       */
+    F(sqr)(C, p->z);                          /* C = Z^2       */
+
+    /* H = 2YZ from a squaring rather than a multiplication, which is the
+     * trade the whole formula is built on. */
+    F(add)(t, p->y, p->z);
+    F(sqr)(H, t);
+    F(sub)(H, H, B);
+    F(sub)(H, H, C);
+
+    PT(curve_b3)(u);                          /* 3b            */
+    F(mul)(E, u, C);                          /* E = 3b Z^2    */
+    F(add)(D, E, E); F(add)(D, D, E);         /* D = 9b Z^2    */
+
+    F(mul)(t, p->x, p->y);
+    F(add)(t, t, t);                          /* 2XY           */
+    F(sub)(u, B, D);                          /* Y^2 - 9b Z^2  */
+    F(mul)(x3, t, u);
+
+    F(add)(t, B, D);                          /* Y^2 + 9b Z^2  */
+    F(sqr)(y3, t);
+    F(sqr)(t, E);
+    F(add)(u, t, t); F(add)(u, u, t);         /* 3E^2          */
+    F(add)(u, u, u); F(add)(u, u, u);         /* 12E^2 = 108 b^2 Z^4 */
+    F(sub)(y3, y3, u);
+
+    F(mul)(z3, B, H);                         /* 2 Y^3 Z       */
+    F(add)(z3, z3, z3); F(add)(z3, z3, z3);   /* 8 Y^3 Z       */
+#else
     EC_FT t0, t1, t2, x3, y3, z3, b3;
     PT(curve_b3)(b3);
 
@@ -157,7 +223,7 @@ void PT(dbl)(PTT *r, const PTT *p)
     F(mul)(t1, p->x, p->y);
     F(mul)(x3, t0, t1);
     F(add)(x3, x3, x3);
-
+#endif
     F(copy)(r->x, x3); F(copy)(r->y, y3); F(copy)(r->z, z3);
 }
 
