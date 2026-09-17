@@ -110,20 +110,28 @@ anything that matters yet.
 
 ## Performance
 
-Intel(R) Xeon(R) Processor @ 2.80GHz, both columns on that one machine, medians over 21
-interleaved reps. Reproduce with `bench_BLS12_381` and `bindings/js/bench.mjs`,
-which measure the same two operations the same way; the full record is in
-[`bench/baseline.json`](bench/baseline.json).
+Intel(R) Xeon(R) Processor @ 2.10GHz, both columns on that one machine, medians
+over 21 interleaved reps. Reproduce with `bench_BLS12_381` and
+`bindings/js/bench.mjs`, which measure the same two operations the same way;
+the full record is in [`bench/baseline.json`](bench/baseline.json).
 
 | | native | WebAssembly | |
 |---|---|---|---|
-| sign | 1.30 ms | 8.91 ms | 6.9x |
-| verify | 2.96 ms | 22.12 ms | 7.5x |
-| pairing | 1.15 ms | | |
+| sign | 0.88 ms | 5.76 ms | 6.6x |
+| verify | 2.21 ms | 15.28 ms | 6.9x |
+| pairing | 0.97 ms | | |
 
-Read the medians, not the spreads. Individual rows swing 10% to 40% on this
+Read the medians, not the spreads. Individual rows swing 5% to 40% on this
 machine, but the medians agree across independent runs to within 1%, which is
-the check that matters.
+the check that matters. The one exception is `ep2_in_subgroup`, which is small
+enough that 2% of it is noise.
+
+These are on a **slower machine than the previous table**, which was recorded
+at 2.80GHz. Comparing the two directly understates the change: signing is 32%
+faster and verification 25% faster on a host running 25% slower. The
+WebAssembly column moved further still, because most of the recent work is
+portable C that reaches both columns, while the x86-64 assembly reaches only
+one.
 
 The browser is slower for a structural reason rather than a missing
 optimisation: `wasm32` has no 64×64 → 128 bit multiply, so every field
@@ -134,7 +142,8 @@ The gap moves with whichever column a change reaches. x86-64 assembly for
 `fp_add` and `fp_sub` sped up the native column by 1.58x and did nothing for
 WebAssembly, which cannot use it, widening it to roughly 8x. Signing through
 GLV then narrowed it again — that one is portable C, so it took 16.9% off
-native signing and 18.5% off WebAssembly.
+native signing and 18.5% off WebAssembly. Jacobian coordinates for G2 are the
+same kind of change and narrowed it again, from 7.5x to 6.9x on verification.
 
 ---
 

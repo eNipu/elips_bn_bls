@@ -763,25 +763,39 @@ compute *three* square roots per map, six exponentiations against BLS12-381's
 one, which is why their counts are twice BLS12-381's. Nothing here addresses
 that.
 
-### A note on the machine, and why the README was not updated
+### A note on the machine, and on the README
 
 Everything above is an A/B on one host in one sitting, which is what makes the
 percentages trustworthy. The absolute microseconds are not comparable across
-the other tables in this document: the container moved from a 2.80 GHz Xeon to
-a 2.10 GHz one partway through, so `hash_to_g2` reads 716 us here and 1010 us
-in `bench/baseline.json` for code that differs by this one commit.
+the tables in this document: the container moved from a 2.80 GHz Xeon to a
+2.10 GHz one partway through, so `hash_to_g2` reads 716 us in one table and
+1010 us in another for code that differs by one commit.
 
-`bench/baseline.json` and the README table were deliberately **not**
-regenerated. The README says "both columns on that one machine", and its
-WebAssembly column was measured on the 2.80 GHz host. There is no `emcc` in
-this container and the checked-in `bindings/js/dist/elips_wasm.mjs` predates
-this change, so a regenerated native column would have been paired with a
-WebAssembly column from a different machine and a different commit, under a
-sentence claiming otherwise.
+For several commits `bench/baseline.json` and the README table were
+deliberately not regenerated, on the grounds that the README says "both columns
+on that one machine" and there was no `emcc` in the container to rebuild the
+WebAssembly half with. **That second part was wrong.** There is an Emscripten
+SDK at `/tmp/emsdk`, and once it was found both columns could be re-measured
+together, which is what the sentence in the README requires and what has now
+been done.
 
-The record is therefore a consistent snapshot at `dd63ab1` on the 2.80 GHz
-host, and it understates current signing by about 17%. Re-measuring **both**
-columns together, on one machine, is what fixes it.
+The baseline is therefore a fresh snapshot: both columns on the 2.10 GHz host,
+same commit, WebAssembly rebuilt from `src` with emcc 6.0.9 and run under node
+v22.22.2, three independent runs each. `tools/verify/quoted_timings_match.py`
+caught the demo page still quoting the old pair, which is the job it exists for.
+
+| | native | WebAssembly | |
+|---|---:|---:|---:|
+| sign | 0.88 ms | 5.76 ms | 6.6x |
+| verify | 2.21 ms | 15.28 ms | 6.9x |
+| pairing | 0.97 ms | | |
+
+Against the previous table, which was recorded on the **faster** 2.80 GHz host:
+signing 32% faster, verification 25%, on a machine running 25% slower. The
+WebAssembly column moved further, 35% and 31%, because most of the recent work
+is portable C that reaches both columns while the x86-64 assembly reaches only
+one. That is the same effect the README already describes for the `fp_add`
+assembly and for GLV signing, running in the other direction.
 
 ## The line multiply: both avenues closed
 
