@@ -1468,6 +1468,11 @@ G1 stays homogeneous: over Fp a squaring IS a multiplication, so Jacobian would
 trade two doubling multiplies for four addition ones and come out level, and
 level is not worth giving up completeness for.
 
+*(Superseded by #51, below. The reasoning above is right about the arithmetic
+and wrong about the conclusion: "level" was the average over callers, and the
+callers are not alike. It also missed that the homogeneous formulas were paying
+for a curve constant they recomputed on every call.)*
+
 ### Safety
 
 Jacobian is not complete the way RCB is, so both routines carry an argument.
@@ -1535,6 +1540,134 @@ so what remains is not arithmetic any more.
 are deleted.** They existed for the twist, the twist no longer uses them, and
 dead code whose comment says it is 89% of `ep2_in_subgroup` is worse than no
 code. The measurements stay recorded above; the code does not.
+
+## Jacobian coordinates for G1
+
+#50 left G1 on the homogeneous RCB formulas and gave a reason: over Fp there is
+no dedicated squaring, `fp_sqr` is literally `fp_mul(a, a)`, so S = M and the
+Jacobian trade of 2M off the doubling against 4M onto the addition comes out
+level. The arithmetic was right. The conclusion was not, for two reasons.
+
+### The first A/B was contaminated, and by something worth finding
+
+Flipping the define and running `compare.py --ab` against what was shipped gave
+this on BLS12-381:
+
+| operation | change | agreement |
+|---|---:|---|
+| `ep_in_subgroup` | -23.8% | 100% |
+| `ep_mul` | -14.4% | 100% |
+| `ep_mul_glv` | -6.6% | 100% |
+| `hash_to_g1` | -3.2% | 100% |
+| `bls_verify` | -1.9% | 100% |
+| `pairing` | -1.8% | 100% |
+
+Every row beat the prediction, `ep_mul_glv` most of all: the count said it
+should be level and it came out 6.6% faster. A model that is wrong in the
+direction you wanted is the one to distrust, so the next step was to find the
+missing term rather than write the commit message.
+
+It was `PT(curve_b3)`. The homogeneous addition and doubling both open by
+computing 3b, and `ep_curve_b` reaches `fp_from_limbs`, which is
+`fp_mul(t, FP_R2)`. So **every homogeneous `ep_add` and `ep_dbl` paid a full
+Montgomery multiplication to rebuild a compile-time constant**, and the counts
+above should have read 10M for the doubling and 15M for the addition. The
+compiler cannot hoist it: `fp_mul` writes through a pointer and dispatches on a
+runtime backend flag.
+
+Caching that constant in the homogeneous code, changing nothing else:
+
+| operation | change | agreement |
+|---|---:|---|
+| `ep_in_subgroup` | -13.6% | 100% |
+| `ep_mul` | -11.9% | 100% |
+| `ep_mul_glv` | -10.0% | 100% |
+| `bls_verify` | -1.5% | 88% |
+
+So most of the "Jacobian" win was a defect in what it was being compared
+against. This is why the three-way comparison exists and why the first table is
+not the one to quote for the coordinate change.
+
+### What the coordinate change is actually worth
+
+Against homogeneous with the constant hoisted, which is the fair comparison:
+
+| operation | dbl : add | change |
+|---|---|---:|
+| `ep_in_subgroup` | 128 : 6 | **-11.5%** |
+| `ep_mul` | 4 : 1 | **-3.9%** |
+| `ep_mul_glv` | 2 : 1 | **+4.4%, slower** |
+
+Which is exactly what the operation counts predict once they are correct. The
+doubling saves 2M, the unified addition costs 4M, and a caller wins or loses on
+its ratio of the two alone. The NAF ladder in `ep_mul_pubconst` does 128
+doublings against 6 additions and keeps nearly all of the saving; the GLV
+ladder does two doublings per addition and loses.
+
+**The GLV ladder is the signing path, and it is 4.4% slower.** That is the cost
+of the change and it is not hidden anywhere else in this file.
+
+A wider ladder window would move the ratio back, since Jacobian makes doublings
+cheap and additions dear. It does not pay, and the arithmetic settles it without
+writing any code: at width three the table is 64 entries, costing about 49 extra
+point additions to build (882M at 18M each) to save 371M over a 128-bit ladder.
+The note in `ec.c` that rejected width three under homogeneous coordinates holds
+under Jacobian for the same reason, with different numbers.
+
+### Why take it anyway
+
+Because `ep_in_subgroup` is on the pairing path -- `elips_pairing_multi_prec`
+validates every G1 input -- and because `read_pk` reaches it through
+`ep_read_compressed`. And because the alternative is keeping two group laws in
+the tree to serve one caller each.
+
+Against what was shipped, all three curves, nothing regressed:
+
+| | BLS12-381 | BLS12-461 | BN-462 |
+|---|---:|---:|---:|
+| `ep_in_subgroup` | -23.8% | -24.4% | n/a |
+| `ep_mul` | -14.4% | -14.0% | -15.4% |
+| `ep_mul_glv` | -6.6% | -6.5% | -7.3% |
+| `hash_to_g1` | -3.2% | -3.1% | -0.4% |
+| `pairing` | -1.8% | -1.8% | -0.5% |
+
+BN has no `ep_in_subgroup` row because #E(Fp) = r there, so the cofactor is 1
+and the test is the curve equation and nothing else.
+
+### What had to come with it
+
+**`ec_homog.h` is deleted.** With both groups Jacobian it had no instantiation,
+and an uncompiled formula set rots. So does the `EC_JACOBIAN` switch and
+`PT(curve_b3)`, which existed only for it. One group law now, not two.
+
+**`ec_group_test.c` covers both groups.** G1 now runs a formula set that is not
+complete, on points `ep_read_compressed` accepted from the wire, so it needs
+what the twist got in #50: an affine oracle with a real inversion and explicit
+special cases, random on-curve points off the subgroup, every degenerate pair,
+and both aliasing directions. The body moved to `ec_group_tmpl.h` and is
+instantiated twice. 4,000 points per group per curve is about 102,000 checks on
+G1 and 204,000 on G2, all passing.
+
+One thing that needed handling: on BN the G1 cofactor is 1, so *every* random
+curve point is in G1 and the "this run found no off-subgroup point, so it proved
+nothing" guard would fire on a test that is working correctly. The guard is now
+per-instantiation, and the BN G1 run says why it reports zero rather than
+failing.
+
+Both halves were checked by sabotage -- `E = 3A` changed to `E = 2A` in the
+doubling, then a full rebuild, not just the library: 43 failures on G1 and 86 on
+G2, including `[r]G is O`.
+
+### The headline table was left alone
+
+`bench/baseline.json` and the README still describe cd0b30e. Re-recording them
+was considered and rejected: the A/B says `bls_verify` and `pairing` moved about
+1.8% while `bls_sign` did not move at all, and three consecutive 21-rep runs of
+the *same* binary put `bls_sign` anywhere between 880 and 902 us. Re-recording
+would import 2.5% of run-to-run noise to capture a 1.8% effect, and would print
+a slower signing figure for a change the alternated A/B shows did not touch
+signing. The README is now conservative by about 1.8% on two rows, which is the
+right direction to be wrong in.
 
 ## Revised ordering
 

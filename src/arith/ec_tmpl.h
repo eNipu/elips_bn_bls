@@ -1,25 +1,20 @@
 /*
- * Group law in HOMOGENEOUS projective coordinates, using the complete formulas
- * of Renes, Costello and Batina (EUROCRYPT 2016), specialised to a = 0.
- *
- * Written once and instantiated for both E(Fp) and E'(Fp2). The original
+ * The scalar multiplications and the representation-agnostic point routines,
+ * written once and instantiated for both E(Fp) and E'(Fp2). The original
  * library kept two hand-copied versions of every curve routine and they had
  * already drifted apart; generating both from one text removes that.
  *
- * Why homogeneous rather than Jacobian
- * ------------------------------------
- * The previous Jacobian implementation had no complete addition. To resolve the
- * coincident-point case without branching it computed a full doubling on every
- * call and selected between the two results, which cost it everything the
- * coordinate change had gained: measured at 0.98x against the affine code it
- * replaced. Every addition in a ladder paid that.
+ * The group law itself is in ec_jacobian.h. Nothing in THIS file knows which
+ * coordinates are in use: set_infinity, is_infinity, copy, neg and from_affine
+ * mean the same thing in any of them, and both ladders only ever call add, dbl
+ * and cselect.
  *
- * The RCB formulas are complete in one expression: the same code is correct for
- * P + Q, P + P, P + (-P), P + O and O + O, with no branch and no fixup. That
- * makes them both faster here and simpler to reason about.
- *
- * A point is (X : Y : Z) with x = X/Z and y = Y/Z. The identity is any point
- * with Z = 0; the canonical one is (0 : 1 : 0).
+ * Both groups were homogeneous projective (x = X/Z) until issue #50 moved the
+ * twist to Jacobian and issue #51 moved G1 after it, so the homogeneous RCB
+ * formulas that used to sit beside them are gone. What that cost is argued at
+ * the top of ec_jacobian.h: those formulas were complete in one expression and
+ * these are not, which is why test/ec_group_test.c now checks both groups
+ * against an affine oracle rather than one.
  *
  * Expects EC_PT, EC_F and EC_FT from the includer.
  */
@@ -29,18 +24,6 @@
 #define PT(name)  CAT(EC_PT, CAT(_, name))
 #define PTT       CAT(EC_PT, _t)
 #define F(name)   CAT(EC_F,  CAT(_, name))
-
-#ifndef EC_JACOBIAN
-/* 3b, the only curve constant the homogeneous formulas need. The Jacobian ones
- * use b itself, in the on-curve test. */
-static void PT(curve_b3)(EC_FT out)
-{
-    EC_FT b, t;
-    PT(curve_b)(b);
-    F(add)(t, b, b);
-    F(add)(out, t, b);
-}
-#endif
 
 void PT(set_infinity)(PTT *r)
 {
@@ -60,20 +43,11 @@ void PT(neg)(PTT *r, const PTT *p)
 void PT(from_affine)(PTT *r, const EC_FT x, const EC_FT y)
 { F(copy)(r->x, x); F(copy)(r->y, y); F(set_one)(r->z); }
 
-/* The group law itself, in whichever coordinate system the instantiation
- * asked for. Everything above and below this point is representation-agnostic:
- * set_infinity, is_infinity, copy, neg and from_affine mean the same thing in
- * both, and so do the two ladders, which only ever call add, dbl and cselect.
- *
- * Splitting the two into their own files rather than one #if/#else body is
- * deliberate. Each is a complete formula set with its own exception argument,
- * and this is the code that decides whether an attacker-supplied point is
- * accepted, so each wants to be readable as a unit. */
-#ifdef EC_JACOBIAN
+/* The group law: add, dbl, to_affine, on_curve, eq. Its own file rather than
+ * an inlined block, because it is a formula set carrying its own exception
+ * argument and it is the code that decides whether an attacker-supplied point
+ * is accepted, so it wants to be readable as a unit. */
 #include "arith/ec_jacobian.h"
-#else
-#include "arith/ec_homog.h"
-#endif
 
 /* [k]P where k is a PUBLIC CONSTANT of the curve, not a caller's scalar.
  *
@@ -99,9 +73,11 @@ void PT(from_affine)(PTT *r, const EC_FT x, const EC_FT y)
  * for every point, and P is what an attacker supplies. Do NOT call this with a
  * scalar derived from a secret: use PT(mul), which is constant time in both.
  *
- * Complete addition again, and here it is not an optimisation to give up. The
- * caller is validating a point it does not trust, so every exceptional case
- * has to work rather than be argued away. */
+ * The unified addition again, and here its cost is not an optimisation to give
+ * up. The caller is validating a point it does not trust, so every exceptional
+ * case has to work rather than be argued away. PT(add) is not complete in the
+ * RCB sense -- it selects between an addition and a doubling under a mask --
+ * but it is correct for every input pair, which is the property this needs. */
 #define PUBCONST_LIMBS (((ELIPS_ORDER_BITS + 63) / 64) + 1)
 #define PUBCONST_BITS  (64 * PUBCONST_LIMBS)
 
@@ -159,8 +135,8 @@ void PT(mul_pubconst)(PTT *r, const PTT *p, const limb_t *k, int kbits)
  * so no memory address depends on the scalar. Only the declared bit length
  * affects the loop count, and that is public.
  *
- * With complete addition this needs no special handling of the identity: the
- * accumulator starts at infinity and the formulas simply work. */
+ * The accumulator starts at infinity and needs no special handling, because
+ * PT(add) returns the other operand when either one is the identity. */
 #define EC_WIN      4
 #define EC_TBL_SIZE (1 << EC_WIN)
 
@@ -203,7 +179,6 @@ void PT(mul)(PTT *r, const PTT *p, const limb_t *k, int kbits)
 #undef EC_WIN
 #undef EC_TBL_SIZE
 
-/* y^2 z == x^3 + b z^3 */
 #undef CAT_
 #undef CAT
 #undef PT

@@ -1,22 +1,29 @@
 /*
- * Elliptic curve points in homogeneous projective coordinates, with the
- * complete addition formulas of Renes, Costello and Batina.
+ * Elliptic curve points in Jacobian coordinates.
  *
- * Pulled forward from Phase 4 into Phase 3 because the two are coupled: the
- * affine group law needs a field inversion per point operation, and constant-
- * time inversion costs 26.8 us against 1.4 us for the variable-time kind. With
- * roughly 79 inversions in a BLS12 Miller loop that is 2.1 ms of inversion
- * against a 2.49 ms loop, so constant-time arithmetic is unaffordable until the
- * inversions are gone. Jacobian coordinates remove all but one of them.
+ * Projective at all because the affine group law needs a field inversion per
+ * point operation, and constant-time inversion costs 26.8 us against 1.4 us for
+ * the variable-time kind. With roughly 79 inversions in a BLS12 Miller loop
+ * that is 2.1 ms of inversion against a 2.49 ms loop, so constant-time
+ * arithmetic is unaffordable until the inversions are gone. Projective
+ * coordinates remove all but one of them.
  *
- * A point is (X : Y : Z) with x = X/Z and y = Y/Z. The identity has Z = 0.
- * Both curves have a = 0, so the RCB formulas specialise to their cheapest form.
+ * A point is (X : Y : Z) with x = X/Z^2 and y = Y/Z^3. The identity has Z = 0.
+ * Both curves have a = 0, so the doubling is dbl-2009-l at 2M + 5S.
  *
  * ep_add and ep2_add are correct for every input pair -- equal, opposite,
- * identity -- with no branch and no fixup. There is deliberately no faster
- * incomplete variant: the Jacobian version had one, guarded by a precondition
- * the caller had to honour, and a routine that is wrong for inputs a caller can
- * plausibly supply is a defect waiting for its first careless call site.
+ * identity -- with no branch and no fixup. They reach that by computing the
+ * addition and the doubling side by side and selecting between them, so they
+ * are a little dearer than a Jacobian addition that assumes its inputs are
+ * distinct. There is deliberately no such faster variant exposed: it would be
+ * guarded by a precondition the caller had to honour, and a routine that is
+ * wrong for inputs a caller can plausibly supply is a defect waiting for its
+ * first careless call site. An earlier Jacobian layer here had one, and the
+ * homogeneous complete formulas that replaced it in Phase 4 were kept until
+ * issues #50 and #51 measured the trade and moved both groups back.
+ *
+ * The exception arguments are in src/arith/ec_jacobian.h and are checked, not
+ * just argued, by test/ec_group_test.c.
  */
 #ifndef ELIPS_EC_H
 #define ELIPS_EC_H

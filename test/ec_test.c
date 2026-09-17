@@ -69,7 +69,7 @@ int main(void)
      * This case is inherited from the Jacobian layer, where it compared the
      * complete addition against a faster incomplete one and had to keep the
      * operands distinct and non-opposite for the incomplete routine's sake. The
-     * RCB formulas have no such precondition and the incomplete routine is
+     * unified addition has no such precondition and the incomplete routine is
      * gone, so what is left is a chain check: 4P, 8P, 16P... each plus P, every
      * intermediate still satisfying the curve equation. */
     int agree = 1, checked = 0;

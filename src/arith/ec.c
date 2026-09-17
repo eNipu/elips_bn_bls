@@ -1,6 +1,6 @@
 /*
  * Instantiates the Jacobian group law for both curves from one template.
- * See src/arith/ec_tmpl.h for the formulas.
+ * src/arith/ec_jacobian.h has the formulas, src/arith/ec_tmpl.h the ladders.
  */
 #include "elips/ec.h"
 
@@ -39,8 +39,11 @@ void ep2_curve_b(fp2_t b)
 
 void ep_phi(ep_t *r, const ep_t *p)
 {
-    /* Safe in projective form: x = X/Z, and scaling X by beta scales x by beta
-     * while leaving Z alone. Infinity has X = 0 and stays infinity.
+    /* Safe in Jacobian form: x = X/Z^2, so scaling X by beta scales x by beta
+     * while leaving y = Y/Z^3 alone, which is what phi does. The same held for
+     * the homogeneous x = X/Z this replaced, so the routine did not change when
+     * G1 moved in issue #51 -- only this sentence did. Infinity is Z = 0 and
+     * stays infinity whatever X becomes.
      *
      * beta is the cube root of unity in Fp that makes phi act as [lambda] on
      * G1, and which lambda that is differs by family: -x^2 on BLS12, where phi
@@ -57,14 +60,14 @@ void ep2_psi(ep2_t *r, const ep2_t *p)
     /* psi(x, y) = (conj(x) * gamma^-2, conj(y) * gamma^-3) on affine
      * coordinates.
      *
-     * In the homogeneous projective form used here, x = X/Z and y = Y/Z, and
-     * conjugation is a field homomorphism, so conjugating all three coordinates
-     * already gives (conj(x), conj(y)); scaling X and Y by the two constants
-     * finishes it. No special case and no normalisation.
+     * In the Jacobian form used here, x = X/Z^2 and y = Y/Z^3, and conjugation
+     * is a field homomorphism, so conjugating all three coordinates already
+     * gives (conj(x), conj(y)); scaling X and Y by the two constants finishes
+     * it. No special case and no normalisation.
      *
-     * (An earlier version of this comment described Jacobian coordinates with
-     * x = X/Z^2. The code was and is right for the homogeneous form the curve
-     * layer moved to in Phase 4; the comment was not.) */
+     * The constants are the same either way. PSI_X and PSI_Y are gamma^-2 and
+     * gamma^-3, which is what the affine map needs, and both forms leave the
+     * affine coordinates to be scaled by exactly those. */
     fp2_conj(r->x, p->x); fp2_mul(r->x, r->x, PSI_X);
     fp2_conj(r->y, p->y); fp2_mul(r->y, r->y, PSI_Y);
     fp2_conj(r->z, p->z);
@@ -73,12 +76,10 @@ void ep2_psi(ep2_t *r, const ep2_t *p)
 #define EC_PT ep2
 #define EC_F  fp2
 #define EC_FT fp2_t
-#define EC_JACOBIAN  1   /* doubling 2M + 5S against 4M + 5S; issue #50 */
 #include "arith/ec_tmpl.h"
 #undef EC_PT
 #undef EC_F
 #undef EC_FT
-#undef EC_JACOBIAN
 
 #include "arith/glv_scalar.h"
 
@@ -115,8 +116,9 @@ static void glv_ladder2_##SUF(PTT *r, const PTT *P0, const PTT *P1,            \
 {                                                                              \
     PTT tbl[16], acc, sel;                                                     \
                                                                                \
-    /* tbl[j] = [j & 3] P0 + [j >> 2] P1. The addition law is complete, so the \
-     * entries built on the identity need no special case. */                  \
+    /* tbl[j] = [j & 3] P0 + [j >> 2] P1. The addition is correct for every    \
+     * input pair, so the entries built on the identity, and the P0 + P0 that   \
+     * tbl[2] would be if it were not a doubling, need no special case. */      \
     PFX##_set_infinity(&tbl[0]);                                               \
     PFX##_copy(&tbl[1], P0);                                                   \
     PFX##_dbl(&tbl[2], P0);                                                    \

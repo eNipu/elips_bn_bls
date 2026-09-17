@@ -1,28 +1,47 @@
 /*
  * Group law in JACOBIAN coordinates: x = X/Z^2, y = Y/Z^3, and the identity is
- * Z = 0. Included from ec_tmpl.h when EC_JACOBIAN is set, which is the twist
- * and only the twist.
+ * Z = 0. Included from ec_tmpl.h, and instantiated for both E(Fp) and E'(Fp2).
  *
  * WHY, and what it costs. The doubling is 2M + 5S here against 4M + 5S for the
  * dedicated homogeneous form, and the doubling is 89% of ep2_in_subgroup and
- * most of every G2 scalar multiplication. The addition goes the other way: a
+ * most of every scalar multiplication. The addition goes the other way: a
  * complete Jacobian addition has to be the unified add-or-double below at
- * 13M + 5S, against 14M for homogeneous RCB, and with S/M = 0.62 in Fp2 that
- * is 15% SLOWER than what it replaces. Doublings outnumber additions by twelve
- * to one in the ladder, so the trade is worth taking, but it is a trade and not
- * a free win. See issue #50.
+ * 13M + 5S, against 14M for the homogeneous RCB formulas this replaced. The
+ * trade is worth taking wherever doublings outnumber additions, and it is a
+ * trade and not a free win. Issues #50 (the twist) and #51 (G1).
  *
- * Squarings are assumed cheaper than multiplies here, which is true because
- * this file is only ever instantiated over Fp2. Over Fp the trade is level and
- * ec_homog.h keeps the complete formulas instead.
+ * The trade is sharper over Fp than over Fp2, because fp_sqr is literally
+ * fp_mul(a, a) -- S = M exactly -- while Fp2 has a real squaring at S/M = 0.62.
+ * So on G1 the doubling saves 2M and the addition costs 4M, and which way a
+ * caller comes out depends only on its ratio of the two. Measured on
+ * BLS12-381, against the homogeneous formulas with their curve constant
+ * hoisted out of the inner loop:
+ *
+ *      ep_in_subgroup   128 dbl :   6 add     -11.5%
+ *      ep_mul             4 dbl :   1 add      -3.9%
+ *      ep_mul_glv         2 dbl :   1 add      +4.4%   (slower)
+ *
+ * The GLV ladder is the one caller that loses, and it is the signing path.
+ * That is the cost of having one group law rather than two; it was taken
+ * knowingly and issue #51 records the numbers. A wider ladder window would
+ * shift the ratio back, but the arithmetic in ec.c refutes it: at width three
+ * the 64-entry table costs more additions to build than the narrower digits
+ * save.
+ *
+ * NOT COMPLETE, unlike the RCB formulas that came before. Both routines below
+ * carry an explicit exception argument instead, and test/ec_group_test.c
+ * checks both of them, for both groups, against an affine oracle on random
+ * off-subgroup points. An argument is not a check.
  */
 
 /* Unified addition: 13M + 5S, correct for every input pair.
  *
- * Jacobian addition is not complete the way the RCB formulas are, and this
- * routine is reached from ep2_in_subgroup with points an attacker chose, so
+ * Jacobian addition is not complete the way the RCB formulas were, and this
+ * routine is reached from ep_in_subgroup and ep2_in_subgroup with points an
+ * attacker chose, so
  * every degenerate pair has to be handled rather than argued away. It is
- * handled the way blst's POINTonE2_dadd handles it: compute the addition and
+ * handled the way blst's POINTonE1_dadd and POINTonE2_dadd handle it: compute
+ * the addition and
  * the doubling helpers side by side, then select between them with a mask.
  *
  *   P == Q  gives H = 0 and R = 0. The doubling helpers are selected, and
