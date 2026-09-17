@@ -30,6 +30,20 @@
 #define PTT       CAT(EC_PT, _t)
 #define F(name)   CAT(EC_F,  CAT(_, name))
 
+/* Squaring, for the places below where both operands are the same value.
+ *
+ * Only worth routing through F(sqr) when the field has a cheaper one than a
+ * general multiply. Over Fp2 it does: fp2_sqr is two Fp products against
+ * fp2_mul's three, 82.5 ns against 132.6. Over Fp it does NOT, because fp_sqr
+ * IS fp_mul(a, a) -- see the note on it in fp.c -- so going through it buys
+ * nothing and adds a call, measured at +1.3% on ep_mul at 100% agreement.
+ * So the instantiation says which it is. */
+#ifdef EC_CHEAP_SQR
+#define FSQR(r, a)  F(sqr)(r, a)
+#else
+#define FSQR(r, a)  F(mul)(r, a, a)
+#endif
+
 /* 3b, the only curve constant the RCB formulas need. */
 static void PT(curve_b3)(EC_FT out)
 {
@@ -109,19 +123,24 @@ void PT(add)(PTT *r, const PTT *p, const PTT *q)
     F(copy)(r->x, x3); F(copy)(r->y, y3); F(copy)(r->z, z3);
 }
 
-/* RCB Algorithm 9: exception-free doubling for a = 0. */
+/* RCB Algorithm 9: exception-free doubling for a = 0.
+ *
+ * Y^2 and Z^2 go through FSQR, not F(mul). The formula is untouched and so is
+ * the exception-freeness argument: these are the same two values, computed the
+ * cheaper way. Two of the nine products in this routine, and this routine is
+ * 89% of ep2_in_subgroup. See issue #48. */
 void PT(dbl)(PTT *r, const PTT *p)
 {
     EC_FT t0, t1, t2, x3, y3, z3, b3;
     PT(curve_b3)(b3);
 
-    F(mul)(t0, p->y, p->y);
+    FSQR(t0, p->y);
     F(add)(z3, t0, t0);
     F(add)(z3, z3, z3);
     F(add)(z3, z3, z3);          /* z3 = 8 Y^2 */
 
     F(mul)(t1, p->y, p->z);
-    F(mul)(t2, p->z, p->z);
+    FSQR(t2, p->z);
     F(mul)(t2, b3, t2);          /* t2 = b3 Z^2 */
 
     F(mul)(x3, t2, z3);
@@ -286,9 +305,9 @@ int PT(on_curve)(const PTT *p)
     if (PT(is_infinity)(p)) return 1;
     EC_FT lhs, rhs, z3, b;
     PT(curve_b)(b);
-    F(mul)(lhs, p->y, p->y); F(mul)(lhs, lhs, p->z);
-    F(mul)(rhs, p->x, p->x); F(mul)(rhs, rhs, p->x);
-    F(mul)(z3, p->z, p->z);  F(mul)(z3, z3, p->z);
+    FSQR(lhs, p->y);         F(mul)(lhs, lhs, p->z);
+    FSQR(rhs, p->x);         F(mul)(rhs, rhs, p->x);
+    FSQR(z3, p->z);          F(mul)(z3, z3, p->z);
     F(mul)(z3, z3, b);
     F(add)(rhs, rhs, z3);
     return F(eq)(lhs, rhs);
@@ -314,3 +333,4 @@ int PT(eq)(const PTT *a, const PTT *b)
 #undef PT
 #undef PTT
 #undef F
+#undef FSQR

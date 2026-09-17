@@ -73,10 +73,12 @@ void ep2_psi(ep2_t *r, const ep2_t *p)
 #define EC_PT ep2
 #define EC_F  fp2
 #define EC_FT fp2_t
+#define EC_CHEAP_SQR 1                 /* fp2_sqr is 2 Fp products, fp2_mul 3 */
 #include "arith/ec_tmpl.h"
 #undef EC_PT
 #undef EC_F
 #undef EC_FT
+#undef EC_CHEAP_SQR
 
 #include "arith/glv_scalar.h"
 

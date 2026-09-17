@@ -1219,6 +1219,101 @@ operation added:
 
 Below roughly 0.3, do not write it. Above it, probe first anyway.
 
+## ep2_in_subgroup, traced
+
+The subgroup-check section above ends by asserting the remaining gap is
+"formula cost: ELiPS doubles and adds with the complete formulas throughout,
+blst uses dedicated ones". That was reasoning. Here is the trace, and it turned
+out the assertion was right about the residual and wrong about all of it.
+
+### The decomposition
+
+| | us | share |
+|---|---:|---:|
+| `ep2_in_subgroup`, whole | 92.39 | |
+| `ep2_mul_pubconst` | 89.50 | **96.9%** |
+| `ep2_on_curve` | 0.93 | 1.0% |
+| `ep2_psi` | 0.25 | 0.3% |
+| `ep2_eq` | 0.25 | 0.3% |
+| one `ep2_dbl` | 1.255 | |
+| one `ep2_add` | 1.910 | |
+
+64 doublings and 5 additions is 64 x 1.255 + 5 x 1.910 = 89.9, which is the
+whole ladder. **Nothing outside the doubling matters**, and the doubling alone
+is 89% of the check.
+
+### It is not the chain, and it is not the test
+
+blst's `POINTonE2_in_G2` is Scott eprint 2021/1130, `psi(P) == [z]P`, and so is
+ours. blst's `POINTonE2_times_minus_z` is a hardcoded chain: one double, then
+`add_n_dbl` by 2, 3, 9, 32, 16. That is **63 doublings and 5 additions**. Our
+NAF of the BLS12-381 seed has weight 6, so 63 doublings and 5 additions.
+Identical.
+
+Fp multiplications per check, callgrind, both libraries:
+
+| | ELiPS | blst |
+|---|---:|---:|
+| before | 2,047 | 1,281 |
+
+One difference worth stating because it makes the row not quite like for like:
+`blst_p2_affine_in_g2` does **no on-curve check**, and `ep2_in_subgroup` does.
+That is 1.0% of ours, so it is not the cause, but ours is doing strictly more.
+
+### What the trace actually found
+
+`PT(dbl)` opens with
+
+```c
+F(mul)(t0, p->y, p->y);     /* Y^2  */
+F(mul)(t2, p->z, p->z);     /* Z^2  */
+```
+
+**Two of its nine products are squarings written as multiplies**, and
+`PT(on_curve)` has three more. `fp2_sqr` is two Fp products against
+`fp2_mul`'s three: 82.5 ns against 132.6.
+
+The formula is untouched and so is the exception-freeness argument. These are
+the same values, computed the cheaper way.
+
+### One thing that had to be measured, not assumed
+
+Routing the Fp instantiation through `F(sqr)` too made G1 **slower**: `ep_mul`
++1.3% at 100% agreement. `fp_sqr` IS `fp_mul(a, a)` -- the note on it in
+`fp.c` says why a dedicated one was measured and not written -- so going
+through it buys nothing and adds a call. The template now asks the
+instantiation, via `EC_CHEAP_SQR`, which the Fp2 one sets and the Fp one does
+not.
+
+### Result
+
+| | change | agreement |
+|---|---:|---:|
+| `ep2_in_subgroup` | **-6.6%, -7.3%** | 100%, 100% |
+| `ep2_mul` | **-4.8%, -5.2%** | 100%, 100% |
+| `ep2_mul_glv` | -2.0%, -2.3% | 75%, 88% |
+| `bls_sign` | -1.5%, -2.0% | 88%, 100% |
+| `hash_to_g2` | -1.0%, -3.5% | 62%, 88% |
+
+Fp multiplications per check: **2,047 to 1,916**, which is exactly the 131
+squarings each saving one. Against blst on the same host, `in_g2` goes
+**1.73x to 1.61x**.
+
+One run showed `ep_mul_glv` at +3.0% and 100% agreement. It is not real: all
+fifteen G1 functions are instruction-identical before and after, and
+`ep_mul_glv` differs only in branch target addresses because it moved in the
+object file. A second run put it at +0.7% at 75%.
+
+### The residual, and why it stays
+
+1,916 against blst's 1,281. We double with the RCB complete formulas, now
+7 Fp2 multiplications and 2 squarings; blst uses dedicated ones. That is the
+remaining 1.61x, and it is a deliberate choice rather than an oversight: the
+caller is validating a point it does not trust, so every exceptional case has
+to work rather than be argued away. The Miller loop could give up the complete
+formulas because T there is a known multiple of a prime-order point. Here there
+is no such argument available.
+
 ## Revised ordering
 
 | | worth | risk |
