@@ -1669,6 +1669,73 @@ a slower signing figure for a change the alternated A/B shows did not touch
 signing. The README is now conservative by about 1.8% on two rows, which is the
 right direction to be wrong in.
 
+## fp2_mul, lazy: the dispatch cost as much as the change saved
+
+`fp6_mul` and the sparse line multiply went lazy in earlier issues. `fp2_mul`
+itself did not, and the wide kernel it needed was sitting there already,
+written, tested and used by both of them. So this was wiring, not arithmetic:
+one `fp2_mulw` and two reductions in place of three fused multiplies.
+
+### Where it lands, which is not the pairing
+
+The tower is already lazy above Fp2, so the pairing reaches `fp2_mul` without
+having much left to save. What reaches it is point arithmetic on the twist,
+which after #50 and #51 is 13M + 5S per addition and 2M + 5S per doubling, all
+of it Fp2.
+
+| BLS12-381 | change | agreement |
+|---|---:|---|
+| `bls_sign` | **-7.7%** | 100% |
+| `ep2_mul_glv` | **-7.6%** | 100% |
+| `ep2_mul` | -6.1% | 88% |
+| `hash_to_g2` | -5.7% | 100% |
+| `ep2_in_subgroup` | -5.6% | 88% |
+| `bls_verify` | -4.1% | 88% |
+| `pairing` | +0.9% | 50% |
+
+The pairing row is a coin flip in both directions, which is what "already
+lazy above Fp2" predicts.
+
+**BLS12-381 only.** `ELIPS_HAVE_LAZY_FP6` is `FP_LIMBS == 6 && __x86_64__`, and
+the kernels need BMI2 and ADX. BN-462 was A/B'd to confirm it: thirteen rows,
+every one between -1.7% and +1.7% at 50-88% agreement, nothing regressed. The
+8-limb curves, aarch64, wasm and pre-Broadwell x86 keep the eager path.
+
+### The first attempt regressed two rows, and the reason was the dispatch
+
+Dispatching the way `fp6_mul` does, with `fp_mul_backend() == ELIPS_FP_MUL_X86_64`
+per call, gave `gt_exp_ct` +3.8% and `miller` +0.9%. `fp_mul_backend()` is a
+call into another translation unit, and `fp2_mul` is the most-called routine in
+the library, so the callers that gain nothing from the change were paying a
+function call each time to be told so. `fp6_mul` can afford it because it is
+entered a sixth as often.
+
+Caching the answer in a file-scope flag moved those two rows to -1.1% and
+-2.2%, and nothing regressed after that. The flag starts at -1 and is filled on
+first use rather than by a constructor, because constructors run in link order
+and this one would have to run after `fp.c`'s. The write is idempotent, so a
+race between threads writes the same value.
+
+### Two rows that look like regressions and are not
+
+`ep_in_subgroup` reads +1.4% and `hash_to_g1` +1.7%. Both are pure Fp: G1 has
+no `fp2_mul` in it at all. Disassembling both binaries and comparing
+instruction by instruction, `ep_dbl`, `ep_add`, `ep_phi`, `ep_mul_pubconst`,
+`ep_on_curve` and `ep_eq` are identical in mnemonics and operands, differing
+only in the ADDRESSES inside their `call` and `jmp` targets. Code placement,
+the same artifact recorded against `ep_mul_glv` in the GLV work.
+
+### No fp2_sqr counterpart
+
+`fp2_sqr` is `(a0+a1)(a0-a1) + 2 a0 a1 u`, which is **two** `fp_mul`, while
+`fp2_mulw` computes the general three-product Karatsuba. Routing a squaring
+through it would add a multiplication to save a reduction, which is the wrong
+trade in both terms. A lazy `fp2_sqr` would need its own wide kernel and is not
+what this issue built.
+
+The lazy path was proved live by sabotage: one bit flipped in the wide product
+before reduction fails 12 of the 62 tests.
+
 ## Revised ordering
 
 | | worth | risk |

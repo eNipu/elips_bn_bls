@@ -31,7 +31,8 @@ void fp2_cselect(fp2_t r, const fp2_t a, const fp2_t b, limb_t mask)
 int fp2_is_zero(const fp2_t a) { return fp_is_zero(a[0]) & fp_is_zero(a[1]); }
 int fp2_eq(const fp2_t a, const fp2_t b) { return fp_eq(a[0], b[0]) & fp_eq(a[1], b[1]); }
 
-void fp2_mul(fp2_t r, const fp2_t a, const fp2_t b)
+/* The dispatching fp2_mul is below the lazy block, beside fp6_mul's. */
+static void fp2_mul_eager(fp2_t r, const fp2_t a, const fp2_t b)
 {
     /* (a0 + a1 u)(b0 + b1 u) = (a0b0 - a1b1) + ((a0+a1)(b0+b1) - a0b0 - a1b1) u,
      * using u^2 = -1. Three multiplies rather than four. */
@@ -212,7 +213,55 @@ static void fp6_mul_lazy(fp6_t r, const fp6_t a, const fp6_t b)
     elips_fp_redcw_6_x86_64(r[2][0], out[4], FP_MODULUS, FP_MONT_N0);
     elips_fp_redcw_6_x86_64(r[2][1], out[5], FP_MODULUS, FP_MONT_N0);
 }
+
+/* Fp2 multiply with the two reductions deferred.
+ *
+ * The eager form above is three fp_mul, each fusing its own Montgomery
+ * reduction, plus four narrow adds. This is one wide kernel and two
+ * reductions: the same three products, but combined at 768 bits so only the
+ * two OUTPUT coefficients are reduced rather than all three products.
+ *
+ * Unlike fp6_mul_lazy this saves one reduction out of three rather than three
+ * out of six, so it is the marginal case of the rule #47 established. It is
+ * measured, not assumed; PAIRING-PERFORMANCE.md records the number.
+ *
+ * There is deliberately no fp2_sqr counterpart. fp2_sqr is
+ * (a0+a1)(a0-a1) + 2 a0 a1 u, which is TWO fp_mul, and fp2_mulw computes the
+ * general three-product Karatsuba. Routing a squaring through it would add a
+ * multiplication to save a reduction, which is the wrong trade in both terms.
+ * A wide squaring would need its own kernel. */
+static void fp2_mul_lazy(fp2_t r, const fp2_t a, const fp2_t b)
+{
+    limb_t c0[12], c1[12];
+    fp2_mulw(c0, c1, a, b);
+    elips_fp_redcw_6_x86_64(r[0], c0, FP_MODULUS, FP_MONT_N0);
+    elips_fp_redcw_6_x86_64(r[1], c1, FP_MODULUS, FP_MONT_N0);
+}
+
 #endif /* ELIPS_HAVE_LAZY_FP6 */
+
+/* The backend choice cached, not re-asked. fp_mul_backend() is a call into
+ * another translation unit and fp2_mul is the most-called routine in the
+ * library, so asking it per call is a measurable tax on the callers that do
+ * not benefit -- the pairing reaches fp2_mul through a tower that is already
+ * lazy. fp6_mul can afford the call because it is entered a sixth as often.
+ *
+ * -1 until first use rather than a constructor: constructors run in link
+ * order, and this one would have to run after fp.c's. The write is idempotent,
+ * so a race between threads writes the same value. */
+#ifdef ELIPS_HAVE_LAZY_FP6
+static int fp2_lazy_ok = -1;
+#endif
+
+void fp2_mul(fp2_t r, const fp2_t a, const fp2_t b)
+{
+#ifdef ELIPS_HAVE_LAZY_FP6
+    if (fp2_lazy_ok < 0)
+        fp2_lazy_ok = (fp_mul_backend() == ELIPS_FP_MUL_X86_64);
+    if (fp2_lazy_ok) { fp2_mul_lazy(r, a, b); return; }
+#endif
+    fp2_mul_eager(r, a, b);
+}
 
 static void fp6_mul_eager(fp6_t r, const fp6_t a, const fp6_t b)
 {
